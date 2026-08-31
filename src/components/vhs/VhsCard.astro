@@ -1,0 +1,47 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  tag: string;
+  year: string;
+  coverImg: string;
+}
+
+const { id, title, tag, year, coverImg } = Astro.props;
+---
+
+<div 
+  class="vhs-card group relative cursor-pointer w-full max-w-[280px] aspect-[2/3] bg-neutral-900 rounded-sm p-3 shadow-2xl border border-neutral-800 transition-all duration-500 hover:-translate-y-3 hover:shadow-indigo-500/20"
+  data-vhs-id={id}
+>
+  <div class="relative w-full h-full border border-white/10 rounded-sm overflow-hidden flex flex-col justify-between p-4 bg-gradient-to-b from-neutral-800/80 to-neutral-950">
+    
+    <img 
+      src={coverImg} 
+      alt={title} 
+      class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-85 transition-opacity duration-500 mix-blend-luminosity group-hover:mix-blend-normal"
+    />
+
+    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/60 z-10"></div>
+
+    <div class="relative z-20 flex justify-between items-center text-[10px] font-mono tracking-widest text-neutral-400 uppercase">
+      <span class="bg-indigo-600/80 text-white px-1.5 py-0.5 rounded-[2px] font-bold">VHS</span>
+      <span>{year}</span>
+    </div>
+
+    <div class="relative z-20 mt-auto">
+      <span class="text-[9px] font-mono tracking-widest text-indigo-400 uppercase block mb-1">
+        {tag}
+      </span>
+      <h3 class="font-serif italic text-2xl text-white leading-tight mb-2 group-hover:text-indigo-200 transition-colors">
+        {title}
+      </h3>
+      
+      <div class="w-full bg-amber-100/90 text-neutral-900 font-mono text-[9px] font-bold px-2 py-1 uppercase tracking-wider shadow-inner flex justify-between items-center rotate-[-1deg]">
+        <span>HI-FI STEREO</span>
+        <span>AUTO TRACKING</span>
+      </div>
+    </div>
+
+  </div>
+</div>

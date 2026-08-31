@@ -1,0 +1,15 @@
+{
+  "alias": "uwil",
+  "titulo": "Developer • Designer",
+  "bio": "Just Tastefull.",
+  "botones": [
+    { "texto": "VER PROYECTOS", "link": "#proyectos", "primario": true },
+    { "texto": "CONTACTARME", "link": "#contacto", "primario": false },
+        { "texto": "CONTACTARME", "link": "#contacto", "primario": false }
+  ],
+  "skills": [
+    { "icono": "UI", "nombre": "UI/UX DESIGN" },
+    { "icono": "</>", "nombre": "WEB DEVELOPMENT" },
+    { "icono": "📱", "nombre": "MOBILE APPS" }
+  ]
+}

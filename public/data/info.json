@@ -1,0 +1,192 @@
+{
+  "perfil": {
+    "nombreCorto": "uwil",
+    "nombreCompleto": "Wilmer Carrasco",
+    "titulo": "Junior Dev & Diseñador Gráfico",
+    "bioCorta": "Just tasteful.",
+    "redes": [
+      {
+        "nombre": "Github",
+        "url": "https://github.com/Uwiloper",
+        "iconoSVG": "<path d=\"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z\"/>"
+      },
+      {
+        "nombre": "LinkedIn",
+        "url": "https://www.linkedin.com/in/uwil/",
+        "iconoSVG": "<path d=\"M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z\"/>"
+      },
+      {
+        "nombre": "Instagram",
+        "url": "https://www.instagram.com/wilcsmre/",
+        "iconoSVG": "<path d=\"M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z\"/>"
+      },
+      {
+        "nombre": "CodePen",
+        "url": "https://codepen.io/Uwiloper/",
+        "iconoSVG": "<path d=\"M24 8.252v7.496c0 .413-.213.793-.561 1.01l-10.878 6.8c-.347.216-.777.216-1.123 0l-10.878-6.8C.214 16.541 0 16.161 0 15.748V8.252c0-.413.214-.793.561-1.01l10.878-6.8c.347-.216.777-.216 1.123 0l10.878 6.8c.348.217.561.597.561 1.01zM12 1.956L2.68 7.781l3.524 2.348L12 6.275l5.795 3.854 3.525-2.348L12 1.956zm-8.243 7.5L1.443 11l2.314 1.543L6.07 11 3.757 9.456zM12 22.044l9.32-5.825-3.525-2.348L12 17.725l-5.795-3.854-3.524 2.348L12 22.044zm8.243-7.5l2.314-1.544-2.314-1.543L17.93 11l2.313 1.544zM12 15.485l4.316-2.871L12 9.743l-4.316 2.871L12 15.485z\"/>"
+      }
+    ]
+  },
+  
+  "sobreMi": {
+    "parrafos": [
+      "Soy Wilmer Carrasco, Egresado de ISIL y Desarrollador junior. Combino la lógica de programación con un diseño visual perfecto.",
+      "Mi enfoque es desarrollar soluciones que sean escalables y funcionales, manteniendo siempre una comunicación clara con el equipo y los usuarios, así como un estándar estético estricto."
+    ],
+    "tecnologias": [  
+      "devicon-mysql-plain",
+      "devicon-firebase-plain",
+      "devicon-react-original",
+      "devicon-nodejs-plain",
+      "devicon-javascript-plain",
+      "devicon-swift-plain",
+      "devicon-android-plain"
+  ]
+  },
+
+  "trayectoria": [
+    {
+      "periodo": "2020 — Presente",
+      "titulo": "Rediseño y Desarrollo Web",
+      "empresa": "imagenartis",
+      "descripcion": "Encabezando la reestructuración del sitio web de la empresa, el perfeccionamiento del SEO y el avance en las comunicaciones digitales de la compañía. Rotulación de vehículos y piezas comerciales, identidades gráficas. Comunicación visual y atención meticulosa a los detalles."
+    },
+    {
+      "periodo": "2022 — 2025",
+      "titulo": "Desarrollo de Software",
+      "empresa": "Instituto San Ignacio de Loyola (ISIL)",
+      "descripcion": "Desarrollo de páginas web, bases de datos y sistemas que están orientados a objetos. Énfasis en el código funcional."
+    }
+  ],
+
+  "proyectos": [
+
+    {
+        "id": "0",
+        "title": "PagoFirme",
+        "tag": "SaaS & FinTech",
+        "year": "Ene 2026",
+        "role": "Creator & Fullstack Developer",
+        "desc": "Plataforma de monitoreo y validación de pagos en tiempo real.",
+        "longDesc": "SaaS desarrollado de forma independiente (Closed Source). Consiste en un sistema distribuido que captura notificaciones de pagos entrantes y las centraliza en un dashboard web seguro. Diseñado para que comercios y negocios verifiquen sus ingresos al instante, eliminando fraudes y agilizando las ventas en mostrador.",
+        "tech": "Firebase, Android API (Notificaciones)",
+        "img1": "https://visornotificaciones.web.app/resources/img/billete.webp",
+        "img2": "https://images.unsplash.com/photo-1522199755839-a2bacb67c546?q=80&w=800",
+        "img3": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800",
+        "img4": "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1600",
+        "video": "public/videos/hero.mp4",
+        "demoLink": "https://visornotificaciones.web.app/",
+        "githubLink": "",
+        "docLink": ""
+    },
+    {
+        "id": "1",
+        "title": "Inversiones Lazaro",
+        "tag": "E-commerce & ERP",
+        "year": "Dic 2025",
+        "role": "Developer & UI/UX",
+        "desc": "Plataforma B2B para gestión y venta a gran escala.",
+        "longDesc": "Ecommerce empresarial sólida, con un nivel de productividad completo y optimizada para una implementación instantánea. Este ecosistema incorpora flujos complejos de ventas B2B y un panel administrativo para la supervisión de las operaciones. El proyecto está organizado de acuerdo con normas profesionales, posibilitando migración completa y escalable desde el repositorio a la producción.",
+        "tech": "HTML, Java",
+        "img1": "images/invlazaro.jpg",
+        "img2": "images/invlazaro.jpg",
+        "img3": "images/invlazaro.jpg",
+        "img4": "images/invlazaro.jpg",
+        "video": "videos/hero.mp4",
+        "demoLink": "demos/invlazaro/index.html",
+        "githubLink": "https://github.com/Uwiloper/InvLazaro-WebApp",
+        "docLink": "https://drive.google.com/file/d/1Ylut9V-tx_AyM5XgcYsFfM-kJIgUJZYi/view?usp=sharing"
+    },
+    {
+      "id": 2,
+      "category": "design",
+      "title": "Imagenartis",
+      "tag": "Diseño Gráfico & Web",
+      "img": "data:image/jpeg;base64,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",
+      "img2": "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=800",
+      "img3": "https://images.unsplash.com/photo-1621609764095-b32bbe35cf3a?q=80&w=800",
+      "img4": "https://www.dafont.com/img/illustration/a/r/arsenica.png",
+      "desc": "Renovación integral de marca, SEO y diseño de rotulación vehicular para empresa de identidad visual.",
+      "demoLink": "#"
+    },
+    {
+      "id": 1,
+      "category": "mobile",
+      "title": "Eatoo Food App",
+      "tag": "Swift UI",
+      "img": "public/images/eatoo.jpg",
+      "img2": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800",
+      "img3": "https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=800",
+      "img4": "https://images.unsplash.com/photo-1581092335397-9583eb92d232?q=80&w=1600",
+      "video": "https://cdn.pixabay.com/video/2023/10/24/186353-877682264_tiny.webm",
+      "desc": "Plataforma B2B para gestión y venta a gran escala.",
+      "githubLink": "https://github.com/wilmer/avisopay",
+      "demoLink": "https://www.youtube.com/watch?v=2shWSN1BO7E"
+    }
+
+  ],
+  "tienda": [
+    {
+      "id": 0,
+      "category": "template",
+      "title": "Portafolio WebGL Premium",
+      "price": "$49",
+      "tag": "Template Completo",
+      "img": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop",
+      "video": "https://cdn.pixabay.com/video/2023/10/24/186353-877682264_tiny.webm",
+      "gallery": [
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600",
+        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=600"
+      ],
+      "desc": "Plantilla inmersiva con animaciones GSAP, scroll fluido, y fondo WebGL interactivo. Perfecta para agencias creativas y desarrolladores frontend que buscan destacar.",
+      "link": "#",
+      "demoLink": "#",
+      "caracteristicas": [
+        "Código fuente 100% editable y documentado.",
+        "Optimizado para Core Web Vitals (SEO).",
+        "Diseño Responsive (Mobile First).",
+        "Animaciones GSAP Premium integradas."
+      ]
+    },
+    {
+      "id": 1,
+      "category": "uikit",
+      "title": "E-Commerce UI Kit",
+      "price": "$29",
+      "tag": "Componentes UI",
+      "img": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
+      "video": "https://cdn.pixabay.com/video/2023/10/24/186353-877682264_tiny.webm",
+      "gallery": [
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600"
+      ],
+      "desc": "Más de 50 componentes responsivos creados en Tailwind CSS. Incluye carritos de compra interactivos, filtros avanzados, modales rápidos y layouts.",
+      "link": "#",
+      "demoLink": "#",
+      "caracteristicas": [
+        "Componentes modulares y reutilizables.",
+        "Integración sencilla con frameworks JS.",
+        "Soporte Dark Mode nativo."
+      ]
+    }
+  ],
+  "ui": {
+    "titulos": {
+      "trayectoria": "Experiencia.",
+      "proyectos": "Proyectos.",
+      "tienda": "Tienda.",
+      "contacto": "Contacto"
+    },
+    "textos": {
+      "subtituloProyectos": "Proyectos destacados de desarrollo y diseño.",
+      "subtituloTienda": "Plantillas y recursos digitales listos para tu próximo proyecto.",
+      "subtituloContacto": "¿Tienes un proyecto en mente?"
+    },
+    "botones": {
+      "verTodosProyectos": "Ver todos los proyectos",
+      "verTodosProductos": "Ver todos los productos",
+      "volverInicio": "Volver al Inicio",
+      "regresarTienda": "Regresar a la Tienda",
+      "enviarMensaje": "Enviar Mensaje"
+    }
+  }
+}

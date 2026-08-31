@@ -1,0 +1,78 @@
+---
+import '../styles/global.css';
+import heroData from '../../src/data/Hero.json';
+
+// Simulamos un par de proyectos para los cuadros vacíos
+const proyectosFalsos = [1, 2];
+---
+
+<html lang="es" class="dark"> <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Wilmer Carrasco | Portafolio</title>
+  </head>
+  
+  <body class="bg-[#f2efe9] text-slate-900 dark:bg-[#11111b] dark:text-slate-100 transition-colors duration-500 font-sans min-h-screen overflow-x-hidden">
+    
+    <div class="analog-noise-overlay"></div>
+    <div class="color-sweep-effect"></div>
+	<div class="analog-noise-overlay"></div>
+<div class="vhs-scanlines"></div> 
+<div class="color-sweep-effect"></div>
+
+<main class="relative z-20 container mx-auto px-6 lg:px-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 pt-20 pb-20">
+  
+  <section class="w-full lg:w-1/2 flex flex-col justify-center">
+    
+    <h2 class="font-mono text-sm font-bold tracking-widest uppercase mb-2 text-indigo-600 dark:text-emerald-400">
+      Hola, soy
+    </h2>
+    
+    <h1 class="text-7xl md:text-8xl lg:text-[100px] font-display lowercase leading-none tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400 relative z-10 hover-glitch cursor-default w-max">
+      {heroData.alias}
+    </h1>
+    
+    <div class="inline-block border-2 border-slate-800 dark:border-white px-4 py-1 mb-8 relative z-10 w-max">
+      <p class="font-mono text-xs md:text-sm font-bold tracking-widest uppercase">
+        {heroData.titulo}
+      </p>
+    </div>
+    
+    <p class="text-lg md:text-xl max-w-md leading-relaxed mb-10 opacity-90 relative z-10 font-light">
+      {heroData.bio}
+    </p>
+
+    <div class="flex flex-wrap gap-4 mb-16 relative z-10">
+      {heroData.botones.map(btn => (
+        <a href={btn.link} 
+           class={`px-8 py-3 font-mono text-xs font-bold tracking-widest uppercase transition-transform hover:-translate-y-1 ${
+             btn.primario 
+              ? 'bg-pink-500 text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' 
+              : 'bg-cyan-500 text-slate-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]'
+           }`}>
+          ▶ {btn.texto}
+        </a>
+      ))}
+    </div>
+
+    <div class="flex gap-8 opacity-70 relative z-10">
+      {heroData.skills.map(skill => (
+        <div class="flex items-center gap-2">
+          <span class="text-xl">{skill.icono}</span>
+          <span class="font-mono text-[10px] tracking-widest font-bold w-16 leading-tight">{skill.nombre}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="w-full lg:w-1/2 grid grid-cols-2 gap-6 relative z-10">
+    {proyectosFalsos.map((i) => (
+      <div class="aspect-[3/4] bg-white dark:bg-neutral-900 border-2 border-slate-800 dark:border-neutral-700 rounded-sm shadow-xl flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity">
+        <span class="font-mono text-xs opacity-50">PROYECTO {i}</span>
+      </div>
+    ))}
+  </section>
+
+</main>
+  </body>
+</html>
