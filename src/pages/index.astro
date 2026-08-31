@@ -1,78 +1,226 @@
 ---
 import '../styles/global.css';
-import heroData from '../../src/data/Hero.json';
-
-// Simulamos un par de proyectos para los cuadros vacíos
-const proyectosFalsos = [1, 2];
+import VhsControlsModal from '../components/VhsControlsModal.jsx';
+import proyectos from '../data/projects.json';
 ---
 
-<html lang="es" class="dark"> <head>
+<html lang="es" class="dark">
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Wilmer Carrasco | Portafolio</title>
   </head>
   
-  <body class="bg-[#f2efe9] text-slate-900 dark:bg-[#11111b] dark:text-slate-100 transition-colors duration-500 font-sans min-h-screen overflow-x-hidden">
+  <body class="bg-[#121010] text-slate-100 font-sans min-h-screen overflow-hidden selection:bg-pink-500 selection:text-white">
     
-    <div class="analog-noise-overlay"></div>
-    <div class="color-sweep-effect"></div>
-	<div class="analog-noise-overlay"></div>
-<div class="vhs-scanlines"></div> 
-<div class="color-sweep-effect"></div>
-
-<main class="relative z-20 container mx-auto px-6 lg:px-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 pt-20 pb-20">
-  
-  <section class="w-full lg:w-1/2 flex flex-col justify-center">
-    
-    <h2 class="font-mono text-sm font-bold tracking-widest uppercase mb-2 text-indigo-600 dark:text-emerald-400">
-      Hola, soy
-    </h2>
-    
-    <h1 class="text-7xl md:text-8xl lg:text-[100px] font-display lowercase leading-none tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400 relative z-10 hover-glitch cursor-default w-max">
-      {heroData.alias}
-    </h1>
-    
-    <div class="inline-block border-2 border-slate-800 dark:border-white px-4 py-1 mb-8 relative z-10 w-max">
-      <p class="font-mono text-xs md:text-sm font-bold tracking-widest uppercase">
-        {heroData.titulo}
-      </p>
-    </div>
-    
-    <p class="text-lg md:text-xl max-w-md leading-relaxed mb-10 opacity-90 relative z-10 font-light">
-      {heroData.bio}
-    </p>
-
-    <div class="flex flex-wrap gap-4 mb-16 relative z-10">
-      {heroData.botones.map(btn => (
-        <a href={btn.link} 
-           class={`px-8 py-3 font-mono text-xs font-bold tracking-widest uppercase transition-transform hover:-translate-y-1 ${
-             btn.primario 
-              ? 'bg-pink-500 text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]' 
-              : 'bg-cyan-500 text-slate-900 shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.2)]'
-           }`}>
-          ▶ {btn.texto}
-        </a>
-      ))}
+    <div id="layer-1-bg" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <img src="/images/firme-cover.jpg" class="bg-project-image" alt="Firme App" />
+      <img src="/images/imagenartis-wrap.jpg" class="bg-project-image" alt="Imagenartis" />
+      <img src="/images/lazaro-dash.jpg" class="bg-project-image" alt="Lazaro B2B" />
     </div>
 
-    <div class="flex gap-8 opacity-70 relative z-10">
-      {heroData.skills.map(skill => (
-        <div class="flex items-center gap-2">
-          <span class="text-xl">{skill.icono}</span>
-          <span class="font-mono text-[10px] tracking-widest font-bold w-16 leading-tight">{skill.nombre}</span>
+    <div id="layer-2-vhs" class="fixed inset-0 z-10 pointer-events-none wobbley">
+      <canvas id="vhs-canvas" class="w-full h-full opacity-30 mix-blend-screen" style="filter: blur(1px);"></canvas>
+      <div class="scanlines"></div>
+      <div class="crt-vignette"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-between p-6 md:p-10 vhs-hud-container mix-blend-difference pointer-events-none z-30">
+        <div class="flex justify-between items-start text-sm md:text-xl lg:text-2xl font-bold tracking-widest uppercase">
+          <div class="rgb-glitch-text flex items-center gap-2">
+            <span class="text-red-500">●</span> REC
+          </div>
+          <div id="vhs-timer" class="rgb-glitch-text">00:00:00</div>
         </div>
-      ))}
-    </div>
-  </section>
 
-  <section class="w-full lg:w-1/2 grid grid-cols-2 gap-6 relative z-10">
-    {proyectosFalsos.map((i) => (
-      <div class="aspect-[3/4] bg-white dark:bg-neutral-900 border-2 border-slate-800 dark:border-neutral-700 rounded-sm shadow-xl flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity">
-        <span class="font-mono text-xs opacity-50">PROYECTO {i}</span>
+        <div class="flex justify-between items-end text-xs md:text-lg lg:text-xl font-bold tracking-widest uppercase">
+          <div class="rgb-glitch-text flex items-center gap-3">
+            <span>SP</span>
+            <span>uwil</span>
+          </div>
+          <div id="vhs-date" class="rgb-glitch-text">MMM. 00 0000</div>
+        </div>
       </div>
-    ))}
-  </section>
+    </div>
 
-</main>
+    <main id="layer-3-content" class="relative z-20 w-full min-h-screen flex flex-col justify-center overflow-hidden pointer-events-auto">
+      <div class="px-6 lg:px-12 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+
+        <div class="lg:col-span-7 w-full order-2 lg:order-1">
+          <div id="project-card" class="relative w-full aspect-video bg-neutral-950 rounded-sm border-2 border-neutral-800 shadow-[0_0_50px_rgba(0,0,0,0.9)] overflow-hidden group">
+            
+            <img id="card-img" src={proyectos[0].img} alt="Preview" class="w-full h-full object-cover opacity-80 border-b border-white/10" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none"></div>
+
+            <div class="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col justify-end">
+              <div class="flex justify-between items-end mb-2 gap-4">
+                <h3 id="card-title" class="text-3xl md:text-5xl font-display text-white uppercase tracking-wider text-pink-500 truncate">
+                  {proyectos[0].titulo}
+                </h3>
+                <span id="card-tech" class="font-mono text-[9px] md:text-xs text-cyan-400 tracking-widest uppercase bg-black/60 px-2 py-1 border border-cyan-500/30 whitespace-nowrap">
+                  {proyectos[0].tech}
+                </span>
+              </div>
+
+              <p id="card-slogan" class="font-sans text-sm md:text-base text-white/80 font-light mb-6">
+                {proyectos[0].slogan}
+              </p>
+
+              <div>
+                <a id="card-link" href={proyectos[0].link} class="px-6 py-2.5 bg-pink-500 text-white font-mono text-xs font-bold tracking-widest uppercase hover:bg-pink-600 transition-colors shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                  ▶ VER PROYECTO
+                </a>
+              </div>
+            </div>
+
+            <div class="absolute top-4 right-4 font-mono text-[9px] text-white/60 bg-black/80 px-2 py-1 border border-white/20 uppercase tracking-widest pointer-events-none">
+              CH <span id="card-channel" class="text-emerald-400">01</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col justify-center order-1 lg:order-2">
+          <div class="text-right font-mono text-[9px] tracking-widest text-white/40 uppercase mb-2">
+            <span class="animate-pulse text-pink-500">●</span> SCROLL / ARRASTRA
+          </div>
+
+          <div id="dial-track" class="dial-container cursor-grab active:cursor-grabbing">
+            {proyectos.map((proj, index) => (
+              <div class="dial-item" 
+                   data-index={index}
+                   data-json={JSON.stringify(proj)}>
+                <span class="text-3xl md:text-4xl lg:text-5xl font-display uppercase tracking-wider text-right">
+                  {proj.titulo}
+                </span>
+                <span class="dial-pointer font-mono text-xs">▶</span>
+                <div class="dial-tick"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <VhsControlsModal client:load />
+
+    <script>
+      import '../js/vhs.js';
+
+      // 1. Reloj y Fecha OSD
+      const dateElement = document.getElementById('vhs-date');
+      const now = new Date();
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      if (dateElement) {
+        dateElement.textContent = `${months[now.getMonth()]}. ${now.getDate().toString().padStart(2, '0')} ${now.getFullYear()}`;
+      }
+
+      const timerElement = document.getElementById('vhs-timer');
+      let seconds = 0;
+      setInterval(() => {
+        seconds++;
+        const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        if (timerElement) timerElement.textContent = `${h}:${m}:${s}`;
+      }, 1000);
+
+      // 2. Control del Dial
+      const items = Array.from(document.querySelectorAll('.dial-item'));
+      const cardImg = document.getElementById('card-img');
+      const cardTitle = document.getElementById('card-title');
+      const cardSlogan = document.getElementById('card-slogan');
+      const cardTech = document.getElementById('card-tech');
+      const cardLink = document.getElementById('card-link');
+      const cardChannel = document.getElementById('card-channel');
+      const projectCard = document.getElementById('project-card');
+      const dialTrack = document.getElementById('dial-track');
+
+      let currentIndex = 0;
+      const itemSpacing = 65;
+
+      function renderDial() {
+        items.forEach((item, i) => {
+          const diff = i - currentIndex;
+          const absDiff = Math.abs(diff);
+          item.classList.remove('active');
+          
+          if (absDiff === 0) {
+            item.classList.add('active');
+            item.style.transform = `translateY(0px) translateX(-10px) scale(1.1)`;
+            item.style.opacity = '1';
+          } else {
+            const curveX = Math.pow(absDiff, 1.8) * 12; 
+            const scale = Math.max(0.6, 1 - (absDiff * 0.15));
+            const opacity = Math.max(0.1, 0.5 - (absDiff * 0.1));
+            item.style.transform = `translateY(${diff * itemSpacing}px) translateX(${curveX}px) scale(${scale})`;
+            item.style.opacity = opacity.toString();
+          }
+        });
+      }
+
+      function setProject(index) {
+        if (index < 0) index = 0;
+        if (index >= items.length) index = items.length - 1;
+        if (index === currentIndex) return;
+
+        currentIndex = index;
+        renderDial();
+
+        if (projectCard) {
+          projectCard.classList.remove('tv-glitch-active');
+          void projectCard.offsetWidth;
+          projectCard.classList.add('tv-glitch-active');
+        }
+
+        const data = JSON.parse(items[currentIndex].getAttribute('data-json'));
+        setTimeout(() => {
+          if (cardImg) cardImg.setAttribute('src', data.img);
+          if (cardTitle) cardTitle.textContent = data.titulo;
+          if (cardSlogan) cardSlogan.textContent = data.slogan;
+          if (cardTech) cardTech.textContent = data.tech;
+          if (cardLink) cardLink.setAttribute('href', data.link);
+          if (cardChannel) cardChannel.textContent = `0${currentIndex + 1}`;
+        }, 150);
+      }
+
+      renderDial();
+
+      items.forEach((item, i) => item.addEventListener('click', () => setProject(i)));
+
+      let isScrolling = false;
+      dialTrack?.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (isScrolling) return;
+        isScrolling = true;
+        if (e.deltaY > 0) setProject(currentIndex + 1);
+        else if (e.deltaY < 0) setProject(currentIndex - 1);
+        setTimeout(() => { isScrolling = false; }, 300);
+      }, { passive: false });
+
+      let startY = 0;
+      let isDragging = false;
+      const threshold = 40;
+
+      const startDrag = (y) => { isDragging = true; startY = y; };
+      const moveDrag = (y) => {
+        if (!isDragging) return;
+        const deltaY = y - startY;
+        if (deltaY > threshold) { setProject(currentIndex - 1); startY = y; }
+        else if (deltaY < -threshold) { setProject(currentIndex + 1); startY = y; }
+      };
+      const endDrag = () => { isDragging = false; };
+
+      dialTrack?.addEventListener('mousedown', (e) => startDrag(e.clientY));
+      window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
+      window.addEventListener('mouseup', endDrag);
+
+      dialTrack?.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY));
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging) e.preventDefault();
+        moveDrag(e.touches[0].clientY);
+      }, { passive: false });
+      window.addEventListener('touchend', endDrag);
+    </script>
   </body>
 </html>

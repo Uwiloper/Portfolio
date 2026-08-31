@@ -1,0 +1,34 @@
+[
+  {
+    "id": "firme",
+    "titulo": "Sobre Mi",
+    "slogan": "Aplicación nativa para verificación de pagos comerciales.",
+    "tech": "ANDROID • JAVA • FINTECH",
+    "img": "/images/firme-cover.jpg",
+    "link": "#"
+  },
+  {
+    "id": "imagenartis",
+    "titulo": "Experiencia",
+    "slogan": "Estudio de diseño visual y personalización de wraps vehiculares.",
+    "tech": "GRAPHIC DESIGN • WRAP",
+    "img": "/images/imagenartis-wrap.jpg",
+    "link": "#"
+  },
+  {
+    "id": "lazaro",
+    "titulo": "Proyectos",
+    "slogan": "Plataforma web B2B de gestión de inventario.",
+    "tech": "WEB DEV • PHP • MYSQL",
+    "img": "/images/lazaro-dash.jpg",
+    "link": "#"
+  },
+  {
+    "id": "portfolio",
+    "titulo": "Contacto",
+    "slogan": "Experiencia inmersiva con renderizado retro CRT y GSAP.",
+    "tech": "ASTRO • REACT • TAILWIND",
+    "img": "/images/portfolio-cover.jpg",
+    "link": "#"
+  }
+]

@@ -17,10 +17,12 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "astro": "^7.2.9",
+    "gsap": "^3.15.0",
     "postprocessing": "^6.39.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "three": "^0.185.1"
   },
   "allowScripts": {
     "esbuild": true
