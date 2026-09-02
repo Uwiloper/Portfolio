@@ -1,7 +1,7 @@
 [
   {
     "id": "firme",
-    "titulo": "Sobre Mi",
+    "titulo": "Intro",
     "slogan": "Aplicación nativa para verificación de pagos comerciales.",
     "tech": "ANDROID • JAVA • FINTECH",
     "img": "/images/firme-cover.jpg",

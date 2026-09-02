@@ -1,0 +1,204 @@
+---
+import navItems from '../data/navigation.json';
+---
+
+<nav id="reel-nav-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden select-none">
+  
+  <!-- Posicion del texto con respecto al rollo de cinta VHS y espacio determinado en pantalla -->  
+  <div class="absolute bottom-[140px] left-1/2 -translate-x-1/2 lg:bottom-auto lg:left-auto lg:top-1/2 lg:right-[220px] xl:right-[150px] lg:-translate-y-1/2 lg:translate-x-0 w-full lg:w-[400px] h-[50px] pointer-events-none z-10 flex justify-center lg:justify-end items-center">
+    
+    {navItems.map((item, index) => (
+      <button 
+        class="nav-label absolute flex flex-col lg:flex-row items-center justify-center lg:justify-end gap-2 lg:gap-3 transition-all duration-500 pointer-events-auto cursor-pointer w-max lg:w-full origin-bottom lg:origin-right"
+        data-index={index}
+        data-target={item.id}
+      >
+        <span class="font-display text-lg md:text-xl lg:text-3xl uppercase tracking-widest transition-all duration-500 whitespace-nowrap text-white/40">
+          {item.label}
+        </span>
+        
+        <div class="pointer-indicator opacity-0 transition-opacity duration-300 absolute lg:relative -bottom-6 lg:bottom-auto">
+          <span class="text-pink-500 text-[10px] md:text-xs font-mono lg:rotate-0 rotate-90 block drop-shadow-[0_0_8px_rgba(236,72,153,1)]">▶</span>
+        </div>
+      </button>
+    ))}
+
+  </div>
+
+  <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[45%] lg:bottom-auto lg:left-auto lg:top-1/2 lg:right-0 lg:-translate-y-1/2 lg:translate-x-[50%] w-[220px] h-[220px] lg:w-[380px] lg:h-[380px] xl:w-[420px] xl:h-[420px] flex items-center justify-center pointer-events-auto z-20">
+    
+     <!-- Tamaño de la cinta rollo VHS -->
+    <div 
+      id="reel-rotator" class="w-20px h-20px rounded-full cursor-grab active:cursor-grabbing will-change-transform"
+    >
+      <img 
+        src="/icons/cinta_rollo.svg" 
+        alt="Carrete VHS" 
+        class="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.9)]"
+        draggable="false"
+      />
+    </div>
+    
+  </div>
+  
+</nav>
+
+<style>
+  /* Estados del texto activo */
+  .nav-label.active span.font-display {
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+  }
+  .nav-label.active .pointer-indicator {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  // 1. OBTENCIÓN DINÁMICA SEGÚN EL JSON
+  const labels = document.querySelectorAll('.nav-label');
+  const totalItems = labels.length;
+  // Calcula automáticamente los grados por cada sección según la cantidad de items en el JSON
+  const degreesPerStep = totalItems > 0 ? 360 / totalItems : 60; 
+
+  const rotator = document.getElementById('reel-rotator');
+  const navContainer = document.getElementById('reel-nav-container');
+
+  let currentIndex = 0;
+  let currentRotation = 0;
+
+  // Renderizado dinámico de los textos centrados
+  function renderTexts() {
+    const isDesktop = window.innerWidth >= 1024;
+
+    labels.forEach((label, i) => {
+      const diff = i - currentIndex;
+      const absDiff = Math.abs(diff);
+
+      if (absDiff > 2) {
+        label.style.opacity = '0';
+        label.style.pointerEvents = 'none';
+        return;
+      }
+
+      const scale = absDiff === 0 ? 1.15 : 0.85 - (absDiff * 0.1);
+      const opacity = absDiff === 0 ? 1 : 0.3 - (absDiff * 0.1);
+      
+      label.style.opacity = opacity.toString();
+      label.style.pointerEvents = absDiff === 0 ? 'auto' : 'none';
+
+      if (isDesktop) {
+        const yOffset = diff * 55;
+        label.style.transform = `translateY(${yOffset}px) scale(${scale})`;
+      } else {
+        const xOffset = diff * 110;
+        label.style.transform = `translateX(${xOffset}px) scale(${scale})`;
+      }
+
+      if (absDiff === 0) {
+        label.classList.add('active');
+      } else {
+        label.classList.remove('active');
+      }
+    });
+  }
+
+  // Navegación con rotación suavizada
+  function updateNavigation(newIndex, animateSVG = true) {
+    if (newIndex < 0) newIndex = 0;
+    if (newIndex >= totalItems) newIndex = totalItems - 1;
+    
+    if (animateSVG && rotator) {
+      const diff = newIndex - currentIndex;
+      currentRotation -= (diff * degreesPerStep);
+      
+      rotator.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+      rotator.style.transform = `rotate(${currentRotation}deg)`;
+    }
+
+    currentIndex = newIndex;
+    renderTexts();
+  }
+
+  renderTexts();
+  window.addEventListener('resize', renderTexts);
+
+  labels.forEach((label, i) => {
+    label.addEventListener('click', () => updateNavigation(i));
+  });
+
+  // 2. SCROLL DEL MOUSE
+  let isScrolling = false;
+  window.addEventListener('wheel', (e) => {
+    if (isScrolling) return;
+    isScrolling = true;
+    
+    if (e.deltaY > 0) updateNavigation(currentIndex + 1);
+    if (e.deltaY < 0) updateNavigation(currentIndex - 1);
+    
+    setTimeout(() => { isScrolling = false; }, 350);
+  }, { passive: true });
+
+  // 3. ARRASTRE UNIVERSAL (Pointer Events para Web y Móvil)
+  let isDragging = false;
+  let startPos = 0;
+  let startRotation = 0;
+
+  const onPointerDown = (e) => {
+    // Solo responde al clic izquierdo en PC o a toques táctiles
+    if (e.button !== undefined && e.button !== 0) return; 
+
+    isDragging = true;
+    const isDesktop = window.innerWidth >= 1024;
+    startPos = isDesktop ? e.clientY : e.clientX;
+    startRotation = currentRotation;
+
+    if (rotator) rotator.style.transition = 'none';
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging || !rotator) return;
+
+    const isDesktop = window.innerWidth >= 1024;
+    const currentPos = isDesktop ? e.clientY : e.clientX;
+    const delta = isDesktop ? (currentPos - startPos) : -(currentPos - startPos);
+
+    // Movimiento fluido continuo en vivo
+    const liveRotation = startRotation - (delta * 0.35);
+    rotator.style.transform = `rotate(${liveRotation}deg)`;
+
+    // Detecta el paso de sección durante el arrastre libre
+    const rotationDiff = startRotation - liveRotation;
+    if (Math.abs(rotationDiff) > (degreesPerStep * 0.5)) {
+      const stepDirection = rotationDiff > 0 ? 1 : -1;
+      const nextIndex = currentIndex + stepDirection;
+
+      if (nextIndex >= 0 && nextIndex < totalItems) {
+        currentIndex = nextIndex;
+        startRotation -= (stepDirection * degreesPerStep);
+        startPos = currentPos;
+        renderTexts();
+      }
+    }
+  };
+
+  const onPointerUp = () => {
+    if (!isDragging || !rotator) return;
+    isDragging = false;
+
+    // Encaje automático (snap) al ángulo relativo más cercano al soltar
+    currentRotation = Math.round(currentRotation / degreesPerStep) * degreesPerStep;
+    rotator.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    rotator.style.transform = `rotate(${currentRotation}deg)`;
+  };
+
+  // Eventos aplicados a la zona completa del menú o la rueda
+  if (rotator) {
+    rotator.addEventListener('pointerdown', onPointerDown);
+  }
+  
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+
+</script>

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "sobre-mi",
+    "label": "Intro",
+    "link": "/inicio" },
+  {
+    "id": "experiencia",
+    "label": "Experiencia",
+    "link": "#" },
+  { 
+    "id": "proyectos",
+    "label": "Proyectos",
+    "link": "#" },
+  { 
+    "id": "contacto",
+    "label": "Contacto",
+    "link": "#" }
+]

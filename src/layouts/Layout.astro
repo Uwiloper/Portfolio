@@ -1,0 +1,78 @@
+---
+import '../styles/global.css';
+import VhsControlsModal from '../components/VhsControlsModal.jsx';
+
+// Permite que las páginas que usen este layout le pasen un título personalizado
+interface Props {
+  title?: string;
+}
+const { title = "Wilmer Carrasco | Portafolio" } = Astro.props;
+---
+
+<html lang="es" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+  </head>
+  
+  <body class="bg-[#121010] text-slate-100 font-sans min-h-screen overflow-hidden selection:bg-pink-500 selection:text-white">
+    
+    <div id="layer-1-bg" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <img src="/images/firme-cover.jpg" class="bg-project-image" alt="Firme App" />
+      <img src="/images/imagenartis-wrap.jpg" class="bg-project-image" alt="Imagenartis" />
+      <img src="/images/lazaro-dash.jpg" class="bg-project-image" alt="Lazaro B2B" />
+    </div>
+
+    <div id="layer-2-vhs" class="fixed inset-0 z-10 pointer-events-none wobbley">
+      <canvas id="vhs-canvas" class="w-full h-full opacity-30 mix-blend-screen" style="filter: blur(1px);"></canvas>
+      <div class="scanlines"></div>
+      <div class="crt-vignette"></div>
+
+      <div class="absolute inset-0 flex flex-col justify-between p-6 md:p-10 vhs-hud-container mix-blend-difference pointer-events-none z-30">
+        <div class="flex justify-between items-start text-sm md:text-xl lg:text-2xl font-bold tracking-widest uppercase">
+          <div class="rgb-glitch-text flex items-center gap-2">
+            <span class="text-red-500">●</span> REC
+          </div>
+          <div id="vhs-timer" class="rgb-glitch-text">00:00:00</div>
+        </div>
+
+        <div class="flex justify-between items-end text-xs md:text-lg lg:text-xl font-bold tracking-widest uppercase">
+          <div class="rgb-glitch-text flex items-center gap-3">
+            <span>uwil</span>
+          </div>
+          <div id="vhs-date" class="rgb-glitch-text">MMM. 00 0000</div>
+        </div>
+      </div>
+    </div>
+
+    <slot />
+
+    <VhsControlsModal client:load />
+
+    <script>
+      // Inicia el motor VHS de Canvas
+      import '../js/vhs.js';
+
+      // Lógica del Reloj y Fecha OSD
+      const dateElement = document.getElementById('vhs-date');
+      const now = new Date();
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      
+      if (dateElement) {
+        dateElement.textContent = `${months[now.getMonth()]}. ${now.getDate().toString().padStart(2, '0')} ${now.getFullYear()}`;
+      }
+
+      const timerElement = document.getElementById('vhs-timer');
+      let seconds = 0;
+      
+      setInterval(() => {
+        seconds++;
+        const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        if (timerElement) timerElement.textContent = `${h}:${m}:${s}`;
+      }, 1000);
+    </script>
+  </body>
+</html>
