@@ -1,0 +1,352 @@
+---
+interface Props {
+  project: {
+    titulo: string;
+    slogan: string;
+    tech: string;
+    img: string;
+    link: string;
+  };
+  index: number;
+  total: number;
+}
+
+const { project, index, total } = Astro.props;
+---
+
+<div id="flip-screen" class="flip-screen" data-open="false">
+  <div class="flip-screen-hinge" aria-hidden="true">
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="flip-screen-panel">
+    <div class="flip-screen-bezel">
+      <div class="flip-screen-glass">
+        <div class="screen-reflection" aria-hidden="true"></div>
+        <div class="screen-scanlines" aria-hidden="true"></div>
+
+        <div class="camera-osd camera-osd-top">
+          <span class="osd-rec"><i></i> REC</span>
+          <span id="screen-timer">00:00:00</span>
+        </div>
+
+        <div class="camera-osd camera-osd-bottom">
+          <span>AUTO</span>
+          <span>F3.5</span>
+          <span>ISO 400</span>
+          <span id="screen-channel">CH 0{index + 1}</span>
+        </div>
+
+        <div class="screen-content">
+          <div class="screen-project-meta">
+            <span>PROJECT</span>
+            <span id="screen-project-number">{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
+          </div>
+
+          <div class="screen-media">
+            <img id="screen-img" src={project.img} alt={project.titulo} />
+            <div class="screen-media-overlay" aria-hidden="true"></div>
+          </div>
+
+          <div class="screen-copy">
+            <p id="screen-tech" class="screen-tech">{project.tech}</p>
+            <h2 id="screen-title">{project.titulo}</h2>
+            <p id="screen-slogan">{project.slogan}</p>
+            <a id="screen-link" href={project.link}>▶ VER PROYECTO</a>
+          </div>
+        </div>
+
+        <div class="screen-focus" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div class="flip-screen-controls" aria-hidden="true">
+        <span class="screen-led"></span>
+        <span class="screen-button"></span>
+        <span class="screen-button small"></span>
+        <span class="screen-label">LCD MONITOR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .flip-screen {
+    --screen-angle: -9deg;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    perspective: 1400px;
+    transform-style: preserve-3d;
+  }
+
+  .flip-screen-panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-origin: right center;
+    transform: rotateY(var(--screen-angle));
+    transition: transform 700ms cubic-bezier(.22, 1, .36, 1), filter 400ms ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .flip-screen[data-open="true"] .flip-screen-panel {
+    --screen-angle: -32deg;
+  }
+
+  .flip-screen-hinge {
+    position: absolute;
+    right: -7px;
+    top: 12%;
+    width: 16px;
+    height: 76%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    z-index: 5;
+    transform: translateZ(12px);
+  }
+
+  .flip-screen-hinge span {
+    display: block;
+    width: 16px;
+    height: 42px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #111, #777, #171717);
+    border: 1px solid rgba(255,255,255,.25);
+    box-shadow: 0 4px 12px rgba(0,0,0,.8);
+  }
+
+  .flip-screen-bezel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    background: linear-gradient(145deg, #252525, #090909 35%, #1c1c1c 70%, #050505);
+    border: 1px solid rgba(255,255,255,.2);
+    box-shadow: 0 25px 60px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.16);
+    transform-style: preserve-3d;
+  }
+
+  .flip-screen-glass {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #020303;
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: inset 0 0 35px rgba(0,0,0,.9), inset 0 0 2px rgba(255,255,255,.35);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .screen-content {
+    position: absolute;
+    inset: 8% 8% 12%;
+    display: grid;
+    grid-template-columns: minmax(150px, 42%) 1fr;
+    gap: clamp(16px, 3vw, 38px);
+    align-items: center;
+    z-index: 3;
+  }
+
+  .screen-project-meta,
+  .camera-osd,
+  .screen-tech,
+  #screen-link {
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .screen-project-meta {
+    position: absolute;
+    top: -5%;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: clamp(7px, .7vw, 11px);
+    color: rgba(255,255,255,.65);
+  }
+
+  .screen-media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.2);
+    background: #050505;
+    box-shadow: 0 0 20px rgba(0,0,0,.8);
+  }
+
+  #screen-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    opacity: .72;
+    filter: grayscale(.25) contrast(1.15) brightness(.8);
+    transition: opacity .2s ease, filter .2s ease;
+  }
+
+  .screen-media-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.12), transparent 35%, rgba(0,0,0,.55));
+    pointer-events: none;
+  }
+
+  .screen-copy {
+    min-width: 0;
+  }
+
+  .screen-tech {
+    margin: 0 0 8px;
+    color: #22d3ee;
+    font-size: clamp(7px, .7vw, 11px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #screen-title {
+    margin: 0;
+    color: white;
+    font-family: 'Joyride', sans-serif;
+    font-size: clamp(20px, 3.2vw, 54px);
+    line-height: .95;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    text-shadow: 2px 0 rgba(236,72,153,.65), -2px 0 rgba(6,182,212,.55);
+  }
+
+  #screen-slogan {
+    max-width: 500px;
+    margin: 14px 0 22px;
+    color: rgba(255,255,255,.7);
+    font-family: sans-serif;
+    font-size: clamp(10px, .9vw, 14px);
+    line-height: 1.45;
+  }
+
+  #screen-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 8px 13px;
+    color: #fff;
+    background: rgba(236,72,153,.85);
+    border: 1px solid rgba(255,255,255,.2);
+    font-size: clamp(7px, .65vw, 10px);
+    text-decoration: none;
+    box-shadow: 3px 3px 0 #000;
+  }
+
+  .camera-osd {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255,255,255,.82);
+    font-size: clamp(7px, .65vw, 10px);
+    z-index: 6;
+    pointer-events: none;
+    text-shadow: 0 0 7px rgba(255,255,255,.4);
+  }
+
+  .camera-osd-top { top: 12px; }
+  .camera-osd-bottom { bottom: 12px; justify-content: flex-start; gap: 15px; }
+
+  .osd-rec { display: inline-flex; align-items: center; gap: 6px; }
+  .osd-rec i { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444; animation: recBlink 1.2s steps(2) infinite; }
+
+  .screen-reflection {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: linear-gradient(115deg, rgba(255,255,255,.1), transparent 18%, transparent 70%, rgba(255,255,255,.035));
+    mix-blend-mode: screen;
+  }
+
+  .screen-scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    pointer-events: none;
+    opacity: .2;
+    background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(255,255,255,.08) 3px, transparent 4px);
+  }
+
+  .screen-focus {
+    position: absolute;
+    inset: 15% 10%;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .screen-focus span { position: absolute; width: 12px; height: 12px; border-color: rgba(255,255,255,.22); }
+  .screen-focus span:nth-child(1) { top:0; left:0; border-top:1px solid; border-left:1px solid; }
+  .screen-focus span:nth-child(2) { top:0; right:0; border-top:1px solid; border-right:1px solid; }
+  .screen-focus span:nth-child(3) { bottom:0; left:0; border-bottom:1px solid; border-left:1px solid; }
+  .screen-focus span:nth-child(4) { bottom:0; right:0; border-bottom:1px solid; border-right:1px solid; }
+
+  .flip-screen-controls {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -1px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    color: rgba(255,255,255,.35);
+    font: 6px/1 ui-monospace, monospace;
+    letter-spacing: .14em;
+    background: #0a0a0a;
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+
+  .screen-led { width: 5px; height: 5px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 7px #ef4444; }
+  .screen-button { width: 10px; height: 5px; border-radius: 3px; background: #383838; border: 1px solid #666; }
+  .screen-button.small { width: 7px; }
+  .screen-label { margin-left: auto; }
+
+  .flip-screen.tv-glitch-active .flip-screen-panel { animation: flipScreenGlitch .32s steps(3) both; }
+
+  @keyframes recBlink { 50% { opacity: .25; } }
+  @keyframes flipScreenGlitch {
+    0% { filter: none; }
+    25% { filter: hue-rotate(80deg) contrast(2) brightness(1.4); transform: rotateY(var(--screen-angle)) translateX(-3px); }
+    50% { filter: contrast(3); transform: rotateY(var(--screen-angle)) translateX(3px); }
+    100% { filter: none; }
+  }
+
+  @media (max-width: 1023px) {
+    .flip-screen { --screen-angle: -4deg; }
+    .flip-screen[data-open="true"] .flip-screen-panel { --screen-angle: -14deg; }
+    .screen-content { inset: 9% 7% 13%; grid-template-columns: 38% 1fr; gap: 14px; }
+    #screen-title { font-size: clamp(18px, 5vw, 32px); }
+    #screen-slogan { margin: 8px 0 12px; font-size: 9px; }
+    .camera-osd-bottom { gap: 7px; }
+    .screen-focus { inset: 16% 8%; }
+  }
+
+  @media (max-width: 560px) {
+    .flip-screen-panel { transform: rotateY(var(--screen-angle)) scale(.98); }
+    .screen-content { grid-template-columns: 1fr; grid-template-rows: 42% 1fr; gap: 10px; }
+    .screen-media { width: 58%; justify-self: center; }
+    .screen-copy { text-align: center; }
+    .screen-tech { margin-bottom: 5px; }
+    #screen-slogan { margin: 5px auto 8px; max-width: 260px; }
+    .screen-project-meta { top: -7%; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flip-screen-panel { transition: none; }
+    .osd-rec i { animation: none; }
+  }
+</style>
