@@ -1,0 +1,26 @@
+{
+  "titulo": "TRACK_LOG // OPERACIONES",
+  "trabajos": [
+    {
+      "timecode": "REC: 2026",
+      "rol": "Lead Software Developer",
+      "empresa": "Proyecto Firme (App B2B)",
+      "descripcion": "Ingeniería core y diseño UI/UX de aplicación nativa Android para verificación de pagos comerciales. Transición y diseño de marca desde AvisoPay.",
+      "activo": true
+    },
+    {
+      "timecode": "SP: 2025",
+      "rol": "Diseñador & Wrapping Comercial",
+      "empresa": "Imagenartis",
+      "descripcion": "Gestión de identidad visual corporativa y personalización vehicular (custom wraps) en vinilo de alta resistencia para flota comercial.",
+      "activo": false
+    },
+    {
+      "timecode": "LP: 2024",
+      "rol": "Junior Full-Stack Dev",
+      "empresa": "Freelance",
+      "descripcion": "Desarrollo de portafolios interactivos, dashboards y plataformas web dinámicas utilizando Astro, Tailwind, PHP y GSAP.",
+      "activo": false
+    }
+  ]
+}

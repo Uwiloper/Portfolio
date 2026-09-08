@@ -1,66 +1,185 @@
 ---
-// Componente: Expediente de Usuario (Sobre Mí)
+import data from '../../data/intro.json';
+
+const tieneHabilidades = data.habilidades && data.habilidades.length > 0;
 ---
 
-<article class="visor-content w-full h-full flex flex-col justify-center text-white p-4 md:p-8 relative">
+<article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center items-center p-4 pt-14 lg:pt-0 pb-44 lg:pb-0 overflow-y-auto lg:overflow-hidden z-10 select-none">
   
-  <header class="flex justify-between items-end border-b border-white/20 pb-2 mb-6">
-    <h2 class="font-display text-2xl md:text-4xl text-white tracking-widest uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
-      AGENTE / <span class="text-pink-500">PERFIL</span>
-    </h2>
-    <span class="font-mono text-[10px] md:text-xs tracking-widest text-cyan-400 animate-pulse">
-      STATUS: ONLINE_
-    </span>
-  </header>
-
-  <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-center">
+  <div class="max-w-[540px] w-full relative p-4 sm:p-6 my-auto">
     
-    <div class="md:col-span-4 lg:col-span-3 relative group">
-      <div class="absolute -inset-2 border-2 border-white/30 opacity-50 group-hover:opacity-100 group-hover:border-pink-500 transition-all duration-300 pointer-events-none" style="clip-path: polygon(0 0, 20% 0, 20% 5%, 5% 5%, 5% 20%, 0 20%, 0 80%, 5% 80%, 5% 95%, 20% 95%, 20% 100%, 0 100%, 100% 100%, 80% 100%, 80% 95%, 95% 95%, 95% 80%, 100% 80%, 100% 20%, 95% 20%, 95% 5%, 80% 5%, 80% 0, 100% 0);"></div>
-      
-      <div class="aspect-square bg-neutral-900 relative overflow-hidden border border-white/10">
-        <img 
-          src="/images/wilmer-profile.jpg" 
-          alt="Wilmer Carrasco" 
-          class="w-full h-full object-cover mix-blend-luminosity opacity-80 group-hover:mix-blend-normal group-hover:opacity-100 transition-all duration-500" 
-        />
-        <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none"></div>
-      </div>
-    </div>
+    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/40 pointer-events-none"></div>
 
-    <div class="md:col-span-8 lg:col-span-9 flex flex-col justify-center">
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start mb-4">
       
-      <ul class="font-mono text-xs md:text-sm tracking-widest text-white/60 space-y-2 mb-6">
-        <li class="flex items-center">
-          <span class="w-24 text-pink-500">ID_NOM:</span>
-          <span class="text-white">WILMER CARRASCO</span>
-        </li>
-        <li class="flex items-center">
-          <span class="w-24 text-pink-500">BASE:</span>
-          <span class="text-white uppercase">Perú (Latam)</span>
-        </li>
-        <li class="flex items-center">
-          <span class="w-24 text-pink-500">EDAD:</span>
-          <span class="text-white">24</span>
-        </li>
-        <li class="flex items-center">
-          <span class="w-24 text-pink-500">ROL:</span>
-          <span class="text-cyan-400 bg-cyan-400/10 px-2 py-0.5 border border-cyan-400/30">FULL-STACK & UI/UX</span>
-        </li>
-      </ul>
+      {data.foto && (
+        <div id="photo-trigger" class="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 bg-white/5 p-1 relative cursor-pointer group">
+          <img src={data.foto} alt={data.nombre} class="photo-fx w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:100%_3px] pointer-events-none"></div>
+          
+          {data.fotoTexto && (
+            <span class="photo-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-mono text-[10px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-all duration-300 bg-black/80 px-2 py-1 rounded-sm z-10 text-center">
+              {data.fotoTexto}
+            </span>
+          )}
+        </div>
+      )}
 
-      <div class="relative bg-black/40 border-l-2 border-pink-500 p-4">
-        <p class="font-sans text-sm md:text-base text-white/80 font-light leading-relaxed">
-          Ingeniero de software y diseñador gráfico. Especializado en crear aplicaciones nativas, plataformas web y construir identidades visuales contundentes. Si involucra código o diseño, lo construyo para que sea funcional y visualmente innegable.
-        </p>
-        <span class="inline-block w-2 h-4 bg-white/80 animate-pulse ml-1 align-middle"></span>
+      <div class="flex flex-col text-center sm:text-left">
+        {data.nombre && (
+          <h1 class="font-display text-xl sm:text-2xl lg:text-3xl uppercase tracking-widest text-white italic drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+            {data.nombre}
+          </h1>
+        )}
+        {data.puesto && (
+          <p class="font-mono text-pink-500 text-[9px] sm:text-[10px] tracking-[0.25em] uppercase mt-1 mb-2">
+            {data.puesto}
+          </p>
+        )}
+        {data.descripcion && (
+          <p class="font-sans text-white/80 text-[11px] sm:text-xs leading-relaxed font-light">
+            {data.descripcion}
+          </p>
+        )}
       </div>
 
     </div>
-  </div>
 
-  <div class="absolute bottom-4 right-4 font-mono text-[8px] text-white/30 tracking-[0.2em] hidden md:block">
-    SYS. VER. 2.0.26 // AUTH: GRANTED
+    {(data.habilidadesTitulo || tieneHabilidades) && (
+      <div class="flex flex-col items-center sm:items-start border-t border-white/10 pt-3 mt-1">
+        {data.habilidadesTitulo && (
+          <h2 class="font-mono text-[9px] text-white/40 uppercase tracking-widest mb-3">
+            {data.habilidadesTitulo}
+          </h2>
+        )}
+        
+        <div class="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-x-6 gap-y-4">
+          {data.habilidades.map((skill) => (
+            <div 
+              class="skill-container group relative flex flex-col items-center justify-center pointer-events-auto"
+              data-skill={skill.nombre}
+            >
+              <div 
+                class="icon-sharp w-5 h-5 sm:w-6 sm:h-6 bg-white/40 group-hover:bg-pink-500 group-hover:scale-125 group-active:scale-125 transition-all duration-300 drop-shadow-[0_0_0px_transparent] group-hover:drop-shadow-[0_0_12px_rgba(236,72,153,0.9)]"
+                style={`
+                  mask-image: url('${skill.icono}');
+                  -webkit-mask-image: url('${skill.icono}');
+                  mask-size: contain;
+                  mask-repeat: no-repeat;
+                  mask-position: center;
+                  -webkit-mask-size: contain;
+                  -webkit-mask-repeat: no-repeat;
+                  -webkit-mask-position: center;
+                `}
+              ></div>
+
+              <span class="skill-label absolute -bottom-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-all duration-300 bg-black/80 px-2 py-0.5 rounded-sm">
+                {skill.nombre}
+              </span>
+
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
   </div>
 
 </article>
+
+<style>
+  /* ========================================= */
+  /* EFECTO FOTO Y TEXTO OCULTO                */
+  /* ========================================= */
+  .photo-fx {
+    filter: grayscale(100%);
+    transition: filter 0.3s ease;
+  }
+  @keyframes snap-focus {
+    0% { filter: grayscale(100%) blur(0px); }
+    40% { filter: grayscale(50%) blur(5px); }
+    100% { filter: grayscale(0%) blur(0px); }
+  }
+  
+  /* Se activa al hacer hover en el contenedor o al añadir la clase is-active vía JS */
+  #photo-trigger:hover .photo-fx, 
+  #photo-trigger.is-active .photo-fx {
+    animation: snap-focus 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+
+  .photo-label {
+    filter: blur(8px);
+    will-change: filter, opacity, transform;
+  }
+  
+  #photo-trigger:hover .photo-label,
+  #photo-trigger.is-active .photo-label {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate(-50%, -50%) scale(1.1); /* Efecto pop */
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
+  }
+
+  /* ========================================= */
+  /* ARREGLO DE CALIDAD SVG BORROSO            */
+  /* ========================================= */
+  .icon-sharp {
+    shape-rendering: crispEdges; 
+    transform: translateZ(0); 
+    -webkit-font-smoothing: none; 
+  }
+
+  /* ========================================= */
+  /* EFECTO LENTE (BLUR) EN ETIQUETAS DE TEXTO */
+  /* ========================================= */
+  .skill-label {
+    filter: blur(8px);
+    will-change: filter, opacity, transform;
+  }
+
+  .skill-container:hover .skill-label,
+  .skill-container.is-active .skill-label {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate(-50%, -4px); 
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
+  }
+
+  /* ========================================= */
+  /* ANIMACIÓN ENTRADA COMPONENTE              */
+  /* ========================================= */
+  @keyframes camera-ready {
+    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
+    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
+  }
+  .camera-focus-view {
+    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+</style>
+
+<script>
+  // 1. Efecto foto y su texto
+  const photoTrigger = document.getElementById('photo-trigger');
+  if (photoTrigger) {
+    photoTrigger.addEventListener('touchstart', () => {
+      // Usamos is-active en el trigger para controlar tanto la imagen como el texto
+      photoTrigger.classList.add('is-active');
+      setTimeout(() => photoTrigger.classList.remove('is-active'), 2500);
+    }, { passive: true });
+  }
+
+  // 2. Efecto Textos Blur en iconos
+  const skillContainers = document.querySelectorAll('.skill-container');
+  skillContainers.forEach((container) => {
+    container.addEventListener('touchstart', () => {
+      skillContainers.forEach(c => c.classList.remove('is-active'));
+      container.classList.add('is-active');
+      setTimeout(() => container.classList.remove('is-active'), 3000);
+    }, { passive: true });
+  });
+</script>

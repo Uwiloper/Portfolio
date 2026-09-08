@@ -1,0 +1,68 @@
+---
+import data from '../../data/experiencia.json';
+---
+
+<article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center items-center p-4 pt-14 lg:pt-0 pb-44 lg:pb-0 overflow-y-auto lg:overflow-hidden z-10 select-none">
+  
+  <div class="max-w-[540px] w-full relative p-4 sm:p-6 my-auto">
+    
+    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/40 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/40 pointer-events-none"></div>
+
+    <header class="mb-8 border-b border-white/10 pb-2">
+      <h2 class="font-mono text-[10px] md:text-xs text-pink-500 uppercase tracking-[0.3em] flex items-center gap-2">
+        <span class="animate-pulse">●</span> {data.titulo}
+      </h2>
+    </header>
+
+    <div class="relative border-l border-white/20 ml-2 md:ml-3 space-y-8">
+      
+      {data.trabajos.map((trabajo, index) => (
+        <div class="relative pl-6 md:pl-8 group cursor-default">
+          
+          <div class={`absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${trabajo.activo ? 'bg-pink-500 border-pink-500 shadow-[0_0_10px_rgba(236,72,153,0.8)]' : 'bg-black border-white/40 group-hover:border-pink-500 group-hover:bg-pink-500/50'}`}></div>
+
+          <div class="font-mono text-[9px] md:text-[10px] tracking-widest uppercase mb-1 flex items-center gap-2">
+            <span class={`${trabajo.activo ? 'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]' : 'text-white/40 group-hover:text-white/80 transition-colors'}`}>
+              [{trabajo.timecode}]
+            </span>
+          </div>
+
+          <div class={`mt-2 p-3 md:p-4 border transition-all duration-300 backdrop-blur-sm ${trabajo.activo ? 'bg-white/10 border-white/20' : 'bg-black/40 border-white/5 group-hover:bg-white/5 group-hover:border-white/20'}`}>
+            
+            <h3 class="font-display text-lg md:text-xl uppercase tracking-wider text-white italic drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] mb-1">
+              {trabajo.rol}
+            </h3>
+            
+            <h4 class="font-mono text-[9px] md:text-[10px] text-cyan-400 uppercase tracking-widest mb-3">
+              > {trabajo.empresa}
+            </h4>
+            
+            <p class="font-sans text-white/70 text-[11px] md:text-xs leading-relaxed font-light">
+              {trabajo.descripcion}
+            </p>
+
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+
+  </div>
+
+</article>
+
+<style>
+  /* Mantenemos exactamente la misma animación de entrada del componente Intro */
+  @keyframes camera-ready {
+    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
+    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
+  }
+  
+  .camera-focus-view {
+    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+</style>

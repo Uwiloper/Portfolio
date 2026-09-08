@@ -95,11 +95,20 @@ import navItems from '../data/navigation.json';
         label.style.transform = `translateX(${xOffset}px) scale(${scale})`;
       }
 
+      // ==========================================
+      // AQUÍ ESTÁ EL CAMBIO: EL EMISOR DE SEÑAL
+      // ==========================================
       if (absDiff === 0) {
         label.classList.add('active');
+        
+        // Avisar al index.astro que cambie la vista
+        const targetId = label.getAttribute('data-target');
+        document.dispatchEvent(new CustomEvent('visor-change', { detail: targetId }));
+        
       } else {
         label.classList.remove('active');
       }
+      // ==========================================
     });
   }
 
@@ -145,7 +154,6 @@ import navItems from '../data/navigation.json';
   let startRotation = 0;
 
   const onPointerDown = (e) => {
-    // Solo responde al clic izquierdo en PC o a toques táctiles
     if (e.button !== undefined && e.button !== 0) return; 
 
     isDragging = true;
@@ -163,11 +171,9 @@ import navItems from '../data/navigation.json';
     const currentPos = isDesktop ? e.clientY : e.clientX;
     const delta = isDesktop ? (currentPos - startPos) : -(currentPos - startPos);
 
-    // Movimiento fluido continuo en vivo
     const liveRotation = startRotation - (delta * 0.35);
     rotator.style.transform = `rotate(${liveRotation}deg)`;
 
-    // Detecta el paso de sección durante el arrastre libre
     const rotationDiff = startRotation - liveRotation;
     if (Math.abs(rotationDiff) > (degreesPerStep * 0.5)) {
       const stepDirection = rotationDiff > 0 ? 1 : -1;
@@ -186,13 +192,11 @@ import navItems from '../data/navigation.json';
     if (!isDragging || !rotator) return;
     isDragging = false;
 
-    // Encaje automático (snap) al ángulo relativo más cercano al soltar
     currentRotation = Math.round(currentRotation / degreesPerStep) * degreesPerStep;
     rotator.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
     rotator.style.transform = `rotate(${currentRotation}deg)`;
   };
 
-  // Eventos aplicados a la zona completa del menú o la rueda
   if (rotator) {
     rotator.addEventListener('pointerdown', onPointerDown);
   }
@@ -200,5 +204,4 @@ import navItems from '../data/navigation.json';
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);
-
 </script>

@@ -1,0 +1,19 @@
+{
+  "nombre": "Wilmer Carrasco",
+  "puesto": "Developer & Designer",
+  "foto": "https://avatars.githubusercontent.com/u/132973171?v=4",
+  "fotoTexto": "Just Tasteful ",
+  "descripcion": "Especializado en desarrollo de software nativo y plataformas web modernas, complementado con diseño gráfico y branding visual de alto impacto.",
+  "habilidadesTitulo": "Stack Principal",
+  "habilidades":
+  [
+    { "nombre": "Astro",        "icono": "/icons/astro.svg" },
+    { "nombre": "TailwindCss",  "icono": "/icons/tailwindcss.svg" },
+    { "nombre": "GSAP",         "icono": "/icons/gsap.svg" },
+    { "nombre": "SwiftUI",      "icono": "/icons/swift.svg" },
+    { "nombre": "Android",      "icono": "/icons/android.svg" },
+    { "nombre": "PHP",          "icono": "/icons/php.svg" },
+    { "nombre": "Illustrator",  "icono": "/icons/illustrator.svg" },
+    { "nombre": "Photoshop",    "icono": "/icons/photoshop.svg" }
+  ]
+}
