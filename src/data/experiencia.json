@@ -1,26 +1,31 @@
 {
-  "titulo": "TRACK_LOG // OPERACIONES",
   "trabajos": [
-    {
-      "timecode": "REC: 2026",
-      "rol": "Lead Software Developer",
-      "empresa": "Proyecto Firme (App B2B)",
-      "descripcion": "Ingeniería core y diseño UI/UX de aplicación nativa Android para verificación de pagos comerciales. Transición y diseño de marca desde AvisoPay.",
-      "activo": true
-    },
-    {
-      "timecode": "SP: 2025",
-      "rol": "Diseñador & Wrapping Comercial",
+        {
+      "id": "exp-imagenartis",
+      "periodo": "2020 - Presente",
       "empresa": "Imagenartis",
-      "descripcion": "Gestión de identidad visual corporativa y personalización vehicular (custom wraps) en vinilo de alta resistencia para flota comercial.",
-      "activo": false
+      "rol": "Diseñador Gráfico",
+      "descripcion": "Gestión de identidad visual corporativa y personalización vehicular (custom wraps) en vinilo de alta resistencia. Optimización de layouts para impresión de gran formato.",
+      "botonTexto": "Visitar",
+      "botonUrl": "https://imagenartis.odoo.com",
+      "tecnologias": [
+        { "nombre": "Illustrator", "icono": "/icons/illustrator.svg" },
+        { "nombre": "Photoshop", "icono": "/icons/photoshop.svg" }
+      ]
     },
     {
-      "timecode": "LP: 2024",
-      "rol": "Junior Full-Stack Dev",
-      "empresa": "Freelance",
-      "descripcion": "Desarrollo de portafolios interactivos, dashboards y plataformas web dinámicas utilizando Astro, Tailwind, PHP y GSAP.",
-      "activo": false
+      "id": "exp-freelance",
+      "periodo": "Agosto 2026",
+      "empresa": "CR Publicidad",
+      "rol": "Full-Stack Dev",
+      "descripcion": "Desarrollo de portafolios interactivos, dashboards y plataformas web dinámicas. Creación de animaciones fluidas y arquitecturas escalables.",
+      "botonTexto": "Visitar",
+      "botonUrl": "https://www.crpublicidad.com.pe",
+      "tecnologias": [
+        { "nombre": "Astro", "icono": "/icons/astro.svg" },
+        { "nombre": "TailwindCss", "icono": "/icons/tailwindcss.svg" },
+        { "nombre": "PHP", "icono": "/icons/php.svg" }
+      ]
     }
   ]
 }
