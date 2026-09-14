@@ -1,0 +1,212 @@
+---
+import data from '../../data/contacto.json';
+
+const tieneRedes = data.redes && data.redes.length > 0;
+// Si no hay valor en el JSON, por defecto será 1 (100% visible)
+const opacidad = data.opacidadFirma || "1";
+---
+
+<article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center p-4 pt-14 lg:pt-0 pb-52 lg:pb-0 z-10 select-none">
+  
+  <div class="max-w-[700px] w-full mx-auto relative p-6 sm:p-8 flex flex-col justify-center min-h-[400px]">
+    
+    <!-- Marcas de Cámara -->
+    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/30 pointer-events-none"></div>
+    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/30 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/30 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/30 pointer-events-none"></div>
+
+    <div class="flex flex-col gap-5 sm:gap-8">
+      
+      <!-- Encabezado de la Terminal (Sin Status) -->
+      {data.titulo && (
+        <header class="border-b border-white/10 pb-2">
+          <h2 class="font-display text-xl md:text-2xl text-white uppercase tracking-widest italic drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+            {data.titulo}
+          </h2>
+        </header>
+      )}
+
+      {data.descripcion && (
+        <p class="font-sans text-white/80 text-xs md:text-sm leading-relaxed font-light">
+          {data.descripcion}
+        </p>
+      )}
+
+      <!-- Bloque de Correo -->
+      {data.correo && (
+        <div class="group flex flex-row items-center justify-between p-3 sm:p-4 md:p-5 border border-white/10 bg-black/40 hover:border-pink-500 hover:bg-white/5 transition-all duration-300 pointer-events-auto w-full gap-3">
+          
+          <div class="flex flex-col text-left min-w-0 flex-1">
+            <span class="font-mono text-[9px] text-cyan-400 uppercase tracking-widest mb-1 flex-shrink-0">
+              > E-MAIL
+            </span>
+            <a 
+              href={`mailto:${data.correo}`}
+              title={data.correo}
+              class="font-display text-xs sm:text-base md:text-xl text-white tracking-widest hover:text-pink-400 transition-colors drop-shadow-[0_0_5px_rgba(255,255,255,0.2)] truncate block w-full"
+            >
+              {data.correo}
+            </a>
+          </div>
+
+          <button 
+            class="copy-btn flex-shrink-0 flex items-center justify-center p-2 sm:p-2.5 border border-white/20 bg-transparent hover:bg-pink-500 hover:border-pink-500 text-white/50 hover:text-white transition-all cursor-pointer"
+            data-copy={data.correo}
+            title="Copiar correo"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 md:w-5 md:h-5">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span class="copy-label hidden sm:block font-mono text-[9px] uppercase tracking-widest ml-2">Copiar</span>
+          </button>
+          
+        </div>
+      )}
+
+      <!-- BLOQUE INFERIOR: Frase + Iconos de Redes -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-2">
+        
+        <!-- Iconos de Redes Sociales (Siempre 100% visibles) -->
+        {tieneRedes && (
+          <div class="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6 order-1 sm:order-none">
+            {data.redes.map((red) => (
+              <a 
+                href={red.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="skill-container group relative flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
+              >
+                <div 
+                  class="icon-sharp w-6 h-6 md:w-7 md:h-7 bg-white/40 group-hover:bg-pink-500 group-hover:scale-125 transition-all duration-300 drop-shadow-[0_0_0px_transparent] group-hover:drop-shadow-[0_0_12px_rgba(236,72,153,0.9)]"
+                  style={`
+                    mask-image: url('${red.icono}');
+                    -webkit-mask-image: url('${red.icono}');
+                    mask-size: contain;
+                    mask-repeat: no-repeat;
+                    mask-position: center;
+                    -webkit-mask-size: contain;
+                    -webkit-mask-repeat: no-repeat;
+                    -webkit-mask-position: center;
+                  `}
+                ></div>
+
+                <span class="skill-label absolute -top-8 left-1/2 -translate-x-1/2 font-mono text-[8px] md:text-[9px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-all duration-300 bg-black/80 px-2 py-0.5 rounded-sm z-20">
+                  {red.nombre}
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <!-- Firma Glitch (Control de opacidad aislado) -->
+        {data.frase && (
+          <span 
+            class="glitch-wrapper group inline-flex font-display text-lg md:text-xl tracking-widest cursor-default order-2 sm:order-none mt-2 sm:mt-0 transition-opacity duration-300 hover:opacity-100"
+            style={`opacity: ${opacidad};`}
+          >
+            <span class="glitch-text font-bold italic">{data.frase}</span>
+          </span>
+        )}
+
+      </div>
+
+    </div>
+  </div>
+</article>
+
+<style>
+  @keyframes camera-ready {
+    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
+    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
+  }
+  .camera-focus-view {
+    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .icon-sharp {
+    shape-rendering: crispEdges; 
+    transform: translateZ(0); 
+    -webkit-font-smoothing: none; 
+  }
+
+  .skill-label {
+    filter: blur(8px);
+    will-change: filter, opacity, transform;
+  }
+  .skill-container:hover .skill-label,
+  .skill-container.is-active .skill-label {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translate(-50%, 4px); 
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
+  }
+
+  .glitch-text {
+    animation: rgb-jitter-idle 2.5s linear infinite alternate;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .glitch-wrapper:hover .glitch-text,
+  .glitch-wrapper:active .glitch-text {
+    color: white;
+    animation: rgb-jitter-active 0.15s linear infinite alternate;
+  }
+
+  @keyframes rgb-jitter-idle {
+    0% { text-shadow: -1px 0 0 rgba(0, 255, 255, 0.4), 1px 0 0 rgba(255, 0, 255, 0.4); }
+    100% { text-shadow: 1px 0 0 rgba(0, 255, 255, 0.4), -1px 0 0 rgba(255, 0, 255, 0.4); }
+  }
+  @keyframes rgb-jitter-active {
+    0% { text-shadow: -2px 0 0 rgba(0, 255, 255, 0.9), 2px 0 0 rgba(255, 0, 255, 0.9); }
+    50% { text-shadow: 2px 0 0 rgba(0, 255, 255, 0.9), -2px 0 0 rgba(255, 0, 255, 0.9); }
+    100% { text-shadow: -1px 0 1px rgba(0, 255, 255, 0.9), 1px 0 1px rgba(255, 0, 255, 0.9); }
+  }
+</style>
+
+<script>
+  const copyButtons = document.querySelectorAll('.copy-btn');
+  
+  copyButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const textToCopy = btn.getAttribute('data-copy');
+      const labelElement = btn.querySelector('.copy-label');
+      
+      if (!textToCopy) return;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        
+        btn.classList.add('bg-pink-500', 'border-pink-500');
+        btn.querySelector('svg').classList.add('text-white');
+        
+        if (labelElement) {
+          labelElement.textContent = 'COPIADO';
+          labelElement.classList.add('text-white');
+        }
+        
+        setTimeout(() => {
+          btn.classList.remove('bg-pink-500', 'border-pink-500');
+          btn.querySelector('svg').classList.remove('text-white');
+          if (labelElement) {
+            labelElement.textContent = 'Copiar';
+            labelElement.classList.remove('text-white');
+          }
+        }, 2000);
+      } catch (err) {
+        console.error('Error al copiar: ', err);
+      }
+    });
+  });
+
+  const skillContainers = document.querySelectorAll('.skill-container');
+  skillContainers.forEach((container) => {
+    container.addEventListener('touchstart', () => {
+      skillContainers.forEach(c => c.classList.remove('is-active'));
+      container.classList.add('is-active');
+      setTimeout(() => container.classList.remove('is-active'), 3000);
+    }, { passive: true });
+  });
+</script>

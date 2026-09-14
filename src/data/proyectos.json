@@ -1,0 +1,39 @@
+{
+  "titulo": "ARCHIVO_DE_CINTAS",
+  "botonVerTodos": "VER ESTANTERÍA",
+  "botonVolver": "VOLVER AL CARRUSEL",
+  "proyectos": [
+    {
+      "id": "vhs-01",
+      "titulo": "FIRME APP",
+      "categoria": "APP NATIVA",
+      "año": "2026",
+      "color": "bg-cyan-500",
+      "duracion": "SP - 120 MIN"
+    },
+    {
+      "id": "vhs-02",
+      "titulo": "IMAGENARTIS",
+      "categoria": "E-COMMERCE",
+      "año": "2025",
+      "color": "bg-pink-500",
+      "duracion": "LP - 90 MIN"
+    },
+    {
+      "id": "vhs-03",
+      "titulo": "PORTFOLIO OS",
+      "categoria": "HUD SYSTEM",
+      "año": "2024",
+      "color": "bg-yellow-500",
+      "duracion": "SP - 60 MIN"
+    },
+    {
+      "id": "vhs-04",
+      "titulo": "CR PUBLICIDAD",
+      "categoria": "BRANDING",
+      "año": "2023",
+      "color": "bg-purple-500",
+      "duracion": "EP - 180 MIN"
+    }
+  ]
+}

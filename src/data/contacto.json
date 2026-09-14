@@ -1,12 +1,14 @@
 {
-  "titulo": "Contacto",
-  "subtitulo": "ESTABLECER TRANSMISIÓN DIRECTA",
-  "descripcion": "Canales abiertos para propuestas de desarrollo, consultorías de software o proyectos",
-  "correo": "wilmeran12438.com",
-  "telefono": "+51 900 000 000",
-  "ubicacion": "Lima, Perú",
+  "titulo": "Conectar",
+  "descripcion": "Escríbeme y charlemos sobre cómo podemos trabajar juntos.",
+  "correo": "wilmeran1249@gmail.com",
+  "redesTitulo": "redes",
+  "frase": "Just tasteful",
+  "opacidadFirma": "0.7",
   "redes": [
-    { "nombre": "GitHub", "url": "https://github.com/tuusuario", "icono": "/icons/github.svg" },
-    { "nombre": "LinkedIn", "url": "https://linkedin.com/in/tuusuario", "icono": "/icons/linkedin.svg" }
+    { "nombre": "GitHub",     "url": "https://github.com/Uwiloper/",        "icono": "/icons/github.svg" },
+    { "nombre": "LinkedIn",   "url": "https://www.linkedin.com/in/uwil/",   "icono": "/icons/linkedin.svg" },
+    { "nombre": "Instagram",  "url": "https://www.instagram.com/uwildev/",  "icono": "/icons/instagram.svg" },
+    { "nombre": "CodePen",    "url": "https://codepen.io/Uwiloper",         "icono": "/icons/codepen.svg" }
   ]
 }

@@ -1,8 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import ReelNavbar from '../components/ReelNavbar.astro';
-import SobreMi from '../components/views/SobreMi.astro'; 
+import Layout from      '../layouts/Layout.astro';
+import ReelNavbar from  '../components/ReelNavbar.astro';
+import SobreMi from     '../components/views/SobreMi.astro'; 
 import Experiencia from '../components/views/Experiencia.astro';
+import Contacto from    '../components/views/Contacto.astro';
+import Proyectos from   '../components/views/Proyectos.astro';
 ---
 
 <Layout title="Wilmer Carrasco | Inicio">
@@ -20,6 +22,14 @@ import Experiencia from '../components/views/Experiencia.astro';
 
             <div class="visor-view w-full h-full hidden" data-view="experiencia">
                 <Experiencia />
+            </div>
+
+            <div class="visor-view w-full h-full hidden" data-view="proyectos">
+                <Proyectos />
+            </div>
+
+            <div class="visor-view w-full h-full hidden" data-view="contacto">
+                <Contacto />
             </div>
 
         </div>
