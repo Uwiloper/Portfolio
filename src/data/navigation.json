@@ -14,5 +14,9 @@
   { 
     "id": "contacto",
     "label": "Contacto",
+    "link": "#" },
+    { 
+    "id": "game",
+    "label": "Add",
     "link": "#" }
 ]

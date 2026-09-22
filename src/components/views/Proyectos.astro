@@ -1,181 +1,643 @@
 ---
 import data from '../../data/proyectos.json';
+
+const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyectos];
 ---
 
-<article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center p-4 pt-14 lg:pt-0 pb-52 lg:pb-0 z-10 select-none">
+<article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center p-4 pt-14 lg:pt-0 pb-52 lg:pb-0 z-10 select-none overflow-hidden">
   
-  <div class="max-w-[700px] w-full mx-auto relative p-6 sm:p-8 flex flex-col justify-center min-h-[420px]">
+  <div class="max-w-[900px] w-full mx-auto relative p-4 sm:p-8 flex flex-col justify-center min-h-[450px]">
     
-    <!-- Marcas de Cámara -->
     <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/30 pointer-events-none"></div>
     <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/30 pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/30 pointer-events-none"></div>
     <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/30 pointer-events-none"></div>
 
-    <header class="mb-4 border-b border-white/10 pb-2">
-      <h2 class="font-display text-xl md:text-2xl text-white uppercase tracking-widest italic drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-        {data.titulo}
-      </h2>
-    </header>
+    <!-- VISTA 1: CARRUSEL -->
+    <div id="vista-carrusel" class="flex flex-col transition-opacity duration-300 opacity-100 w-full relative">
+      <header class="mb-4 border-b border-white/10 pb-2">
+        <h2 class="font-display text-xl md:text-2xl text-white tracking-widest italic drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+          {data.titulo}
+        </h2>
+      </header>
 
-    <!-- VISTA 1: CARRUSEL PRINCIPAL -->
-    <div id="view-carousel" class="flex flex-col transition-all duration-500 opacity-100">
-      
-      <!-- Contenedor del Carrusel (Scrolleable) -->
-      <div class="slider-mask flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth scrollbar-hide py-4 w-full">
-        {data.proyectos.map((proyecto) => (
-        //   <!-- CAJA VHS -->
-          <button class="vhs-box group relative flex-shrink-0 w-[160px] h-[240px] md:w-[180px] md:h-[260px] snap-center border-2 border-white/10 bg-black hover:border-white/40 transition-all duration-300 overflow-hidden pointer-events-auto text-left">
-            
-            {/* <!-- Etiqueta de color (Simula la calcomanía superior de la cinta) --> */}
-            <div class={`absolute top-0 left-0 right-0 h-8 ${proyecto.color} flex items-center px-2 border-b-2 border-black`}>
-              <span class="font-mono text-[8px] text-black font-bold tracking-widest">{proyecto.duracion}</span>
-            </div>
-
-            {/* <!-- Contenido de la Caja --> */}
-            <div class="absolute inset-0 top-8 p-3 flex flex-col justify-between bg-[linear-gradient(to_bottom,rgba(255,255,255,0.05),transparent)]">
-              <div>
-                <span class="font-mono text-[9px] text-white/50 tracking-widest uppercase block mb-1">
-                  > {proyecto.categoria}
-                </span>
-                <h3 class="font-display text-lg md:text-xl text-white tracking-widest uppercase leading-tight group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all">
-                  {proyecto.titulo}
-                </h3>
-              </div>
-              
-              <div class="flex justify-between items-end border-t border-white/10 pt-2">
-                <span class="font-mono text-[10px] text-white/40">[{proyecto.año}]</span>
-                <span class="font-mono text-[9px] text-pink-500 uppercase tracking-widest group-hover:animate-pulse">PLAY ▶</span>
-              </div>
-            </div>
-
-            {/* <!-- Efecto de desgaste/brillo en hover --> */}
-            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 transition-opacity duration-500 pointer-events-none"></div>
-          </button>
-        ))}
+      <div id="carousel-container" class="slider-mask relative w-full overflow-hidden py-10 touch-pan-y cursor-grab active:cursor-grabbing">
+        <div id="carousel-track" class="flex items-center gap-4 sm:gap-10 w-max pointer-events-auto will-change-transform">
+          {carruselInfinito.map((proyecto) => (
+            <button class="vhs-item group relative flex-shrink-0 w-[140px] md:w-[180px] aspect-[2/3] transition-transform duration-100 block" data-id={proyecto.id} data-title={proyecto.titulo}>
+              <img src={proyecto.imagen1} alt={proyecto.titulo} class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 z-10 opacity-100 group-hover:opacity-0 group-[.is-opening]:opacity-0 pointer-events-none" />
+              <img src={proyecto.imagen2} alt={`${proyecto.titulo} Abierta`} class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 z-20 opacity-0 group-hover:opacity-100 group-[.is-opening]:opacity-100 pointer-events-none" />
+            </button>
+          ))}
+        </div>
       </div>
 
-      <!-- Botón: VER ESTANTERÍA -->
-      <div class="mt-4 flex justify-center sm:justify-end">
-        <button id="btn-show-shelf" class="glitch-action-link group inline-flex items-center gap-2 font-mono text-xs md:text-sm text-white uppercase tracking-widest pointer-events-auto w-max">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5 md:w-3 md:h-3 text-pink-500 group-hover:drop-shadow-[0_0_8px_rgba(236,72,153,1)] transition-all">
+      <div class="mt-2 flex justify-center sm:justify-end">
+        <button id="btn-ver-estanteria" class="glitch-action-link group inline-flex items-center gap-2 font-mono text-xs md:text-sm text-white uppercase tracking-widest pointer-events-auto">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-pink-500 group-hover:drop-shadow-[0_0_8px_rgba(236,72,153,1)] transition-all">
             <path d="M8 5v14l11-7z"/>
           </svg>
           <span class="glitch-text font-bold">{data.botonVerTodos}</span>
         </button>
       </div>
-
     </div>
 
-    <!-- VISTA 2: ESTANTERÍA (Oculta por defecto) -->
-    <div id="view-shelf" class="hidden flex-col transition-all duration-500 opacity-0 absolute inset-0 p-6 sm:p-8 bg-black/90 backdrop-blur-sm z-20 overflow-y-auto scrollbar-hide">
-      
-      <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-2 sticky top-0 bg-black/90 z-10 pt-2">
-        <span class="font-mono text-[10px] text-cyan-400 tracking-widest uppercase">> ESTANTERÍA DE DATOS</span>
-        <!-- Botón: VOLVER -->
-        <button id="btn-hide-shelf" class="glitch-action-link group inline-flex items-center gap-2 font-mono text-[10px] text-white uppercase tracking-widest pointer-events-auto">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5 text-pink-500 rotate-180">
+    <!-- VISTA 2: ESTANTERÍA -->
+    <div id="vista-estanteria" class="hidden flex-col transition-opacity duration-300 opacity-0 absolute inset-0 p-6 sm:p-8 bg-black/95 z-40 overflow-y-auto scrollbar-hide">
+      <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-2 sticky top-0 bg-black/95 z-50 pt-2">
+        <span class="font-mono text-[10px] text-cyan-400 tracking-widest uppercase">> ARCHIVO COMPLETO</span>
+        <button class="btn-volver glitch-action-link group inline-flex items-center gap-2 font-mono text-[10px] text-white uppercase tracking-widest pointer-events-auto">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-pink-500 rotate-180">
             <path d="M8 5v14l11-7z"/>
           </svg>
           <span class="glitch-text font-bold">{data.botonVolver}</span>
         </button>
       </div>
-
-      <!-- Grid de la Repisa -->
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 pb-20">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pb-20 pointer-events-auto">
         {data.proyectos.map((proyecto) => (
-          <button class="relative w-full aspect-[2/3] border border-white/20 bg-black/60 hover:bg-white/5 hover:border-white/50 transition-all duration-300 flex flex-col items-center justify-center p-2 group pointer-events-auto">
-             <div class={`w-full h-2 absolute top-0 left-0 ${proyecto.color}`}></div>
-             <span class="font-mono text-[8px] text-white/40 mb-1">{proyecto.año}</span>
-             <h3 class="font-display text-sm text-center text-white/80 group-hover:text-white uppercase px-1">{proyecto.titulo}</h3>
+          <button class="vhs-shelf-item relative w-full aspect-[2/3] group overflow-hidden" data-id={proyecto.id}>
+             <img src={proyecto.imagen1} alt={proyecto.titulo} class="absolute inset-0 w-full h-full object-contain opacity-60 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
+             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+               <h3 class="font-display text-sm text-center text-white leading-tight">{proyecto.titulo}</h3>
+             </div>
           </button>
         ))}
       </div>
+    </div>
 
+    <!-- ========================================== -->
+    <!-- VISTA 3: DETALLE DEL PROYECTO (FULLSCREEN) -->
+    <!-- ========================================== -->
+    <div id="vista-detalle" class="hidden fixed inset-0 w-full h-full bg-[#030303] z-[9999] transition-opacity duration-500 opacity-0 flex-col overflow-y-auto lg:overflow-hidden m-0 p-0 border-none" style="--theme-color: #00d2ff;">
+      
+      <!-- Botón Rebobinar -->
+      <button class="btn-volver glitch-action-link group fixed bottom-4 right-4 lg:bottom-auto lg:left-auto lg:top-6 lg:right-6 z-[10001] inline-flex items-center gap-2 font-mono text-[9px] sm:text-[10px] text-white uppercase tracking-widest pointer-events-auto bg-red-600/90 px-3.5 py-2.5 border border-red-500 hover:bg-red-500 transition-colors backdrop-blur-md shadow-2xl">
+        <span class="glitch-text font-bold">REBOBINAR ⏴⏴</span>
+      </button>
+
+      <!-- Botón VISITAR Flotante en Móvil -->
+      <div class="fixed bottom-4 left-1/2 -translate-x-1/2 lg:hidden w-max z-[10001] pointer-events-auto" id="wrap-portada-btn-mobile">
+        <a id="detalle-portada-btn-mob" href="#" target="_blank" rel="noopener noreferrer" class="hidden glitch-action-link group items-center gap-2.5 font-mono text-xs text-white uppercase tracking-widest px-6 py-3 border border-theme/40 bg-black/90 hover:border-theme transition-all backdrop-blur-md shadow-2xl w-max">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-theme"><path d="M8 5v14l11-7z"/></svg>
+          <span class="glitch-text font-bold tracking-wider btn-visitar-label">VISITAR</span>
+        </a>
+      </div>
+
+      <div class="w-full h-full min-h-screen grid grid-cols-[45px_1fr] grid-rows-[auto_auto] lg:grid-cols-[1.3fr_55px_1fr] lg:grid-rows-1 m-0 p-0">
+        
+        <!-- CONTRAPORTADA -->
+        <div id="seccion-contraportada" class="col-start-2 row-start-2 lg:col-start-1 lg:row-start-1 flex flex-col justify-between bg-[#080808] border-t lg:border-t-0 lg:border-r border-theme p-6 lg:p-8">
+          <div class="flex flex-col h-full max-w-[700px] mx-auto w-full">
+            <div id="wrap-contra-badge" class="flex items-center gap-3 mb-6">
+              <span id="detalle-contra-badge" class="font-mono text-theme text-[10px] tracking-widest border border-theme px-2 py-1"></span>
+              <div id="detalle-contra-icono" class="w-4 h-4 bg-theme" style="mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></div>
+            </div>
+            
+            <p id="detalle-contra-frase" class="font-display text-white text-base lg:text-xl italic leading-snug mb-8 opacity-90 border-l-2 border-theme pl-4"></p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-[1fr_95px] lg:grid-cols-[1fr_115px] gap-6 flex-1 min-h-0">
+              
+              <div class="flex flex-col min-h-0 overflow-y-auto scrollbar-hide pb-24 lg:pb-8">
+                <div id="wrap-sinopsis" class="mb-6">
+                  <div class="glitch-action-link group inline-block mb-2 w-max cursor-default">
+                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">SINOPSIS</span>
+                  </div>
+                  <p id="detalle-contra-sinopsis" class="font-sans text-white/70 text-xs lg:text-sm font-light leading-relaxed"></p>
+                </div>
+
+                <div id="wrap-reto" class="mb-8">
+                  <div class="glitch-action-link group inline-block mb-2 w-max cursor-default">
+                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">RETO</span>
+                  </div>
+                  <p id="detalle-contra-reto" class="font-sans text-white/70 text-xs lg:text-sm font-light leading-relaxed whitespace-pre-line"></p>
+                </div>
+
+                <div id="wrap-tech" class="mt-auto pt-4 pb-8 lg:pb-4">
+                  <div class="glitch-action-link group inline-block mb-4 w-max cursor-default">
+                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">TECH CREDITS</span>
+                  </div>
+                  <div id="detalle-tech-credits" class="flex flex-wrap gap-4 sm:gap-5 items-center">
+                    <!-- Iconos con tooltips blur -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fotos sin cortes verticales -->
+              <div id="detalle-contra-fotos" class="flex flex-row sm:flex-col h-20 sm:h-full overflow-hidden mt-4 sm:mt-0 gap-2 sm:gap-1 pb-6 sm:pb-0">
+                <!-- Se inyectan las 3 fotos -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOMO -->
+        <div id="seccion-lomo" class="col-start-1 row-span-2 lg:col-start-2 lg:row-start-1 bg-[#050505] border-r lg:border-x border-theme flex flex-col items-center justify-between py-6 relative">
+          <span id="detalle-lomo-codigo" class="font-mono text-theme text-[10px] tracking-widest -rotate-90 lg:rotate-0 mt-4 lg:mt-0 font-bold whitespace-nowrap"></span>
+          
+          <div class="flex flex-col items-center justify-center flex-1 my-8" style="writing-mode: vertical-rl; transform: rotate(180deg);">
+            <span id="detalle-lomo-subtitulo" class="font-sans text-white/60 font-light text-[10px] tracking-widest mb-2 whitespace-nowrap"></span>
+            <span id="detalle-lomo-titulo" class="font-display text-theme text-3xl lg:text-4xl tracking-widest"></span>
+          </div>
+
+          <div class="flex flex-col items-center gap-2 mb-2 lg:mb-0">
+            <div id="lomo-barcode" class="w-6 h-8 flex gap-[2px] opacity-70 -rotate-90 lg:rotate-0 mb-4 lg:mb-0">
+              <div class="w-[2px] h-full bg-theme"></div>
+              <div class="w-[4px] h-full bg-theme"></div>
+              <div class="w-[1px] h-full bg-theme"></div>
+              <div class="w-[3px] h-full bg-theme"></div>
+              <div class="w-[2px] h-full bg-theme"></div>
+              <div class="w-[1px] h-full bg-theme"></div>
+            </div>
+            <span id="detalle-lomo-año" class="font-mono text-theme text-[9px] tracking-widest -rotate-90 lg:rotate-0 mt-2 lg:mt-0 bg-theme/10 border border-theme px-1 py-0.5"></span>
+          </div>
+        </div>
+
+        <!-- PORTADA -->
+        <div id="seccion-portada" class="col-start-2 row-start-1 lg:col-start-3 lg:row-start-1 bg-[#111] flex flex-col relative overflow-hidden h-[50vh] lg:h-full min-h-full">
+          <img id="detalle-portada-imagen" src="" alt="Portada" class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/60 z-0 pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col justify-between h-full p-6 lg:p-10">
+            <div class="w-full h-6"></div>
+
+            <div class="hidden lg:flex flex-col items-center justify-end mt-auto mb-6 w-full">
+              <a id="detalle-portada-btn-desk" href="#" target="_blank" rel="noopener noreferrer" class="hidden glitch-action-link group items-center gap-2.5 font-mono text-sm text-white uppercase tracking-widest px-6 py-3 border border-theme/40 bg-black/60 hover:border-theme hover:bg-theme/10 transition-all backdrop-blur-sm w-max">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-theme"><path d="M8 5v14l11-7z"/></svg>
+                <span class="glitch-text font-bold tracking-wider btn-visitar-label">VISITAR</span>
+              </a>
+            </div>
+
+            <div id="wrap-director" class="w-full text-center mt-auto lg:mt-0">
+              <span class="font-mono text-[10px] text-white/40 tracking-widest uppercase">
+                DIRIGIDO POR: <strong id="detalle-portada-director" class="text-white font-normal"></strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MINIMODAL GALERÍA LIGHTBOX                -->
+    <!-- ========================================== -->
+    <div id="gallery-modal" class="hidden fixed inset-0 z-[10005] bg-black/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-auto backdrop-blur-md">
+      
+      <button id="gallery-close" class="absolute top-6 right-6 font-mono text-xs sm:text-sm text-white hover:text-theme tracking-widest p-4 transition-colors z-20 cursor-pointer">
+        [ CERRAR X / ESC ]
+      </button>
+
+      <button id="gallery-prev" class="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 p-4 text-white hover:text-theme transition-colors z-20 cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 rotate-180 drop-shadow-theme"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+
+      <button id="gallery-next" class="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 p-4 text-white hover:text-theme transition-colors z-20 cursor-pointer">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-theme"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+
+      <!-- Contenedor con Detección de Clic Fuera -->
+      <div id="gallery-backdrop-area" class="absolute inset-0 w-full h-full flex items-center justify-center p-4 sm:p-12">
+        <div id="gallery-zoom-box" class="relative max-w-full max-h-full flex items-center justify-center transition-transform duration-300 cursor-zoom-in">
+          <img id="gallery-image" src="" alt="Vista Previa" class="max-w-[85vw] max-h-[80vh] object-contain border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] select-none transition-all duration-300" />
+        </div>
+      </div>
+
+      <div class="absolute bottom-6 flex items-center gap-4 font-mono text-theme text-xs tracking-widest pointer-events-none z-20">
+        <span id="gallery-counter">1 / 3</span>
+        <span class="text-white/30 hidden sm:inline">[ CLIC O TECLA 'Z' PARA ZOOM ]</span>
+      </div>
     </div>
 
   </div>
 </article>
 
+<!-- Tooltip Flotante Seguidor Global -->
+<div id="mouse-tooltip" class="fixed pointer-events-none z-[10003] font-mono text-[9px] md:text-[10px] text-theme tracking-widest bg-black/95 px-3 py-1.5 border border-theme opacity-0 transition-[opacity,filter] duration-200 backdrop-blur-md skill-label" style="transform: translate(-50%, -100%);"></div>
+
 <style>
-  /* Scrollbar hide */
+  .text-theme { color: var(--theme-color, #00d2ff); }
+  .bg-theme { background-color: var(--theme-color, #00d2ff); }
+  .border-theme { border-color: var(--theme-color, #00d2ff); }
+  .drop-shadow-theme { filter: drop-shadow(0 0 10px var(--theme-color, #00d2ff)); }
+
+  .slider-mask { mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%); }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Máscara del slider principal */
-  .slider-mask {
-    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+  /* Glitch Text Core */
+  .glitch-text { animation: rgb-jitter-idle 2s linear infinite alternate; color: rgba(255, 255, 255, 0.95); }
+  .glitch-action-link:hover .glitch-text, .glitch-action-link:active .glitch-text { color: white; animation: rgb-jitter-active 0.15s linear infinite alternate; }
+  @keyframes rgb-jitter-idle { 0% { text-shadow: -1px 0 0 rgba(0, 255, 255, 0.4), 1px 0 0 rgba(255, 0, 255, 0.4); } 100% { text-shadow: 1px 0 0 rgba(0, 255, 255, 0.4), -1px 0 0 rgba(255, 0, 255, 0.4); } }
+  @keyframes rgb-jitter-active { 0% { text-shadow: -2px 0 0 rgba(0, 255, 255, 0.9), 2px 0 0 rgba(255, 0, 255, 0.9); } 50% { text-shadow: 2px 0 0 rgba(0, 255, 255, 0.9), -2px 0 0 rgba(255, 0, 255, 0.9); } 100% { text-shadow: -1px 0 1px rgba(0, 255, 255, 0.9), 1px 0 1px rgba(255, 0, 255, 0.9); } }
+
+  .skill-label { filter: blur(8px); will-change: filter, opacity, transform; }
+  .skill-label.is-visible { opacity: 1; filter: blur(0px); color: #ffffff; text-shadow: 0 0 8px var(--theme-color, #00d2ff); }
+
+  /* Animación de Transición de Imagen en la Galería */
+  .gallery-glitch-switch {
+    animation: gallery-pop 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  }
+  @keyframes gallery-pop {
+    0% { transform: scale(0.95); opacity: 0.3; filter: blur(6px) brightness(1.8); }
+    100% { transform: scale(1); opacity: 1; filter: blur(0px) brightness(1); }
   }
 
-  /* Efecto Glitch de los Botones (Reutilizado) */
-  .glitch-text {
-    animation: rgb-jitter-idle 2s linear infinite alternate;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .glitch-action-link:hover .glitch-text,
-  .glitch-action-link:active .glitch-text {
-    color: white;
-    animation: rgb-jitter-active 0.15s linear infinite alternate;
-  }
-  @keyframes rgb-jitter-idle {
-    0% { text-shadow: -1px 0 0 rgba(0, 255, 255, 0.4), 1px 0 0 rgba(255, 0, 255, 0.4); }
-    100% { text-shadow: 1px 0 0 rgba(0, 255, 255, 0.4), -1px 0 0 rgba(255, 0, 255, 0.4); }
-  }
-  @keyframes rgb-jitter-active {
-    0% { text-shadow: -2px 0 0 rgba(0, 255, 255, 0.9), 2px 0 0 rgba(255, 0, 255, 0.9); }
-    50% { text-shadow: 2px 0 0 rgba(0, 255, 255, 0.9), -2px 0 0 rgba(255, 0, 255, 0.9); }
-    100% { text-shadow: -1px 0 1px rgba(0, 255, 255, 0.9), 1px 0 1px rgba(255, 0, 255, 0.9); }
-  }
-
-  @keyframes camera-ready {
-    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
-    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
-  }
-  .camera-focus-view {
-    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
+  @keyframes camera-ready { 0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); } 100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); } }
+  .camera-focus-view { animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 </style>
 
 <script>
-  // Lógica para alternar entre el Carrusel y la Estantería
-  const btnShow = document.getElementById('btn-show-shelf');
-  const btnHide = document.getElementById('btn-hide-shelf');
-  const viewCarousel = document.getElementById('view-carousel');
-  const viewShelf = document.getElementById('view-shelf');
+  const container = document.getElementById('carousel-container');
+  const track = document.getElementById('carousel-track');
+  const items = document.querySelectorAll('.vhs-item');
+  const mouseTooltip = document.getElementById('mouse-tooltip');
+  
+  let isPaused = false;
+  let targetScroll = 0;
+  let isDragging = false;
+  let hasDragged = false;
+  let startX = 0;
+  let dragStartScroll = 0;
 
-  if (btnShow && btnHide && viewCarousel && viewShelf) {
-    btnShow.addEventListener('click', () => {
-      // Ocultar carrusel
-      viewCarousel.classList.replace('opacity-100', 'opacity-0');
-      setTimeout(() => {
-        viewCarousel.classList.add('hidden');
-        viewCarousel.classList.remove('flex');
-        
-        // Mostrar repisa
-        viewShelf.classList.remove('hidden');
-        viewShelf.classList.add('flex');
-        // Pequeño delay para que el navegador procese el display:flex antes de cambiar la opacidad
-        setTimeout(() => {
-          viewShelf.classList.replace('opacity-0', 'opacity-100');
-        }, 50);
-      }, 300); // 300ms es el tiempo de la transición
-    });
-
-    btnHide.addEventListener('click', () => {
-      // Ocultar repisa
-      viewShelf.classList.replace('opacity-100', 'opacity-0');
-      setTimeout(() => {
-        viewShelf.classList.add('hidden');
-        viewShelf.classList.remove('flex');
-        
-        // Mostrar carrusel
-        viewCarousel.classList.remove('hidden');
-        viewCarousel.classList.add('flex');
-        setTimeout(() => {
-          viewCarousel.classList.replace('opacity-0', 'opacity-100');
-        }, 50);
-      }, 300);
-    });
+  if (track) {
+    targetScroll = track.scrollWidth / 3;
+    if(container) container.scrollLeft = targetScroll;
   }
+
+  if(container) {
+    container.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      hasDragged = false;
+      startX = e.clientX;
+      dragStartScroll = targetScroll;
+      isPaused = true; 
+    });
+    container.addEventListener('mouseenter', () => { isPaused = true; });
+    container.addEventListener('mouseleave', () => { if (!isDragging) isPaused = false; });
+  }
+
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    const diff = e.clientX - startX;
+    if (Math.abs(diff) > 5) hasDragged = true;
+    targetScroll = dragStartScroll - (diff * 2.5); 
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    if (container && !container.matches(':hover')) isPaused = false;
+    if (container && items.length > 0) {
+      const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
+      let minDist = Infinity;
+      let nearestItem = null;
+      items.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        const itemCenterX = rect.left + rect.width / 2;
+        const dist = Math.abs(centerX - itemCenterX);
+        if (dist < minDist) { minDist = dist; nearestItem = item; }
+      });
+      if (nearestItem) {
+        const itemCenterX = nearestItem.getBoundingClientRect().left + nearestItem.offsetWidth / 2;
+        targetScroll += (itemCenterX - centerX);
+      }
+    }
+  });
+
+  function updateCarousel() {
+    if (!container || !track) return;
+    if (!isPaused && !isDragging) targetScroll += 0.6; 
+    const singleSetWidth = track.scrollWidth / 3;
+    if (targetScroll >= singleSetWidth * 2) {
+      targetScroll -= singleSetWidth;
+      container.scrollLeft -= singleSetWidth;
+    }
+    container.scrollLeft += (targetScroll - container.scrollLeft) * 0.08;
+    const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
+    items.forEach(item => {
+      const rect = item.getBoundingClientRect();
+      const itemCenterX = rect.left + rect.width / 2;
+      const dist = Math.abs(centerX - itemCenterX);
+      const maxDist = container.offsetWidth / 2;
+      let scale = 1.25 - (dist / maxDist) * 0.5; 
+      scale = Math.max(0.75, Math.min(1.25, scale));
+      item.style.transform = `scale(${scale})`;
+      item.style.zIndex = Math.round(scale * 100).toString();
+    });
+    requestAnimationFrame(updateCarousel);
+  }
+  if (container) updateCarousel();
+
+  // Teletransportaciones al Body
+  const vistaCarrusel = document.getElementById('vista-carrusel');
+  const vistaEstanteria = document.getElementById('vista-estanteria');
+  const vistaDetalle = document.getElementById('vista-detalle');
+  const galleryModal = document.getElementById('gallery-modal');
+  
+  if (vistaDetalle && vistaDetalle.parentNode !== document.body) document.body.appendChild(vistaDetalle);
+  if (galleryModal && galleryModal.parentNode !== document.body) document.body.appendChild(galleryModal);
+  if (mouseTooltip && mouseTooltip.parentNode !== document.body) document.body.appendChild(mouseTooltip);
+
+  const btnVerEstanteria = document.getElementById('btn-ver-estanteria');
+  const btnsVolver = document.querySelectorAll('.btn-volver');
+
+  // ==========================================
+  // MOTOR DEL MINIMODAL GALERÍA
+  // ==========================================
+  let currentGalleryPhotos = [];
+  let currentPhotoIndex = 0;
+  let isZoomed = false;
+  const galImg = document.getElementById('gallery-image');
+  const galCounter = document.getElementById('gallery-counter');
+  const galZoomBox = document.getElementById('gallery-zoom-box');
+  const galBackdropArea = document.getElementById('gallery-backdrop-area');
+
+  function triggerGlitchTransition() {
+    if (!galImg) return;
+    galImg.classList.remove('gallery-glitch-switch');
+    void galImg.offsetWidth;
+    galImg.classList.add('gallery-glitch-switch');
+  }
+
+  function toggleZoom() {
+    isZoomed = !isZoomed;
+    if (isZoomed) {
+      galZoomBox.classList.add('scale-150');
+      galZoomBox.classList.replace('cursor-zoom-in', 'cursor-zoom-out');
+    } else {
+      galZoomBox.classList.remove('scale-150');
+      galZoomBox.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+    }
+  }
+
+  function resetZoom() {
+    isZoomed = false;
+    galZoomBox?.classList.remove('scale-150');
+    galZoomBox?.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
+  }
+
+  function updateGallery() {
+    if (currentGalleryPhotos.length > 0 && galImg && galCounter) {
+      resetZoom();
+      galImg.src = currentGalleryPhotos[currentPhotoIndex];
+      galCounter.textContent = `${currentPhotoIndex + 1} / ${currentGalleryPhotos.length}`;
+      triggerGlitchTransition();
+    }
+  }
+
+  function openGallery(index) {
+    currentPhotoIndex = index;
+    updateGallery();
+    galleryModal.classList.remove('hidden');
+    galleryModal.classList.add('flex');
+    setTimeout(() => galleryModal.classList.replace('opacity-0', 'opacity-100'), 10);
+  }
+
+  function closeGallery() {
+    galleryModal.classList.replace('opacity-100', 'opacity-0');
+    resetZoom();
+    setTimeout(() => {
+      galleryModal.classList.add('hidden');
+      galleryModal.classList.remove('flex');
+    }, 300);
+  }
+
+  document.getElementById('gallery-close')?.addEventListener('click', closeGallery);
+  
+  document.getElementById('gallery-next')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentPhotoIndex = (currentPhotoIndex + 1) % currentGalleryPhotos.length;
+    updateGallery();
+  });
+
+  document.getElementById('gallery-prev')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    currentPhotoIndex = (currentPhotoIndex - 1 + currentGalleryPhotos.length) % currentGalleryPhotos.length;
+    updateGallery();
+  });
+
+  // Clic en la foto para zoom
+  galZoomBox?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleZoom();
+  });
+
+  // Clic fuera para cerrar
+  galBackdropArea?.addEventListener('click', (e) => {
+    if (e.target === galBackdropArea) closeGallery();
+  });
+
+  // Eventos de teclado (Esc, Z, Flechas)
+  window.addEventListener('keydown', (e) => {
+    if (galleryModal.classList.contains('hidden')) return;
+
+    if (e.key === 'Escape') {
+      closeGallery();
+    } else if (e.key === 'z' || e.key === 'Z') {
+      toggleZoom();
+    } else if (e.key === 'ArrowRight') {
+      currentPhotoIndex = (currentPhotoIndex + 1) % currentGalleryPhotos.length;
+      updateGallery();
+    } else if (e.key === 'ArrowLeft') {
+      currentPhotoIndex = (currentPhotoIndex - 1 + currentGalleryPhotos.length) % currentGalleryPhotos.length;
+      updateGallery();
+    }
+  });
+
+  function switchView(hideElement, showElement) {
+    if (!hideElement || !showElement) return;
+    hideElement.classList.replace('opacity-100', 'opacity-0');
+    setTimeout(() => {
+      hideElement.classList.add('hidden');
+      hideElement.classList.remove('flex');
+      showElement.classList.remove('hidden');
+      showElement.classList.add('flex');
+      setTimeout(() => showElement.classList.replace('opacity-0', 'opacity-100'), 50);
+    }, 300);
+  }
+
+  function toggleContent(element, content) {
+    if (!element) return;
+    if (!content || content.toString().trim() === "" || (Array.isArray(content) && content.length === 0)) {
+      element.classList.add('hidden');
+    } else {
+      element.classList.remove('hidden');
+    }
+  }
+
+  function openProjectDetail(projectId, currentView) {
+    document.body.style.overflow = 'hidden';
+
+    import('../../data/proyectos.json').then(module => {
+      const db = module.default.proyectos;
+      const proyecto = db.find(p => p.id === projectId);
+      
+      if (proyecto && proyecto.detalle) {
+        if (proyecto.colorPrincipal) vistaDetalle.style.setProperty('--theme-color', proyecto.colorPrincipal);
+        const d = proyecto.detalle;
+
+        // LOMO
+        const lomoCod = document.getElementById('detalle-lomo-codigo');
+        if (lomoCod) { lomoCod.textContent = d.lomo?.codigo || ""; toggleContent(lomoCod, d.lomo?.codigo); }
+
+        const lomoSub = document.getElementById('detalle-lomo-subtitulo');
+        if (lomoSub) { lomoSub.textContent = d.lomo?.subtitulo || ""; toggleContent(lomoSub, d.lomo?.subtitulo); }
+
+        const lomoTit = document.getElementById('detalle-lomo-titulo');
+        if (lomoTit) { lomoTit.textContent = proyecto.titulo || ""; toggleContent(lomoTit, proyecto.titulo); }
+
+        const lomoAn = document.getElementById('detalle-lomo-año');
+        if (lomoAn) { lomoAn.textContent = proyecto.año || ""; toggleContent(lomoAn, proyecto.año); }
+
+        // PORTADA
+        const imgPort = document.getElementById('detalle-portada-imagen');
+        if (imgPort) { imgPort.src = d.portada?.imagen || ""; toggleContent(imgPort, d.portada?.imagen); }
+
+        const wrapDir = document.getElementById('wrap-director');
+        const dirPort = document.getElementById('detalle-portada-director');
+        if (dirPort) { dirPort.textContent = d.portada?.director || ""; toggleContent(wrapDir, d.portada?.director); }
+
+        // Botones VISITAR (Desktop & Mobile)
+        const btnDesk = document.getElementById('detalle-portada-btn-desk');
+        const btnMob = document.getElementById('detalle-portada-btn-mob');
+        const labels = document.querySelectorAll('.btn-visitar-label');
+
+        if (d.portada?.linkBoton && d.portada.linkBoton.trim() !== "") {
+          const url = d.portada.linkBoton;
+          const texto = d.portada.textoBoton || 'VISITAR';
+          labels.forEach(l => l.textContent = texto);
+
+          if (btnDesk) { btnDesk.href = url; btnDesk.classList.remove('hidden'); btnDesk.classList.add('inline-flex'); }
+          if (btnMob) { btnMob.href = url; btnMob.classList.remove('hidden'); btnMob.classList.add('inline-flex'); }
+        } else {
+          if (btnDesk) { btnDesk.classList.add('hidden'); btnDesk.classList.remove('inline-flex'); }
+          if (btnMob) { btnMob.classList.add('hidden'); btnMob.classList.remove('inline-flex'); }
+        }
+
+        // CONTRAPORTADA
+        const wrapBadge = document.getElementById('wrap-contra-badge');
+        const badgeContra = document.getElementById('detalle-contra-badge');
+        const iconBadge = document.getElementById('detalle-contra-icono');
+        if (badgeContra && iconBadge) {
+          badgeContra.textContent = d.contraportada?.badge || "";
+          toggleContent(badgeContra, d.contraportada?.badge);
+          if (d.contraportada?.badgeIcono) {
+            iconBadge.style.maskImage = `url('${d.contraportada.badgeIcono}')`;
+            iconBadge.style.webkitMaskImage = `url('${d.contraportada.badgeIcono}')`;
+            iconBadge.classList.remove('hidden');
+          } else {
+            iconBadge.classList.add('hidden');
+          }
+          toggleContent(wrapBadge, d.contraportada?.badge || d.contraportada?.badgeIcono);
+        }
+
+        const fraseContra = document.getElementById('detalle-contra-frase');
+        if (fraseContra) {
+          fraseContra.textContent = d.contraportada?.fraseItalica ? `"${d.contraportada.fraseItalica}"` : "";
+          toggleContent(fraseContra, d.contraportada?.fraseItalica);
+        }
+
+        const wrapSinop = document.getElementById('wrap-sinopsis');
+        const sinopContra = document.getElementById('detalle-contra-sinopsis');
+        if (sinopContra) { sinopContra.textContent = d.contraportada?.sinopsis || ""; toggleContent(wrapSinop, d.contraportada?.sinopsis); }
+
+        const wrapReto = document.getElementById('wrap-reto');
+        const retoContra = document.getElementById('detalle-contra-reto');
+        if (retoContra) { retoContra.textContent = d.contraportada?.reto || ""; toggleContent(wrapReto, d.contraportada?.reto); }
+
+        // Tech Credits con Tooltip Blur y Seguimiento Suave
+        const wrapTech = document.getElementById('wrap-tech');
+        const techContainer = document.getElementById('detalle-tech-credits');
+        if (techContainer) {
+          techContainer.innerHTML = ''; 
+          toggleContent(wrapTech, d.contraportada?.techCredits);
+          if (d.contraportada?.techCredits && d.contraportada.techCredits.length > 0) {
+            d.contraportada.techCredits.forEach(tech => {
+              const itemDiv = document.createElement('div');
+              itemDiv.className = "group relative flex items-center justify-center pointer-events-auto cursor-default py-1";
+              itemDiv.innerHTML = `<div class="w-5 h-5 sm:w-6 sm:h-6 bg-white/40 hover:bg-[var(--theme-color)] hover:scale-125 transition-all duration-300 drop-shadow-[0_0_8px_var(--theme-color)]" style="mask-image: url('${tech.icono}'); -webkit-mask-image: url('${tech.icono}'); mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></div>`;
+              
+              itemDiv.addEventListener('pointermove', (e) => {
+                if (e.pointerType !== 'mouse' || !mouseTooltip) return;
+                mouseTooltip.textContent = tech.nombre;
+                mouseTooltip.classList.add('is-visible');
+                mouseTooltip.style.left = e.clientX + 'px';
+                mouseTooltip.style.top = (e.clientY - 25) + 'px';
+              });
+              itemDiv.addEventListener('pointerleave', (e) => {
+                if (e.pointerType === 'mouse' && mouseTooltip) mouseTooltip.classList.remove('is-visible');
+              });
+              techContainer.appendChild(itemDiv);
+            });
+          }
+        }
+
+        // Fotos sin deformaciones ni cortes
+        const fotosContainer = document.getElementById('detalle-contra-fotos');
+        if (fotosContainer) {
+          fotosContainer.innerHTML = '';
+          toggleContent(fotosContainer, d.contraportada?.fotos);
+          if (d.contraportada?.fotos && d.contraportada.fotos.length > 0) {
+            currentGalleryPhotos = d.contraportada.fotos;
+            d.contraportada.fotos.forEach((fotoUrl, idx) => {
+              const box = document.createElement('div');
+              box.className = "w-full flex-1 overflow-hidden cursor-pointer group/photo bg-black/40 flex items-center justify-center";
+              box.innerHTML = `<img src="${fotoUrl}" alt="Preview" class="w-full h-full object-contain opacity-75 group-hover/photo:opacity-100 transition-all duration-300 group-hover/photo:scale-105" />`;
+              box.addEventListener('click', () => openGallery(idx));
+              fotosContainer.appendChild(box);
+            });
+          }
+        }
+
+        switchView(currentView, vistaDetalle);
+      }
+    }).catch(err => console.error("Error al cargar datos:", err));
+  }
+
+  if (btnVerEstanteria) btnVerEstanteria.addEventListener('click', () => switchView(vistaCarrusel, vistaEstanteria));
+  
+  btnsVolver.forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.body.style.overflow = '';
+      if (mouseTooltip) mouseTooltip.classList.remove('is-visible');
+      if (vistaEstanteria && !vistaEstanteria.classList.contains('hidden')) switchView(vistaEstanteria, vistaCarrusel);
+      if (vistaDetalle && !vistaDetalle.classList.contains('hidden')) switchView(vistaDetalle, vistaCarrusel);
+    });
+  });
+
+  items.forEach(item => {
+    item.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !mouseTooltip) return;
+      mouseTooltip.textContent = item.getAttribute('data-title');
+      mouseTooltip.classList.add('is-visible');
+      mouseTooltip.style.left = e.clientX + 'px';
+      mouseTooltip.style.top = (e.clientY - 25) + 'px';
+    });
+    item.addEventListener('pointerleave', (e) => {
+      if (e.pointerType === 'mouse' && mouseTooltip) mouseTooltip.classList.remove('is-visible');
+    });
+    item.addEventListener('pointerup', (e) => {
+      if (hasDragged) return; 
+      const projectId = item.getAttribute('data-id');
+      if (e.pointerType === 'touch') {
+        if (container) {
+          const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
+          const itemCenterX = item.getBoundingClientRect().left + item.offsetWidth / 2;
+          targetScroll += (itemCenterX - centerX);
+        }
+        item.classList.add('is-opening');
+        setTimeout(() => {
+          item.classList.remove('is-opening');
+          openProjectDetail(projectId, vistaCarrusel);
+        }, 500);
+      } else {
+        if (mouseTooltip) mouseTooltip.classList.remove('is-visible');
+        openProjectDetail(projectId, vistaCarrusel);
+      }
+    });
+  });
+
+  document.querySelectorAll('.vhs-shelf-item').forEach(item => {
+    item.addEventListener('click', () => openProjectDetail(item.getAttribute('data-id'), vistaEstanteria));
+  });
 </script>

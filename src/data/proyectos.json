@@ -1,39 +1,88 @@
 {
-  "titulo": "ARCHIVO_DE_CINTAS",
+  "titulo": "MIS PRODUCCIONES",
   "botonVerTodos": "VER ESTANTERÍA",
-  "botonVolver": "VOLVER AL CARRUSEL",
+  "botonVolver": "Rebobinar",
   "proyectos": [
+    
     {
       "id": "vhs-01",
-      "titulo": "FIRME APP",
-      "categoria": "APP NATIVA",
+      "titulo": "Cheka",
+      "categoria": "Web & app",
       "año": "2026",
-      "color": "bg-cyan-500",
-      "duracion": "SP - 120 MIN"
+      "colorPrincipal": "#24da8d",
+      "imagen1": "https://placehold.co/300x450/111/fff?text=CHEKA+CLOSED",
+      "imagen2": "https://placehold.co/800x1200/00d2ff/000?text=FONDO+PORTADA",
+      "descripcion": "Sistema de monitoreo de pagos (Payment Monitoring). Arquitectura en tiempo real y dashboards analíticos para control financiero.",
+      "detalle": {
+        "lomo": {
+          "codigo": "PR-001",
+          "subtitulo": "Tus finanzas validadas en automático"
+        },
+        "portada": {
+          "imagen": "https://placehold.co/800x1200/00d2ff/000?text=FONDO+PORTADA",
+          "textoBoton": "VISITAR",
+          "linkBoton": "https://cheka-pe-six.vercel.app/",
+          "director": "Uwil"
+        },
+        "contraportada": {
+          "badge": "Top Project",
+          "badgeIcono": "/icons/corona.svg",
+          "fraseItalica": "En un mercado inundado de transacciones falsas y descuadres de caja, una web inteligente llegó para tomar el control...",
+          "sinopsis": "La respuesta para los negocios que buscan eliminar fraude en tiempo real. Cheka conecta tu móvil Android de manera privada con nuestra plataforma web, automatizando la validación de billeteras digitales como Yape y Plin.",
+          "reto": "Desarrollar un ecosistema inmutable capaz de procesar eventos asíncronos en tiempo real, manteniendo la privacidad sin comprometer la velocidad en el punto de venta.\n\n¡Una obra maestra de la sincronización y la seguridad que automatiza tus finanzas sin pestañear! No te la puedes perder!!!",
+          "techCredits": [
+            { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
+            { "nombre": "Android", "icono": "/icons/android.svg" },
+            { "nombre": "Cloudflare", "icono": "/icons/cloudflare.svg" }
+          ],
+          "fotos": [
+            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png",
+            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png",
+            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png"
+          ]
+        }
+      }
     },
     {
       "id": "vhs-02",
-      "titulo": "IMAGENARTIS",
-      "categoria": "E-COMMERCE",
+      "titulo": "Inv. Lázaro",
+      "categoria": "Ecommerce",
       "año": "2025",
-      "color": "bg-pink-500",
-      "duracion": "LP - 90 MIN"
-    },
-    {
-      "id": "vhs-03",
-      "titulo": "PORTFOLIO OS",
-      "categoria": "HUD SYSTEM",
-      "año": "2024",
-      "color": "bg-yellow-500",
-      "duracion": "SP - 60 MIN"
-    },
-    {
-      "id": "vhs-04",
-      "titulo": "CR PUBLICIDAD",
-      "categoria": "BRANDING",
-      "año": "2023",
-      "color": "bg-purple-500",
-      "duracion": "EP - 180 MIN"
+      "colorPrincipal": "#1e293b",
+      "imagen1": "/images/vhs/lazaro-vhs1.png",
+      "imagen2": "/images/vhs/lazaro-vhs2.png",
+      "descripcion": "Ecom",
+      "detalle": {
+        "lomo": {
+          "codigo": "PR-001",
+          "subtitulo": "Web Empresarial - Ecommerce & Gestion"
+        },
+        "portada": {
+          "imagen": "/images/proyectos/lazaro-portada.jpg",
+          "textoBoton": "Ver Demo",
+          "linkBoton": "/demos/invlazaro/index.html",
+          "director": "Uwil"
+        },
+        "contraportada": {
+          "badge": "",
+          "badgeIcono": "",
+          "fraseItalica": "El almacén era un laberinto, los números no cuadraban y las ventas se desvanecían en la sombra del caos administrativo...",
+          "sinopsis": "Inversiones Lázaro. Lo que parecía un simple encargo de comercio electrónico resultó ser la construcción de un sistema de gestión implacable. La plataforma opera con doble identidad: un frente de tienda intuitivo que atrapa al cliente, y una trastienda administrativa que rastrea cada producto, venta y movimiento de stock sin dejar un solo cabo suelto.",
+          "reto": "El verdadero trabajo de campo: integrar un catálogo público con el control de inventario en tiempo real, manteniendo la base de datos impecable y sin que el servidor sudara una gota. \n\n¡Un thriller de código y arquitectura donde el orden siempre resuelve el caso.",
+          "techCredits": [
+            { "nombre": "Java", "icono": "/icons/java.svg" },
+            { "nombre": "Spring Boot", "icono": "/icons/spring.svg" },
+            { "nombre": "Mysql", "icono": "/icons/mysql.svg" },
+            { "nombre": "Thymeleaf", "icono": "/icons/thymeleaf.svg" },
+            { "nombre": "Bootstrap", "icono": "/icons/bootstrap.svg" }
+          ],
+          "fotos": [
+            "/images/proyectos/invlazaro-foto1.jpg",
+            "/images/proyectos/invlazaro-foto2.jpg",
+            "/images/proyectos/invlazaro-foto3.jpg"
+          ]
+        }
+      }
     }
   ]
 }
