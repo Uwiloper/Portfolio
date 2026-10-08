@@ -4,7 +4,27 @@ import navItems from '../data/navigation.json';
 
 <nav id="reel-nav-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden select-none">
   
-  <!-- Posicion del texto con respecto al rollo de cinta VHS y espacio determinado en pantalla -->  
+  <!-- INDICADOR DE INTERACCIÓN (Sin texto, Rosa Neón, encima de la rueda) -->
+  <div id="interaction-hint" class="absolute z-30 pointer-events-none transition-opacity duration-1000 opacity-100 bottom-[35px] left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-1/2 lg:left-auto lg:right-[50px] lg:-translate-y-1/2 flex items-center justify-center">
+    
+    <!-- Móvil: Manito Deslizando -->
+    <div class="flex lg:hidden animate-swipe-hand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-[rgba(236,72,153,0.8)] drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
+        <path d="M10 13V5a2 2 0 1 1 4 0v9"/><path d="M14 11V9a2 2 0 1 1 4 0v4"/><path d="M18 13v-1a2 2 0 1 1 4 0v7a8 8 0 0 1-16 0v-5.5a2.5 2.5 0 0 1 5 0V15"/>
+      </svg>
+    </div>
+
+    <!-- Web: Mouse Scroll -->
+    <div class="hidden lg:flex">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-10 text-[rgba(236,72,153,0.8)] drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
+        <rect x="5" y="2" width="14" height="20" rx="7" ry="7"></rect>
+        <line x1="12" y1="6" x2="12" y2="10" class="animate-scroll-wheel"></line>
+      </svg>
+    </div>
+
+  </div>
+
+  <!-- Posicion del texto -->  
   <div class="absolute bottom-[140px] left-1/2 -translate-x-1/2 lg:bottom-auto lg:left-auto lg:top-1/2 lg:right-[220px] xl:right-[150px] lg:-translate-y-1/2 lg:translate-x-0 w-full lg:w-[400px] h-[50px] pointer-events-none z-10 flex justify-center lg:justify-end items-center">
     
     {navItems.map((item, index) => (
@@ -25,9 +45,9 @@ import navItems from '../data/navigation.json';
 
   </div>
 
+  <!-- Rueda Z-20 -->
   <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[45%] lg:bottom-auto lg:left-auto lg:top-1/2 lg:right-0 lg:-translate-y-1/2 lg:translate-x-[50%] w-[220px] h-[220px] lg:w-[380px] lg:h-[380px] xl:w-[420px] xl:h-[420px] flex items-center justify-center pointer-events-auto z-20">
     
-     <!-- touch-none es CLAVE aquí para que el móvil no intente hacer scroll en la página -->
     <div 
       id="reel-rotator" class="w-20px h-20px rounded-full cursor-grab active:cursor-grabbing will-change-transform touch-none"
     >
@@ -52,20 +72,44 @@ import navItems from '../data/navigation.json';
   .nav-label.active .pointer-indicator {
     opacity: 1;
   }
+
+  /* Animaciones del Hint (Desliza / Scroll) */
+  @keyframes swipe-hand {
+    0%   { transform: translateX(15px); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateX(-15px); opacity: 0; }
+  }
+  .animate-swipe-hand { animation: swipe-hand 2s infinite ease-in-out; }
+
+  @keyframes scroll-mouse {
+    0%   { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(6px); opacity: 0; }
+  }
+  .animate-scroll-wheel { animation: scroll-mouse 1.5s infinite; }
 </style>
 
 <script>
-  // 1. OBTENCIÓN DINÁMICA SEGÚN EL JSON
   const labels = document.querySelectorAll('.nav-label');
   const totalItems = labels.length;
-  // Calcula automáticamente los grados por cada sección según la cantidad de items
   const degreesPerStep = totalItems > 0 ? 360 / totalItems : 60; 
 
   const rotator = document.getElementById('reel-rotator');
   const navContainer = document.getElementById('reel-nav-container');
+  const interactionHint = document.getElementById('interaction-hint');
 
   let currentIndex = 0;
   let currentRotation = 0;
+  let hasInteracted = false; 
+
+  // Función para desaparecer el indicador
+  function hideHint() {
+    if (!hasInteracted && interactionHint) {
+      hasInteracted = true;
+      interactionHint.style.opacity = '0';
+      setTimeout(() => interactionHint.remove(), 1000);
+    }
+  }
 
   // Renderizado dinámico de los textos centrados
   function renderTexts() {
@@ -95,7 +139,6 @@ import navItems from '../data/navigation.json';
         (label as HTMLElement).style.transform = `translateX(${xOffset}px) scale(${scale})`;
       }
 
-      // Emisor de Señal al index.astro
       if (absDiff === 0) {
         label.classList.add('active');
         const targetId = label.getAttribute('data-target');
@@ -106,10 +149,45 @@ import navItems from '../data/navigation.json';
     });
   }
 
-  // Navegación con límites estrictos
+  // Animación de REBOTE cuando se llega al límite (Inicio o Fin)
+  function bounceLimit(direction) {
+    if (!rotator) return;
+    hideHint(); 
+    
+    const bounceAngle = direction === -1 ? 20 : -20; 
+    
+    rotator.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
+    rotator.style.transform = `rotate(${currentRotation + bounceAngle}deg)`;
+    
+    const activeLabel = labels[currentIndex] as HTMLElement;
+    if (activeLabel) {
+       activeLabel.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
+       const isDesktop = window.innerWidth >= 1024;
+       activeLabel.style.transform = isDesktop ? `translateY(0px) scale(1.05)` : `translateX(0px) scale(1.05)`;
+    }
+
+    setTimeout(() => {
+      rotator.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'; 
+      rotator.style.transform = `rotate(${currentRotation}deg)`;
+      
+      if (activeLabel) {
+         activeLabel.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+         const isDesktop = window.innerWidth >= 1024;
+         activeLabel.style.transform = isDesktop ? `translateY(0px) scale(1.15)` : `translateX(0px) scale(1.15)`;
+      }
+    }, 150);
+  }
+
+  // Navegación principal
   function updateNavigation(newIndex, animateSVG = true) {
-    // Si intenta ir más allá de los límites, no hace NADA (rebote duro)
-    if (newIndex < 0 || newIndex >= totalItems) return;
+    if (newIndex < 0) {
+      bounceLimit(-1);
+      return;
+    }
+    if (newIndex >= totalItems) {
+      bounceLimit(1);
+      return;
+    }
     
     if (animateSVG && rotator) {
       const diff = newIndex - currentIndex;
@@ -127,53 +205,59 @@ import navItems from '../data/navigation.json';
   window.addEventListener('resize', renderTexts);
 
   labels.forEach((label, i) => {
-    label.addEventListener('click', () => updateNavigation(i));
+    label.addEventListener('click', () => {
+      hideHint(); 
+      updateNavigation(i);
+    });
   });
 
-  // 2. SCROLL DEL MOUSE
-  let isScrolling = false;
+  // SCROLL DEL MOUSE STRICTO
+  let isWheelLocked = false;
+
   window.addEventListener('wheel', (e) => {
-    if (isScrolling) return;
-    isScrolling = true;
+    hideHint(); 
+    if (isWheelLocked) return;
+    
+    if (Math.abs(e.deltaY) < 15) return; 
+
+    isWheelLocked = true;
     
     if (e.deltaY > 0) updateNavigation(currentIndex + 1);
     if (e.deltaY < 0) updateNavigation(currentIndex - 1);
+
+    setTimeout(() => {
+      isWheelLocked = false;
+    }, 600);
     
-    setTimeout(() => { isScrolling = false; }, 350);
   }, { passive: true });
 
-  // 3. ARRASTRE UNIVERSAL 1x1 (Pointer Events para Web y Móvil)
+  // ARRASTRE UNIVERSAL 1x1 CON TOPES
   let isDragging = false;
   let startPos = 0;
-  let swipeLocked = false; // Evita que siga girando en un solo arrastre largo
+  let swipeLocked = false;
 
   const onPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return; 
-
+    
+    hideHint(); 
     isDragging = true;
     swipeLocked = false;
     const isDesktop = window.innerWidth >= 1024;
     startPos = isDesktop ? e.clientY : e.clientX;
-    // Ya no quitamos la transición de la rueda para mantener el salto limpio
   };
 
   const onPointerMove = (e) => {
-    // Si no está arrastrando, o si ya ejecutó un cambio en este movimiento, ignoramos.
     if (!isDragging || swipeLocked || !rotator) return;
 
     const isDesktop = window.innerWidth >= 1024;
     const currentPos = isDesktop ? e.clientY : e.clientX;
     const delta = isDesktop ? (currentPos - startPos) : -(currentPos - startPos);
 
-    // Umbral estricto: Si mueve el dedo 40px, ejecuta un solo salto.
     if (Math.abs(delta) > 40) {
       const stepDirection = delta > 0 ? 1 : -1;
       const nextIndex = currentIndex + stepDirection;
-
-      // Intentamos cambiar la navegación (si supera el límite, updateNavigation lo detiene)
-      updateNavigation(nextIndex, true);
       
-      // Bloqueamos el arrastre hasta que el usuario levante el dedo
+      updateNavigation(nextIndex, true);
       swipeLocked = true; 
     }
   };
@@ -182,10 +266,7 @@ import navItems from '../data/navigation.json';
     isDragging = false;
   };
 
-  if (rotator) {
-    rotator.addEventListener('pointerdown', onPointerDown);
-  }
-  
+  if (rotator) rotator.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);
