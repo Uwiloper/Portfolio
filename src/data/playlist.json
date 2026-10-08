@@ -1,0 +1,26 @@
+{
+  "tituloPlaylist": "LOBBY FM",
+  "canciones": [
+    {
+      "id": "trk-01",
+      "titulo": "Neon Rain [Lo-Fi]",
+      "artista": "Wilmer's Mix",
+      "duracion": "02:45",
+      "url": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3"
+    },
+    {
+      "id": "trk-02",
+      "titulo": "Midnight Coding",
+      "artista": "Wilmer's Mix",
+      "duracion": "03:12",
+      "url": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8b1a8d793.mp3"
+    },
+    {
+      "id": "trk-03",
+      "titulo": "Coffee & Bugs",
+      "artista": "Wilmer's Mix",
+      "duracion": "02:20",
+      "url": "https://cdn.pixabay.com/download/audio/2022/10/25/audio_2484cd1bb4.mp3"
+    }
+  ]
+}
