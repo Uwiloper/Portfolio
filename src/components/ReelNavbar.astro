@@ -27,9 +27,9 @@ import navItems from '../data/navigation.json';
 
   <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[45%] lg:bottom-auto lg:left-auto lg:top-1/2 lg:right-0 lg:-translate-y-1/2 lg:translate-x-[50%] w-[220px] h-[220px] lg:w-[380px] lg:h-[380px] xl:w-[420px] xl:h-[420px] flex items-center justify-center pointer-events-auto z-20">
     
-     <!-- Tamaño de la cinta rollo VHS -->
+     <!-- touch-none es CLAVE aquí para que el móvil no intente hacer scroll en la página -->
     <div 
-      id="reel-rotator" class="w-20px h-20px rounded-full cursor-grab active:cursor-grabbing will-change-transform"
+      id="reel-rotator" class="w-20px h-20px rounded-full cursor-grab active:cursor-grabbing will-change-transform touch-none"
     >
       <img 
         src="/icons/cinta_rollo.svg" 
@@ -58,7 +58,7 @@ import navItems from '../data/navigation.json';
   // 1. OBTENCIÓN DINÁMICA SEGÚN EL JSON
   const labels = document.querySelectorAll('.nav-label');
   const totalItems = labels.length;
-  // Calcula automáticamente los grados por cada sección según la cantidad de items en el JSON
+  // Calcula automáticamente los grados por cada sección según la cantidad de items
   const degreesPerStep = totalItems > 0 ? 360 / totalItems : 60; 
 
   const rotator = document.getElementById('reel-rotator');
@@ -76,46 +76,40 @@ import navItems from '../data/navigation.json';
       const absDiff = Math.abs(diff);
 
       if (absDiff > 2) {
-        label.style.opacity = '0';
-        label.style.pointerEvents = 'none';
+        (label as HTMLElement).style.opacity = '0';
+        (label as HTMLElement).style.pointerEvents = 'none';
         return;
       }
 
       const scale = absDiff === 0 ? 1.15 : 0.85 - (absDiff * 0.1);
       const opacity = absDiff === 0 ? 1 : 0.3 - (absDiff * 0.1);
       
-      label.style.opacity = opacity.toString();
-      label.style.pointerEvents = absDiff === 0 ? 'auto' : 'none';
+      (label as HTMLElement).style.opacity = opacity.toString();
+      (label as HTMLElement).style.pointerEvents = absDiff === 0 ? 'auto' : 'none';
 
       if (isDesktop) {
         const yOffset = diff * 55;
-        label.style.transform = `translateY(${yOffset}px) scale(${scale})`;
+        (label as HTMLElement).style.transform = `translateY(${yOffset}px) scale(${scale})`;
       } else {
         const xOffset = diff * 110;
-        label.style.transform = `translateX(${xOffset}px) scale(${scale})`;
+        (label as HTMLElement).style.transform = `translateX(${xOffset}px) scale(${scale})`;
       }
 
-      // ==========================================
-      // AQUÍ ESTÁ EL CAMBIO: EL EMISOR DE SEÑAL
-      // ==========================================
+      // Emisor de Señal al index.astro
       if (absDiff === 0) {
         label.classList.add('active');
-        
-        // Avisar al index.astro que cambie la vista
         const targetId = label.getAttribute('data-target');
         document.dispatchEvent(new CustomEvent('visor-change', { detail: targetId }));
-        
       } else {
         label.classList.remove('active');
       }
-      // ==========================================
     });
   }
 
-  // Navegación con rotación suavizada
+  // Navegación con límites estrictos
   function updateNavigation(newIndex, animateSVG = true) {
-    if (newIndex < 0) newIndex = 0;
-    if (newIndex >= totalItems) newIndex = totalItems - 1;
+    // Si intenta ir más allá de los límites, no hace NADA (rebote duro)
+    if (newIndex < 0 || newIndex >= totalItems) return;
     
     if (animateSVG && rotator) {
       const diff = newIndex - currentIndex;
@@ -148,53 +142,44 @@ import navItems from '../data/navigation.json';
     setTimeout(() => { isScrolling = false; }, 350);
   }, { passive: true });
 
-  // 3. ARRASTRE UNIVERSAL (Pointer Events para Web y Móvil)
+  // 3. ARRASTRE UNIVERSAL 1x1 (Pointer Events para Web y Móvil)
   let isDragging = false;
   let startPos = 0;
-  let startRotation = 0;
+  let swipeLocked = false; // Evita que siga girando en un solo arrastre largo
 
   const onPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return; 
 
     isDragging = true;
+    swipeLocked = false;
     const isDesktop = window.innerWidth >= 1024;
     startPos = isDesktop ? e.clientY : e.clientX;
-    startRotation = currentRotation;
-
-    if (rotator) rotator.style.transition = 'none';
+    // Ya no quitamos la transición de la rueda para mantener el salto limpio
   };
 
   const onPointerMove = (e) => {
-    if (!isDragging || !rotator) return;
+    // Si no está arrastrando, o si ya ejecutó un cambio en este movimiento, ignoramos.
+    if (!isDragging || swipeLocked || !rotator) return;
 
     const isDesktop = window.innerWidth >= 1024;
     const currentPos = isDesktop ? e.clientY : e.clientX;
     const delta = isDesktop ? (currentPos - startPos) : -(currentPos - startPos);
 
-    const liveRotation = startRotation - (delta * 0.35);
-    rotator.style.transform = `rotate(${liveRotation}deg)`;
-
-    const rotationDiff = startRotation - liveRotation;
-    if (Math.abs(rotationDiff) > (degreesPerStep * 0.5)) {
-      const stepDirection = rotationDiff > 0 ? 1 : -1;
+    // Umbral estricto: Si mueve el dedo 40px, ejecuta un solo salto.
+    if (Math.abs(delta) > 40) {
+      const stepDirection = delta > 0 ? 1 : -1;
       const nextIndex = currentIndex + stepDirection;
 
-      if (nextIndex >= 0 && nextIndex < totalItems) {
-        currentIndex = nextIndex;
-        startRotation -= (stepDirection * degreesPerStep);
-        startPos = currentPos;
-        renderTexts();
-      }
+      // Intentamos cambiar la navegación (si supera el límite, updateNavigation lo detiene)
+      updateNavigation(nextIndex, true);
+      
+      // Bloqueamos el arrastre hasta que el usuario levante el dedo
+      swipeLocked = true; 
     }
   };
 
   const onPointerUp = () => {
-    if (!isDragging || !rotator) return;
     isDragging = false;
-
-    currentRotation = Math.round(currentRotation / degreesPerStep) * degreesPerStep;
-    rotator.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-    rotator.style.transform = `rotate(${currentRotation}deg)`;
   };
 
   if (rotator) {
