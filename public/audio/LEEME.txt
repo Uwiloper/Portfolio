@@ -1,0 +1,2 @@
+Coloca aquí los MP3 del Lobby FM con los nombres de src/data/playlist.json
+(trk-01.mp3, trk-02.mp3, trk-03.mp3). Los hotlinks de Pixabay devuelven 403.

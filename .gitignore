@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# archivos de diseño (fuera del repo)
+*.ai
+*.psd
+edits/

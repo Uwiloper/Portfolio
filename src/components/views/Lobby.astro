@@ -2,7 +2,7 @@
 import playlist from '../../data/playlist.json';
 ---
 
-<article class="camera-focus-view relative w-full h-full flex flex-col items-center justify-center p-4 lg:p-0 z-10 select-none pb-40 lg:pb-0">
+<article id="lobby-player" data-playlist={JSON.stringify(playlist.canciones)} class="camera-focus-view relative w-full h-full flex flex-col items-center justify-center p-4 lg:p-0 z-10 select-none pb-40 lg:pb-0">
   
   <div class="w-full max-w-[400px] flex flex-col items-center gap-8 relative">
     
@@ -80,18 +80,18 @@ import playlist from '../../data/playlist.json';
       <!-- Botones de Control Mecánicos -->
       <div class="flex justify-between gap-2 mt-2">
         
-        <button id="btn-prev" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
+        <button id="btn-prev" aria-label="Pista anterior" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
           <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 rotate-180"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
 
-        <button id="btn-play-pause" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
+        <button id="btn-play-pause" aria-label="Reproducir" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
           <!-- Icono Play por defecto -->
           <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M8 5v14l11-7z"/></svg>
           <!-- Icono Pausa oculto -->
           <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
 
-        <button id="btn-next" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
+        <button id="btn-next" aria-label="Pista siguiente" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
           <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
 
@@ -127,3 +127,79 @@ import playlist from '../../data/playlist.json';
   @keyframes camera-ready { 0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); } 100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); } }
   .camera-focus-view { animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 </style>
+
+<script>
+  type Track = { id: string; titulo: string; artista: string; duracion: string; url: string };
+
+  const player = document.getElementById('lobby-player');
+  const tracks: Track[] = JSON.parse(player?.dataset.playlist || '[]');
+
+  const btnPrev = document.getElementById('btn-prev');
+  const btnPlay = document.getElementById('btn-play-pause');
+  const btnNext = document.getElementById('btn-next');
+  const iconPlay = document.getElementById('icon-play');
+  const iconPause = document.getElementById('icon-pause');
+  const marquee = document.getElementById('track-marquee');
+  const statusText = document.getElementById('player-status');
+  const statusDot = document.getElementById('status-dot');
+
+  const audio = new Audio();
+  audio.preload = 'none';
+  let current = 0;
+
+  function setStatus(label: string, color: 'red' | 'green' | 'amber') {
+    if (statusText) statusText.textContent = label;
+    if (!statusDot) return;
+    statusDot.classList.remove('bg-red-500', 'bg-green-400', 'bg-amber-400');
+    statusDot.classList.add(color === 'green' ? 'bg-green-400' : color === 'amber' ? 'bg-amber-400' : 'bg-red-500');
+  }
+
+  function setPlayingUI(playing: boolean) {
+    player?.classList.toggle('is-playing', playing);
+    iconPlay?.classList.toggle('hidden', playing);
+    iconPause?.classList.toggle('hidden', !playing);
+    btnPlay?.setAttribute('aria-label', playing ? 'Pausar' : 'Reproducir');
+  }
+
+  function setMarquee(suffix: string) {
+    if (marquee && tracks[current]) marquee.textContent = `[ ${tracks[current].titulo} ] - ${suffix}`;
+  }
+
+  function load(index: number) {
+    current = (index + tracks.length) % tracks.length;
+    audio.src = tracks[current].url;
+  }
+
+  async function play() {
+    if (!audio.src) load(current);
+    setStatus('LOADING', 'amber');
+    try {
+      await audio.play();
+    } catch {
+      // Error de autoplay o archivo inexistente: lo resuelve el handler de 'error' o se queda en pausa
+      if (!audio.error) { setPlayingUI(false); setStatus('PAUSED', 'red'); }
+    }
+  }
+
+  function changeTrack(step: number) {
+    const wasPlaying = !audio.paused;
+    load(current + step);
+    setMarquee(wasPlaying ? 'NOW PLAYING' : 'READY TO PLAY');
+    if (wasPlaying) play();
+  }
+
+  audio.addEventListener('playing', () => { setPlayingUI(true); setStatus('PLAYING', 'green'); setMarquee('NOW PLAYING'); });
+  audio.addEventListener('pause', () => { setPlayingUI(false); if (!audio.error) setStatus('PAUSED', 'red'); });
+  audio.addEventListener('ended', () => changeTrack(1));
+  audio.addEventListener('error', () => {
+    setPlayingUI(false);
+    setStatus('NO SIGNAL', 'red');
+    setMarquee('SIN SEÑAL');
+  });
+
+  if (tracks.length > 0) {
+    btnPlay?.addEventListener('click', () => (audio.paused ? play() : audio.pause()));
+    btnPrev?.addEventListener('click', () => changeTrack(-1));
+    btnNext?.addEventListener('click', () => changeTrack(1));
+  }
+</script>

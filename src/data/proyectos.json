@@ -1,48 +1,8 @@
 {
   "titulo": "PRODUCCIONES",
-  "botonVerTodos": "Ver Colleción",
+  "botonVerTodos": "Ver Colección",
   "botonVolver": "Rebobinar",
   "proyectos": [
-    
-    {
-      "id": "vhs-01",
-      "titulo": "Cheka",
-      "categoria": "Web & app",
-      "año": "2026",
-      "colorPrincipal": "#24da8d",
-      "imagen1": "https://placehold.co/300x450/111/fff?text=CHEKA+CLOSED",
-      "imagen2": "https://placehold.co/800x1200/00d2ff/000?text=FONDO+PORTADA",
-      "descripcion": "Sistema de monitoreo de pagos (Payment Monitoring). Arquitectura en tiempo real y dashboards analíticos para control financiero.",
-      "detalle": {
-        "lomo": {
-          "codigo": "PR-001",
-          "subtitulo": "Tus finanzas validadas en automático"
-        },
-        "portada": {
-          "imagen": "https://placehold.co/800x1200/00d2ff/000?text=FONDO+PORTADA",
-          "textoBoton": "VISITAR",
-          "linkBoton": "https://cheka-pe-six.vercel.app/",
-          "director": "Uwil"
-        },
-        "contraportada": {
-          "badge": "Top Project",
-          "badgeIcono": "/icons/corona.svg",
-          "fraseItalica": "En un mercado inundado de transacciones falsas y descuadres de caja, una web inteligente llegó para tomar el control...",
-          "sinopsis": "La respuesta para los negocios que buscan eliminar fraude en tiempo real. Cheka conecta tu móvil Android de manera privada con nuestra plataforma web, automatizando la validación de billeteras digitales como Yape y Plin.",
-          "reto": "Desarrollar un ecosistema inmutable capaz de procesar eventos asíncronos en tiempo real, manteniendo la privacidad sin comprometer la velocidad en el punto de venta.\n\n¡Una obra maestra de la sincronización y la seguridad que automatiza tus finanzas sin pestañear! No te la puedes perder!!!",
-          "techCredits": [
-            { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
-            { "nombre": "Android", "icono": "/icons/android.svg" },
-            { "nombre": "Cloudflare", "icono": "/icons/cloudflare.svg" }
-          ],
-          "fotos": [
-            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png",
-            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png",
-            "https://static.vecteezy.com/system/resources/thumbnails/035/174/040/small/hand-on-the-right-shows-a-fan-of-money-money-in-a-hand-isolated-on-transparent-background-png.png"
-          ]
-        }
-      }
-    },
     {
       "id": "vhs-02",
       "titulo": "Inv. Lázaro",
@@ -51,7 +11,7 @@
       "colorPrincipal": "#1e293b",
       "imagen1": "/images/vhs/lazaro-vhs1.png",
       "imagen2": "/images/vhs/lazaro-vhs2.png",
-      "descripcion": "Ecom",
+      "descripcion": "Ecommerce con panel de gestión de inventario, ventas y stock en tiempo real.",
       "detalle": {
         "lomo": {
           "codigo": "PR-001",
@@ -81,6 +41,41 @@
             "/images/proyectos/invlazaro-foto2.jpg",
             "/images/proyectos/invlazaro-foto3.jpg"
           ]
+        }
+      }
+    },
+    {
+      "id": "vhs-01",
+      "titulo": "Cheka",
+      "categoria": "Web & app",
+      "año": "2026",
+      "colorPrincipal": "#24da8d",
+      "imagen1": "https://placehold.co/300x450/0b0b0b/24da8d?text=CHEKA",
+      "imagen2": "https://placehold.co/300x450/24da8d/0b0b0b?text=CHEKA",
+      "descripcion": "Sistema de monitoreo de pagos (Payment Monitoring). Arquitectura en tiempo real y dashboards analíticos para control financiero.",
+      "detalle": {
+        "lomo": {
+          "codigo": "PR-002",
+          "subtitulo": "Tus finanzas validadas en automático"
+        },
+        "portada": {
+          "imagen": "",
+          "textoBoton": "VISITAR",
+          "linkBoton": "https://cheka-pe-six.vercel.app/",
+          "director": "Uwil"
+        },
+        "contraportada": {
+          "badge": "",
+          "badgeIcono": "",
+          "fraseItalica": "En un mercado inundado de transacciones falsas y descuadres de caja, una web inteligente llegó para tomar el control...",
+          "sinopsis": "La respuesta para los negocios que buscan eliminar fraude en tiempo real. Cheka conecta tu móvil Android de manera privada con nuestra plataforma web, automatizando la validación de billeteras digitales como Yape y Plin.",
+          "reto": "Desarrollar un ecosistema inmutable capaz de procesar eventos asíncronos en tiempo real, manteniendo la privacidad sin comprometer la velocidad en el punto de venta.\n\n¡Una obra maestra de la sincronización y la seguridad que automatiza tus finanzas sin pestañear! No te la puedes perder!!!",
+          "techCredits": [
+            { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
+            { "nombre": "Android", "icono": "/icons/android.svg" },
+            { "nombre": "Cloudflare", "icono": "/icons/cloudflare.svg" }
+          ],
+          "fotos": []
         }
       }
     }
