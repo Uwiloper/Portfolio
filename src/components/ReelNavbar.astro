@@ -4,14 +4,26 @@ import navItems from '../data/navigation.json';
 
 <nav id="reel-nav-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden select-none">
   
-  <!-- INDICADOR DE INTERACCIÓN (Sin texto, Rosa Neón, encima de la rueda) -->
-  <div id="interaction-hint" class="absolute z-30 pointer-events-none transition-opacity duration-1000 opacity-100 bottom-[35px] left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-1/2 lg:left-auto lg:right-[50px] lg:-translate-y-1/2 flex items-center justify-center">
-    
-    <!-- Móvil: Manito Deslizando -->
-    <div class="flex lg:hidden animate-swipe-hand">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-[rgba(236,72,153,0.8)] drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
+  <!-- ZONA DE DESLIZAMIENTO (Móvil): toda la franja inferior responde al swipe, no solo el carrete -->
+  <div id="reel-swipe-zone" class="lg:hidden absolute bottom-0 inset-x-0 h-[190px] pointer-events-auto touch-none z-[5]" aria-hidden="true"></div>
+
+  <!-- FLECHAS (Móvil): indican que el menú se mueve a los lados y sirven como botones -->
+  <button id="reel-prev" type="button" aria-label="Sección anterior" class="reel-arrow reel-arrow-left lg:hidden absolute left-3 bottom-[44px] z-30 w-11 h-11 flex items-center justify-center pointer-events-auto text-pink-500 transition-opacity duration-300">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="w-6 h-6 drop-shadow-[0_0_8px_rgba(236,72,153,0.9)]"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <button id="reel-next" type="button" aria-label="Sección siguiente" class="reel-arrow reel-arrow-right lg:hidden absolute right-3 bottom-[44px] z-30 w-11 h-11 flex items-center justify-center pointer-events-auto text-pink-500 transition-opacity duration-300">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" class="w-6 h-6 drop-shadow-[0_0_8px_rgba(236,72,153,0.9)]"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+
+  <!-- INDICADOR DE INTERACCIÓN (Rosa Neón, encima de la rueda) -->
+  <div id="interaction-hint" class="absolute z-30 pointer-events-none transition-opacity duration-1000 opacity-100 bottom-[22px] left-1/2 -translate-x-1/2 lg:bottom-auto lg:top-1/2 lg:left-auto lg:right-[50px] lg:-translate-y-1/2 flex items-center justify-center">
+
+    <!-- Móvil: Manito Deslizando + texto -->
+    <div class="flex lg:hidden flex-col items-center gap-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="animate-swipe-hand w-8 h-8 text-[rgba(236,72,153,0.8)] drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]">
         <path d="M10 13V5a2 2 0 1 1 4 0v9"/><path d="M14 11V9a2 2 0 1 1 4 0v4"/><path d="M18 13v-1a2 2 0 1 1 4 0v7a8 8 0 0 1-16 0v-5.5a2.5 2.5 0 0 1 5 0V15"/>
       </svg>
+      <span class="font-mono text-[10px] tracking-[0.3em] uppercase text-pink-300 drop-shadow-[0_0_6px_rgba(236,72,153,0.8)] whitespace-nowrap">Desliza</span>
     </div>
 
     <!-- Web: Mouse Scroll -->
@@ -87,6 +99,17 @@ import navItems from '../data/navigation.json';
     100% { transform: translateY(6px); opacity: 0; }
   }
   .animate-scroll-wheel { animation: scroll-mouse 1.5s infinite; }
+
+  /* Flechas móviles: empujan hacia su lado hasta la primera interacción */
+  @keyframes nudge-left  { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
+  @keyframes nudge-right { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+  #reel-nav-container:not(.has-interacted) .reel-arrow-left  { animation: nudge-left 1.2s ease-in-out infinite; }
+  #reel-nav-container:not(.has-interacted) .reel-arrow-right { animation: nudge-right 1.2s ease-in-out infinite; }
+  .reel-arrow[disabled] { opacity: 0.2; cursor: default; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-swipe-hand, .animate-scroll-wheel, .reel-arrow { animation: none !important; }
+  }
 </style>
 
 <script>
@@ -98,17 +121,54 @@ import navItems from '../data/navigation.json';
   const navContainer = document.getElementById('reel-nav-container');
   const interactionHint = document.getElementById('interaction-hint');
 
+  const swipeZone = document.getElementById('reel-swipe-zone');
+  const arrowPrev = document.getElementById('reel-prev') as HTMLButtonElement | null;
+  const arrowNext = document.getElementById('reel-next') as HTMLButtonElement | null;
+
   let currentIndex = 0;
   let currentRotation = 0;
-  let hasInteracted = false; 
+  let hasInteracted = false;
+
+  // Capas que se abren encima (detalle de proyecto, galería, estantería, SETUP) llevan
+  // data-reel-lock. Mientras alguna esté visible, el carrete no lee scroll ni arrastre.
+  function isLocked() {
+    return Array.from(document.querySelectorAll('[data-reel-lock]'))
+      // getClientRects vacío = el elemento o algún ancestro tiene display:none
+      .some(el => el.getClientRects().length > 0);
+  }
 
   // Función para desaparecer el indicador
   function hideHint() {
     if (!hasInteracted && interactionHint) {
       hasInteracted = true;
+      navContainer?.classList.add('has-interacted');
       interactionHint.style.opacity = '0';
       setTimeout(() => interactionHint.remove(), 1000);
     }
+  }
+
+  // Empujón de muestra: el carrete y el texto se asoman hacia la siguiente sección
+  // para que se entienda que el menú se mueve. Solo hasta la primera interacción.
+  function peek() {
+    if (hasInteracted || isLocked() || !rotator) return;
+    const isDesktop = window.innerWidth >= 1024;
+    const activeLabel = labels[currentIndex] as HTMLElement;
+
+    rotator.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
+    rotator.style.transform = `rotate(${currentRotation - 14}deg)`;
+    if (activeLabel) {
+      activeLabel.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
+      activeLabel.style.transform = isDesktop ? 'translateY(-12px) scale(1.15)' : 'translateX(-24px) scale(1.15)';
+    }
+
+    setTimeout(() => {
+      rotator.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      rotator.style.transform = `rotate(${currentRotation}deg)`;
+      if (activeLabel) {
+        activeLabel.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        activeLabel.style.transform = isDesktop ? 'translateY(0px) scale(1.15)' : 'translateX(0px) scale(1.15)';
+      }
+    }, 350);
   }
 
   // Renderizado dinámico de los textos centrados
@@ -126,10 +186,11 @@ import navItems from '../data/navigation.json';
       }
 
       const scale = absDiff === 0 ? 1.15 : 0.85 - (absDiff * 0.1);
-      const opacity = absDiff === 0 ? 1 : 0.3 - (absDiff * 0.1);
-      
+      // Los vecinos inmediatos se ven y se pueden tocar: dejan claro que hay más secciones a los lados
+      const opacity = absDiff === 0 ? 1 : absDiff === 1 ? 0.45 : 0.12;
+
       (label as HTMLElement).style.opacity = opacity.toString();
-      (label as HTMLElement).style.pointerEvents = absDiff === 0 ? 'auto' : 'none';
+      (label as HTMLElement).style.pointerEvents = absDiff <= 1 ? 'auto' : 'none';
 
       if (isDesktop) {
         const yOffset = diff * 55;
@@ -147,6 +208,9 @@ import navItems from '../data/navigation.json';
         label.classList.remove('active');
       }
     });
+
+    if (arrowPrev) arrowPrev.disabled = currentIndex === 0;
+    if (arrowNext) arrowNext.disabled = currentIndex === totalItems - 1;
   }
 
   // Animación de REBOTE cuando se llega al límite (Inicio o Fin)
@@ -215,7 +279,8 @@ import navItems from '../data/navigation.json';
   let isWheelLocked = false;
 
   window.addEventListener('wheel', (e) => {
-    hideHint(); 
+    if (isLocked()) return;
+    hideHint();
     if (isWheelLocked) return;
     
     if (Math.abs(e.deltaY) < 15) return; 
@@ -237,8 +302,9 @@ import navItems from '../data/navigation.json';
   let swipeLocked = false;
 
   const onPointerDown = (e) => {
-    if (e.button !== undefined && e.button !== 0) return; 
-    
+    if (e.button !== undefined && e.button !== 0) return;
+    if (isLocked()) return;
+
     hideHint(); 
     isDragging = true;
     swipeLocked = false;
@@ -267,6 +333,13 @@ import navItems from '../data/navigation.json';
   };
 
   if (rotator) rotator.addEventListener('pointerdown', onPointerDown);
+  if (swipeZone) swipeZone.addEventListener('pointerdown', onPointerDown);
+
+  arrowPrev?.addEventListener('click', () => { hideHint(); updateNavigation(currentIndex - 1); });
+  arrowNext?.addEventListener('click', () => { hideHint(); updateNavigation(currentIndex + 1); });
+
+  setTimeout(peek, 1200);
+  setTimeout(peek, 5000);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);

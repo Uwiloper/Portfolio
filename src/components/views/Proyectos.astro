@@ -43,7 +43,7 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
     </div>
 
     <!-- VISTA 2: ESTANTERÍA -->
-    <div id="vista-estanteria" class="hidden flex-col transition-opacity duration-300 opacity-0 absolute inset-0 p-6 sm:p-8 bg-black/95 z-40 overflow-y-auto scrollbar-hide">
+    <div id="vista-estanteria" data-reel-lock class="hidden flex-col transition-opacity duration-300 opacity-0 absolute inset-0 p-6 sm:p-8 bg-black/95 z-40 overflow-y-auto scrollbar-hide">
       <div class="flex justify-between items-center mb-6 border-b border-white/20 pb-2 sticky top-0 bg-black/95 z-50 pt-2">
         <span class="font-mono text-[10px] text-cyan-400 tracking-widest uppercase">> ARCHIVO COMPLETO</span>
         <button class="btn-volver glitch-action-link group inline-flex items-center gap-2 font-mono text-[10px] text-white uppercase tracking-widest pointer-events-auto">
@@ -67,76 +67,75 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
 
     <!-- ========================================== -->
     <!-- VISTA 3: DETALLE DEL PROYECTO (FULLSCREEN) -->
+    <!-- Cada proyecto define su tema en proyectos.json → estilo.tema   -->
+    <!-- (paleta, tipografías, composición y textura en el bloque global) -->
     <!-- ========================================== -->
-    <div id="vista-detalle" class="hidden fixed inset-0 w-full h-full bg-[#030303] z-[9999] transition-opacity duration-500 opacity-0 flex-col overflow-y-auto lg:overflow-hidden m-0 p-0 border-none" style="--theme-color: #00d2ff;">
-      
+    <div id="vista-detalle" data-reel-lock data-tema="default" class="hidden fixed inset-0 w-full h-full z-[9999] transition-opacity duration-500 opacity-0 flex-col overflow-y-auto lg:overflow-hidden m-0 p-0 border-none">
+
+      <div class="detalle-textura" aria-hidden="true"></div>
+
       <!-- Botón Rebobinar -->
       <button class="btn-volver glitch-action-link group fixed bottom-4 right-4 lg:bottom-auto lg:left-auto lg:top-6 lg:right-6 z-[10001] inline-flex items-center gap-2 font-mono text-[9px] sm:text-[10px] text-white uppercase tracking-widest pointer-events-auto bg-red-600/90 px-3.5 py-2.5 border border-red-500 hover:bg-red-500 transition-colors backdrop-blur-md shadow-2xl">
         <span class="glitch-text font-bold">REBOBINAR ⏴⏴</span>
       </button>
 
       <!-- Botón VISITAR Flotante en Móvil -->
-      <div class="fixed bottom-4 left-1/2 -translate-x-1/2 lg:hidden w-max z-[10001] pointer-events-auto" id="wrap-portada-btn-mobile">
-        <a id="detalle-portada-btn-mob" href="#" target="_blank" rel="noopener noreferrer" class="hidden glitch-action-link group items-center gap-2.5 font-mono text-xs text-white uppercase tracking-widest px-6 py-3 border border-theme/40 bg-black/90 hover:border-theme transition-all backdrop-blur-md shadow-2xl w-max">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-theme"><path d="M8 5v14l11-7z"/></svg>
-          <span class="glitch-text font-bold tracking-wider btn-visitar-label">VISITAR</span>
+      <div class="fixed bottom-4 left-4 lg:hidden w-max z-[10001] pointer-events-auto" id="wrap-portada-btn-mobile">
+        <a id="detalle-portada-btn-mob" href="#" target="_blank" rel="noopener noreferrer" class="detalle-cta hidden items-center gap-2.5 text-xs uppercase tracking-widest px-5 py-3 backdrop-blur-md shadow-2xl w-max">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3"><path d="M8 5v14l11-7z"/></svg>
+          <span class="font-bold tracking-wider btn-visitar-label">VISITAR</span>
         </a>
       </div>
 
-      <div class="w-full h-full min-h-screen grid grid-cols-[45px_1fr] grid-rows-[auto_auto] lg:grid-cols-[1.3fr_55px_1fr] lg:grid-rows-1 m-0 p-0">
-        
+      <div class="detalle-grid">
+
         <!-- CONTRAPORTADA -->
-        <div id="seccion-contraportada" class="col-start-2 row-start-2 lg:col-start-1 lg:row-start-1 flex flex-col justify-between bg-[#080808] border-t lg:border-t-0 lg:border-r border-theme p-6 lg:p-8">
-          <div class="flex flex-col h-full max-w-[700px] mx-auto w-full">
+        <section id="seccion-contraportada" class="relative flex flex-col p-6 lg:p-10">
+          <span id="detalle-sello" class="detalle-sello"></span>
+
+          <div class="flex flex-col h-full max-w-[760px] mx-auto w-full min-h-0">
             <div id="wrap-contra-badge" class="flex items-center gap-3 mb-6">
-              <span id="detalle-contra-badge" class="font-mono text-theme text-[10px] tracking-widest border border-theme px-2 py-1"></span>
+              <span id="detalle-contra-badge" class="detalle-badge"></span>
               <div id="detalle-contra-icono" class="w-4 h-4 bg-theme" style="mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></div>
             </div>
-            
-            <p id="detalle-contra-frase" class="font-display text-white text-base lg:text-xl italic leading-snug mb-8 opacity-90 border-l-2 border-theme pl-4"></p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-[1fr_95px] lg:grid-cols-[1fr_115px] gap-6 flex-1 min-h-0">
-              
-              <div class="flex flex-col min-h-0 overflow-y-auto scrollbar-hide pb-24 lg:pb-8">
-                <div id="wrap-sinopsis" class="mb-6">
-                  <div class="glitch-action-link group inline-block mb-2 w-max cursor-default">
-                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">SINOPSIS</span>
-                  </div>
-                  <p id="detalle-contra-sinopsis" class="font-sans text-white/70 text-xs lg:text-sm font-light leading-relaxed"></p>
+            <p id="detalle-contra-frase" class="detalle-frase"></p>
+
+            <div class="contra-body">
+              <div class="contra-texto scrollbar-hide">
+                <div id="wrap-sinopsis">
+                  <h3 class="detalle-label" data-label="sinopsis" data-default="SINOPSIS">SINOPSIS</h3>
+                  <p id="detalle-contra-sinopsis" class="detalle-texto"></p>
                 </div>
 
-                <div id="wrap-reto" class="mb-8">
-                  <div class="glitch-action-link group inline-block mb-2 w-max cursor-default">
-                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">RETO</span>
-                  </div>
-                  <p id="detalle-contra-reto" class="font-sans text-white/70 text-xs lg:text-sm font-light leading-relaxed whitespace-pre-line"></p>
+                <div id="wrap-reto">
+                  <h3 class="detalle-label" data-label="reto" data-default="RETO">RETO</h3>
+                  <p id="detalle-contra-reto" class="detalle-texto whitespace-pre-line"></p>
                 </div>
 
-                <div id="wrap-tech" class="mt-auto pt-4 pb-8 lg:pb-4">
-                  <div class="glitch-action-link group inline-block mb-4 w-max cursor-default">
-                    <span class="glitch-text font-display text-theme tracking-widest text-sm border-b border-theme pb-1 italic block">TECH CREDITS</span>
-                  </div>
-                  <div id="detalle-tech-credits" class="flex flex-wrap gap-4 sm:gap-5 items-center">
-                    <!-- Iconos con tooltips blur -->
-                  </div>
+                <div id="wrap-resultados">
+                  <h3 class="detalle-label" data-label="resultados" data-default="TAQUILLA">TAQUILLA</h3>
+                  <dl id="detalle-resultados" class="detalle-resultados"></dl>
+                </div>
+
+                <div id="wrap-tech">
+                  <h3 class="detalle-label" data-label="tech" data-default="TECH CREDITS">TECH CREDITS</h3>
+                  <ul id="detalle-tech-credits" class="detalle-creditos"></ul>
                 </div>
               </div>
 
-              <!-- Fotos sin cortes verticales -->
-              <div id="detalle-contra-fotos" class="flex flex-row sm:flex-col h-20 sm:h-full overflow-hidden mt-4 sm:mt-0 gap-2 sm:gap-1 pb-6 sm:pb-0">
-                <!-- Se inyectan las 3 fotos -->
-              </div>
+              <div id="detalle-contra-fotos" class="contra-fotos"></div>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- LOMO -->
-        <div id="seccion-lomo" class="col-start-1 row-span-2 lg:col-start-2 lg:row-start-1 bg-[#050505] border-r lg:border-x border-theme flex flex-col items-center justify-between py-6 relative">
+        <aside id="seccion-lomo" class="flex flex-col items-center justify-between py-6 relative">
           <span id="detalle-lomo-codigo" class="font-mono text-theme text-[10px] tracking-widest -rotate-90 lg:rotate-0 mt-4 lg:mt-0 font-bold whitespace-nowrap"></span>
-          
+
           <div class="flex flex-col items-center justify-center flex-1 my-8" style="writing-mode: vertical-rl; transform: rotate(180deg);">
-            <span id="detalle-lomo-subtitulo" class="font-sans text-white/60 font-light text-[10px] tracking-widest mb-2 whitespace-nowrap"></span>
-            <span id="detalle-lomo-titulo" class="font-display text-theme text-3xl lg:text-4xl tracking-widest"></span>
+            <span id="detalle-lomo-subtitulo" class="lomo-subtitulo text-[10px] tracking-widest mb-2 whitespace-nowrap"></span>
+            <span id="detalle-lomo-titulo" class="lomo-titulo text-theme text-3xl lg:text-4xl tracking-widest"></span>
           </div>
 
           <div class="flex flex-col items-center gap-2 mb-2 lg:mb-0">
@@ -148,40 +147,40 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
               <div class="w-[2px] h-full bg-theme"></div>
               <div class="w-[1px] h-full bg-theme"></div>
             </div>
-            <span id="detalle-lomo-año" class="font-mono text-theme text-[9px] tracking-widest -rotate-90 lg:rotate-0 mt-2 lg:mt-0 bg-theme/10 border border-theme px-1 py-0.5"></span>
+            <span id="detalle-lomo-año" class="font-mono text-theme text-[9px] tracking-widest -rotate-90 lg:rotate-0 mt-2 lg:mt-0 border border-theme px-1 py-0.5"></span>
           </div>
-        </div>
+        </aside>
 
         <!-- PORTADA -->
-        <div id="seccion-portada" class="col-start-2 row-start-1 lg:col-start-3 lg:row-start-1 bg-[#111] flex flex-col relative overflow-hidden h-[50vh] lg:h-full min-h-full">
-          <img id="detalle-portada-imagen" src="" alt="Portada" class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/60 z-0 pointer-events-none"></div>
+        <section id="seccion-portada" class="flex flex-col relative overflow-hidden h-[50vh] lg:h-full">
+          <img id="detalle-portada-imagen" src="" alt="" class="portada-imagen absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" />
+          <div class="portada-velo absolute inset-0 z-0 pointer-events-none"></div>
+          <h2 id="detalle-portada-titulo" class="portada-titulo hidden"><span></span><small></small></h2>
 
           <div class="relative z-10 flex flex-col justify-between h-full p-6 lg:p-10">
             <div class="w-full h-6"></div>
 
             <div class="hidden lg:flex flex-col items-center justify-end mt-auto mb-6 w-full">
-              <a id="detalle-portada-btn-desk" href="#" target="_blank" rel="noopener noreferrer" class="hidden glitch-action-link group items-center gap-2.5 font-mono text-sm text-white uppercase tracking-widest px-6 py-3 border border-theme/40 bg-black/60 hover:border-theme hover:bg-theme/10 transition-all backdrop-blur-sm w-max">
-                <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-theme"><path d="M8 5v14l11-7z"/></svg>
-                <span class="glitch-text font-bold tracking-wider btn-visitar-label">VISITAR</span>
+              <a id="detalle-portada-btn-desk" href="#" target="_blank" rel="noopener noreferrer" class="detalle-cta hidden items-center gap-2.5 text-sm uppercase tracking-widest px-6 py-3 backdrop-blur-sm w-max">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3"><path d="M8 5v14l11-7z"/></svg>
+                <span class="font-bold tracking-wider btn-visitar-label">VISITAR</span>
               </a>
             </div>
 
             <div id="wrap-director" class="w-full text-center mt-auto lg:mt-0">
-              <span class="font-mono text-[10px] text-white/40 tracking-widest uppercase">
-                DIRIGIDO POR: <strong id="detalle-portada-director" class="text-white font-normal"></strong>
+              <span class="detalle-director text-[10px] tracking-widest uppercase">
+                DIRIGIDO POR: <strong id="detalle-portada-director" class="font-normal"></strong>
               </span>
             </div>
           </div>
-        </div>
+        </section>
 
       </div>
     </div>
 
-    <!-- ========================================== -->
     <!-- MINIMODAL GALERÍA LIGHTBOX                -->
     <!-- ========================================== -->
-    <div id="gallery-modal" class="hidden fixed inset-0 z-[10005] bg-black/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-auto backdrop-blur-md">
+    <div id="gallery-modal" data-reel-lock class="hidden fixed inset-0 z-[10005] bg-black/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-auto backdrop-blur-md">
       
       <button id="gallery-close" class="absolute top-6 right-6 font-mono text-xs sm:text-sm text-white hover:text-theme tracking-widest p-4 transition-colors z-20 cursor-pointer">
         [ CERRAR X / ESC ]
@@ -244,6 +243,209 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
 
   @keyframes camera-ready { 0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); } 100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); } }
   .camera-focus-view { animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+</style>
+
+<!-- ============================================================ -->
+<!-- TEMAS DEL DETALLE. Global porque el contenido se inyecta por JS. -->
+<!-- Base → "noir" (expediente policial) → "tech" (terminal)          -->
+<!-- ============================================================ -->
+<style is:global>
+  /* ---------- BASE ---------- */
+  #vista-detalle {
+    --theme-color: #00d2ff;
+    --theme-2: #ec4899;
+    --theme-bg: #030303;
+    --theme-panel: #080808;
+    --theme-ink: #f1f5f9;
+    --font-title: 'Joyride', sans-serif;
+    --font-label: 'Joyride', sans-serif;
+    --font-body: ui-sans-serif, system-ui, sans-serif;
+    background: var(--theme-bg);
+    color: var(--theme-ink);
+  }
+  /* Elementos con display propio que JS oculta con .hidden: .hidden debe ganar */
+  #vista-detalle .contra-fotos.hidden,
+  #vista-detalle .detalle-sello.hidden,
+  #vista-detalle .portada-titulo.hidden { display: none !important; }
+
+  .detalle-textura { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+  #vista-detalle .detalle-grid { position: relative; z-index: 2; }
+
+  /* Composición: móvil = lomo a la izquierda, portada arriba, contraportada abajo */
+  .detalle-grid {
+    display: grid;
+    min-height: 100%;
+    grid-template-columns: 45px minmax(0, 1fr);
+    grid-template-areas: "lomo portada" "lomo contra";
+  }
+  #seccion-portada { grid-area: portada; background: #111; }
+  #seccion-lomo { grid-area: lomo; background: color-mix(in srgb, var(--theme-panel) 70%, black); border-inline: 1px solid var(--theme-color); }
+  /* En móvil deja aire abajo para los botones flotantes VISITAR / REBOBINAR */
+  #seccion-contraportada { grid-area: contra; background: var(--theme-panel); border-top: 1px solid var(--theme-color); padding-bottom: 5.5rem; }
+
+  @media (min-width: 1024px) {
+    .detalle-grid { height: 100%; grid-template-columns: minmax(0, 1.3fr) 55px minmax(0, 1fr); grid-template-areas: "contra lomo portada"; }
+    #seccion-contraportada { border-top: 0; min-height: 0; overflow: hidden; padding-bottom: 2.5rem; }
+  }
+
+  /* Portada sin imagen: el título del proyecto ocupa la carátula */
+  .portada-titulo { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: center; gap: .75rem; padding: 2.5rem; font-family: var(--font-title); color: var(--theme-color); font-size: clamp(3rem, 9vw, 7.5rem); line-height: .9; text-transform: uppercase; overflow-wrap: anywhere; }
+  .portada-titulo small { font-family: var(--font-label); font-size: .85rem; letter-spacing: .25em; color: color-mix(in srgb, var(--theme-ink) 65%, transparent); line-height: 1.4; }
+
+  .contra-body { display: grid; gap: 1.5rem; flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 640px) { .contra-body { grid-template-columns: minmax(0, 1fr) 100px; } }
+  @media (min-width: 1024px) { .contra-body { grid-template-columns: minmax(0, 1fr) 120px; } }
+
+  .contra-texto { display: flex; flex-direction: column; gap: 1.75rem; min-height: 0; overflow-y: auto; padding-bottom: 6rem; }
+  @media (min-width: 1024px) { .contra-texto { padding-bottom: 2rem; } }
+
+  .contra-fotos { display: flex; flex-direction: row; gap: 0.5rem; height: 6rem; }
+  @media (min-width: 640px) { .contra-fotos { flex-direction: column; height: auto; } }
+
+  .foto-item { position: relative; flex: 1; min-width: 0; min-height: 0; overflow: hidden; cursor: zoom-in; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; }
+  .foto-item img { width: 100%; height: 100%; object-fit: cover; opacity: .8; transition: opacity .3s, transform .3s, filter .3s; }
+  .foto-item:hover img, .foto-item:focus-visible img { opacity: 1; transform: scale(1.05); }
+  .foto-etiqueta { position: absolute; left: 4px; bottom: 3px; font-size: 8px; letter-spacing: .15em; }
+
+  .detalle-frase { font-family: var(--font-title); font-size: clamp(1rem, 1.6vw, 1.35rem); line-height: 1.4; margin-bottom: 2rem; padding-left: 1rem; border-left: 2px solid var(--theme-color); font-style: italic; text-wrap: balance; }
+  .detalle-frase::before { content: "“"; }
+  .detalle-frase::after { content: "”"; }
+
+  .detalle-label { display: inline-block; margin-bottom: .6rem; padding-bottom: .25rem; font-family: var(--font-label); font-size: .85rem; letter-spacing: .2em; color: var(--theme-color); border-bottom: 1px solid var(--theme-color); font-style: italic; }
+  .detalle-texto { font-family: var(--font-body); font-size: .95rem; line-height: 1.7; font-weight: 300; color: color-mix(in srgb, var(--theme-ink) 78%, transparent); max-width: 62ch; }
+
+  .detalle-badge { font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: .2em; color: var(--theme-color); border: 1px solid var(--theme-color); padding: 2px 8px; }
+  .detalle-sello { display: none; }
+
+  .detalle-resultados { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+  .resultado dt { font-family: var(--font-title); font-size: 1.75rem; line-height: 1; color: var(--theme-color); }
+  .resultado dd { margin: .3rem 0 0; font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--theme-ink) 60%, transparent); }
+
+  /* Créditos: mismo componente en todos los temas */
+  .detalle-creditos { display: flex; flex-wrap: wrap; gap: .6rem 1.4rem; list-style: none; margin: 0; padding: 0; }
+  .credito { display: inline-flex; align-items: center; gap: .5rem; font-size: .8rem; letter-spacing: .08em; }
+  .credito-icono { width: 1.15rem; height: 1.15rem; flex-shrink: 0; background: var(--theme-color); -webkit-mask: var(--icono) center / contain no-repeat; mask: var(--icono) center / contain no-repeat; }
+  .credito-nombre { font-family: var(--font-body); color: var(--theme-ink); }
+
+  .lomo-titulo { font-family: var(--font-title); }
+  .lomo-subtitulo { font-family: var(--font-body); color: color-mix(in srgb, var(--theme-ink) 60%, transparent); }
+
+  .portada-velo { background: linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,.35), rgba(0,0,0,.6)); }
+  .detalle-director { font-family: var(--font-body); color: color-mix(in srgb, var(--theme-ink) 50%, transparent); }
+  .detalle-director strong { color: var(--theme-ink); }
+
+  .detalle-cta { font-family: var(--font-label); color: var(--theme-ink); background: rgba(0,0,0,.65); border: 1px solid color-mix(in srgb, var(--theme-color) 50%, transparent); transition: border-color .3s, background .3s; }
+  .detalle-cta svg { color: var(--theme-color); }
+  .detalle-cta:hover { border-color: var(--theme-color); background: color-mix(in srgb, var(--theme-color) 15%, black); }
+
+  /* ---------- TEMA NOIR: expediente policial ---------- */
+  /* Grano de película + viñeta de lámpara de escritorio */
+  #vista-detalle[data-tema="noir"] .detalle-textura {
+    background:
+      radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--theme-color) 10%, transparent), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    opacity: .14;
+    mix-blend-mode: screen;
+  }
+  #vista-detalle[data-tema="noir"] #seccion-contraportada { border-color: color-mix(in srgb, var(--theme-color) 35%, transparent); }
+  #vista-detalle[data-tema="noir"] #seccion-lomo { background: var(--theme-ink); border-color: var(--theme-ink); }
+  #vista-detalle[data-tema="noir"] #seccion-lomo .text-theme { color: var(--theme-bg); }
+  #vista-detalle[data-tema="noir"] #seccion-lomo .bg-theme { background-color: var(--theme-bg); }
+  #vista-detalle[data-tema="noir"] #seccion-lomo .border-theme { border-color: var(--theme-bg); }
+  #vista-detalle[data-tema="noir"] .lomo-subtitulo { color: color-mix(in srgb, var(--theme-bg) 70%, transparent); }
+
+  #vista-detalle[data-tema="noir"] .detalle-frase { font-family: var(--font-label); font-style: normal; border-left: 0; padding-left: 0; font-size: clamp(1rem, 1.5vw, 1.25rem); }
+  #vista-detalle[data-tema="noir"] .detalle-label { font-style: normal; border-bottom: 1px dashed var(--theme-color); letter-spacing: .3em; }
+
+  /* Sello de goma rojo, torcido, en una franja propia sobre la frase */
+  #vista-detalle[data-tema="noir"] #seccion-contraportada { padding-top: 5rem; }
+  #vista-detalle[data-tema="noir"] .detalle-sello {
+    display: block; position: absolute; top: 1.5rem; right: 1.75rem; z-index: 3;
+    font-family: var(--font-label); font-size: .8rem; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--theme-2); border: 3px double var(--theme-2); padding: .35rem .7rem;
+    transform: rotate(-9deg); opacity: .8; pointer-events: none;
+  }
+
+  /* Fotos como evidencias: papel, rotadas, en sepia hasta el hover */
+  #vista-detalle[data-tema="noir"] .contra-fotos { gap: .9rem; }
+  #vista-detalle[data-tema="noir"] .foto-item { background: var(--theme-ink); padding: 5px 5px 18px; box-shadow: 0 8px 18px rgba(0,0,0,.6); }
+  #vista-detalle[data-tema="noir"] .foto-item:nth-child(odd) { transform: rotate(-2.5deg); }
+  #vista-detalle[data-tema="noir"] .foto-item:nth-child(even) { transform: rotate(2deg); }
+  #vista-detalle[data-tema="noir"] .foto-item img { filter: grayscale(1) sepia(.35) contrast(1.1); opacity: 1; }
+  #vista-detalle[data-tema="noir"] .foto-item:hover img { filter: none; transform: none; }
+  #vista-detalle[data-tema="noir"] .foto-etiqueta { left: 6px; bottom: 4px; font-family: var(--font-label); color: var(--theme-bg); }
+
+  /* Créditos como lista de sospechosos con línea de puntos */
+  #vista-detalle[data-tema="noir"] .detalle-creditos { flex-direction: column; gap: .45rem; max-width: 22rem; }
+  #vista-detalle[data-tema="noir"] .credito { width: 100%; }
+  #vista-detalle[data-tema="noir"] .credito::after { content: ""; order: 1; flex: 1; border-bottom: 1px dotted color-mix(in srgb, var(--theme-ink) 30%, transparent); transform: translateY(4px); }
+  #vista-detalle[data-tema="noir"] .credito-icono { order: 2; }
+  #vista-detalle[data-tema="noir"] .credito-nombre { order: 0; font-family: var(--font-label); text-transform: uppercase; }
+
+  #vista-detalle[data-tema="noir"] .portada-imagen { filter: grayscale(.7) contrast(1.15) brightness(.85); }
+  #vista-detalle[data-tema="noir"] .portada-velo { background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.85) 100%), linear-gradient(to top, rgba(0,0,0,.85), transparent 50%); }
+  #vista-detalle[data-tema="noir"] .detalle-cta { border-radius: 0; }
+
+  /* ---------- TEMA TECH: terminal de monitoreo ---------- */
+  /* Rejilla de osciloscopio + barrido */
+  #vista-detalle[data-tema="tech"] .detalle-textura {
+    background:
+      repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.25) 3px 4px),
+      linear-gradient(color-mix(in srgb, var(--theme-color) 7%, transparent) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, color-mix(in srgb, var(--theme-color) 7%, transparent) 1px, transparent 1px) 0 0 / 40px 40px;
+  }
+
+  /* Composición espejada: portada a la izquierda, contraportada a la derecha; en móvil el lomo pasa a la derecha */
+  #vista-detalle[data-tema="tech"] .detalle-grid { grid-template-columns: minmax(0, 1fr) 45px; grid-template-areas: "portada lomo" "contra lomo"; }
+  @media (min-width: 1024px) {
+    #vista-detalle[data-tema="tech"] .detalle-grid { grid-template-columns: minmax(0, 1fr) 55px minmax(0, 1.3fr); grid-template-areas: "portada lomo contra"; }
+  }
+  #vista-detalle[data-tema="tech"] #seccion-contraportada { background: color-mix(in srgb, var(--theme-panel) 85%, transparent); }
+
+  /* Fotos arriba, como una fila de monitores; texto en dos columnas debajo */
+  #vista-detalle[data-tema="tech"] .contra-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  #vista-detalle[data-tema="tech"] .contra-fotos { order: -1; flex-direction: row; height: 7.5rem; gap: .75rem; }
+  #vista-detalle[data-tema="tech"] .foto-item { border: 1px solid color-mix(in srgb, var(--theme-color) 50%, transparent); background: #000; }
+  #vista-detalle[data-tema="tech"] .foto-item img { filter: saturate(.6) brightness(.85); }
+  #vista-detalle[data-tema="tech"] .foto-item:hover img { filter: none; }
+  #vista-detalle[data-tema="tech"] .foto-etiqueta { font-family: var(--font-label); color: var(--theme-color); background: rgba(0,0,0,.75); padding: 1px 4px; }
+  @media (min-width: 1024px) {
+    #vista-detalle[data-tema="tech"] .contra-texto { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 2.5rem; align-content: start; }
+    #vista-detalle[data-tema="tech"] #wrap-resultados,
+    #vista-detalle[data-tema="tech"] #wrap-tech { grid-column: 1 / -1; }
+  }
+
+  /* Frase como línea de terminal con cursor */
+  #vista-detalle[data-tema="tech"] .detalle-frase { font-family: var(--font-label); font-style: normal; border-left: 0; padding-left: 0; color: var(--theme-color); font-size: clamp(.95rem, 1.3vw, 1.15rem); }
+  #vista-detalle[data-tema="tech"] .detalle-frase::before { content: "$ "; color: var(--theme-2); }
+  #vista-detalle[data-tema="tech"] .detalle-frase::after { content: "▌"; margin-left: .2em; animation: cursor-tech 1s steps(2) infinite; }
+  @keyframes cursor-tech { 50% { opacity: 0; } }
+
+  #vista-detalle[data-tema="tech"] .detalle-label { font-style: normal; border-bottom: 0; letter-spacing: .1em; text-transform: lowercase; }
+  #vista-detalle[data-tema="tech"] .detalle-label::before { content: "> "; color: var(--theme-2); }
+
+  /* Sello como indicador de estado */
+  #vista-detalle[data-tema="tech"] .detalle-sello {
+    display: inline-flex; align-items: center; gap: .5rem; align-self: flex-start; margin-bottom: 1.25rem;
+    font-family: var(--font-label); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--theme-color); border: 1px solid var(--theme-color); padding: .3rem .7rem;
+    background: color-mix(in srgb, var(--theme-color) 10%, transparent);
+    /* alineado con el contenido centrado de 760px */
+    margin-left: max(0px, calc((100% - 760px) / 2));
+  }
+  #vista-detalle[data-tema="tech"] .detalle-sello::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--theme-color); box-shadow: 0 0 8px var(--theme-color); }
+
+  #vista-detalle[data-tema="tech"] .credito { border: 1px solid color-mix(in srgb, var(--theme-color) 40%, transparent); background: color-mix(in srgb, var(--theme-color) 8%, transparent); padding: .35rem .7rem; }
+  #vista-detalle[data-tema="tech"] .credito-nombre { font-family: var(--font-label); text-transform: lowercase; }
+
+  #vista-detalle[data-tema="tech"] .portada-velo { background: linear-gradient(to top, rgba(0,0,0,.9), transparent 55%), color-mix(in srgb, var(--theme-color) 12%, transparent); mix-blend-mode: normal; }
+  #vista-detalle[data-tema="tech"] .detalle-director,
+  #vista-detalle[data-tema="tech"] .detalle-cta { font-family: var(--font-label); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #vista-detalle[data-tema="tech"] .detalle-frase::after { animation: none; }
+    #vista-detalle .foto-item img { transition: none; }
+  }
 </style>
 
 <script>
@@ -452,6 +654,9 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
       hideElement.classList.remove('flex');
       showElement.classList.remove('hidden');
       showElement.classList.add('flex');
+      // Cada vista abre desde arriba (scrollTop solo funciona cuando ya es visible)
+      showElement.scrollTop = 0;
+      showElement.querySelectorAll('.contra-texto').forEach(el => { el.scrollTop = 0; });
       setTimeout(() => showElement.classList.replace('opacity-0', 'opacity-100'), 50);
     }, 300);
   }
@@ -465,6 +670,60 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
     }
   }
 
+  // ==========================================
+  // TEMA POR PROYECTO (proyectos.json → estilo)
+  // ==========================================
+  const fuentesCargadas = new Set();
+  const VARIABLES_PALETA = {
+    primario: '--theme-color',
+    secundario: '--theme-2',
+    fondo: '--theme-bg',
+    panel: '--theme-panel',
+    texto: '--theme-ink',
+  };
+
+  function cargarFuentes(familias) {
+    if (!familias || fuentesCargadas.has(familias)) return;
+    fuentesCargadas.add(familias);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${familias}&display=swap`;
+    document.head.appendChild(link);
+  }
+
+  function aplicarEstilo(proyecto) {
+    const estilo = proyecto.estilo || {};
+    vistaDetalle.dataset.tema = estilo.tema || 'default';
+
+    // Limpia la paleta del proyecto anterior y aplica la nueva (detalle + galería)
+    [vistaDetalle, galleryModal].forEach(el => {
+      if (!el) return;
+      Object.values(VARIABLES_PALETA).forEach(v => el.style.removeProperty(v));
+      el.style.removeProperty('--font-title');
+      el.style.removeProperty('--font-label');
+      el.style.removeProperty('--font-body');
+      const paleta = { primario: proyecto.colorPrincipal, ...estilo.paleta };
+      Object.entries(VARIABLES_PALETA).forEach(([clave, variable]) => {
+        if (paleta[clave]) el.style.setProperty(variable, paleta[clave]);
+      });
+      if (estilo.tipografia?.titulo) el.style.setProperty('--font-title', estilo.tipografia.titulo);
+      if (estilo.tipografia?.etiquetas) el.style.setProperty('--font-label', estilo.tipografia.etiquetas);
+      if (estilo.tipografia?.texto) el.style.setProperty('--font-body', estilo.tipografia.texto);
+    });
+    cargarFuentes(estilo.tipografia?.googleFonts);
+
+    // Etiquetas de sección propias del tema ("EL CASO", "> brief"...)
+    vistaDetalle.querySelectorAll('.detalle-label').forEach(el => {
+      el.textContent = estilo.etiquetas?.[el.dataset.label] || el.dataset.default;
+    });
+
+    const sello = document.getElementById('detalle-sello');
+    if (sello) { sello.textContent = estilo.sello || ''; toggleContent(sello, estilo.sello); }
+
+    const portada = document.getElementById('detalle-portada-imagen');
+    if (portada) portada.alt = `Portada de ${proyecto.titulo}`;
+  }
+
   function openProjectDetail(projectId, currentView) {
     document.body.style.overflow = 'hidden';
 
@@ -473,7 +732,7 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
       const proyecto = db.find(p => p.id === projectId);
       
       if (proyecto && proyecto.detalle) {
-        if (proyecto.colorPrincipal) vistaDetalle.style.setProperty('--theme-color', proyecto.colorPrincipal);
+        aplicarEstilo(proyecto);
         const d = proyecto.detalle;
 
         // LOMO
@@ -492,6 +751,13 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
         // PORTADA
         const imgPort = document.getElementById('detalle-portada-imagen');
         if (imgPort) { imgPort.src = d.portada?.imagen || ""; toggleContent(imgPort, d.portada?.imagen); }
+
+        const tituloPort = document.getElementById('detalle-portada-titulo');
+        if (tituloPort) {
+          tituloPort.querySelector('span')!.textContent = proyecto.titulo || "";
+          tituloPort.querySelector('small')!.textContent = d.lomo?.subtitulo || "";
+          tituloPort.classList.toggle('hidden', !!d.portada?.imagen);
+        }
 
         const wrapDir = document.getElementById('wrap-director');
         const dirPort = document.getElementById('detalle-portada-director');
@@ -533,7 +799,8 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
 
         const fraseContra = document.getElementById('detalle-contra-frase');
         if (fraseContra) {
-          fraseContra.textContent = d.contraportada?.fraseItalica ? `"${d.contraportada.fraseItalica}"` : "";
+          // Las comillas o el prompt los pone cada tema por CSS
+          fraseContra.textContent = d.contraportada?.fraseItalica || "";
           toggleContent(fraseContra, d.contraportada?.fraseItalica);
         }
 
@@ -545,48 +812,71 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
         const retoContra = document.getElementById('detalle-contra-reto');
         if (retoContra) { retoContra.textContent = d.contraportada?.reto || ""; toggleContent(wrapReto, d.contraportada?.reto); }
 
-        // Tech Credits con Tooltip Blur y Seguimiento Suave
-        const wrapTech = document.getElementById('wrap-tech');
-        const techContainer = document.getElementById('detalle-tech-credits');
-        if (techContainer) {
-          techContainer.innerHTML = ''; 
-          toggleContent(wrapTech, d.contraportada?.techCredits);
-          if (d.contraportada?.techCredits && d.contraportada.techCredits.length > 0) {
-            d.contraportada.techCredits.forEach(tech => {
-              const itemDiv = document.createElement('div');
-              itemDiv.className = "group relative flex items-center justify-center pointer-events-auto cursor-default py-1";
-              itemDiv.innerHTML = `<div class="w-5 h-5 sm:w-6 sm:h-6 bg-white/40 hover:bg-[var(--theme-color)] hover:scale-125 transition-all duration-300 drop-shadow-[0_0_8px_var(--theme-color)]" style="mask-image: url('${tech.icono}'); -webkit-mask-image: url('${tech.icono}'); mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;"></div>`;
-              
-              itemDiv.addEventListener('pointermove', (e) => {
-                if (e.pointerType !== 'mouse' || !mouseTooltip) return;
-                mouseTooltip.textContent = tech.nombre;
-                mouseTooltip.classList.add('is-visible');
-                mouseTooltip.style.left = e.clientX + 'px';
-                mouseTooltip.style.top = (e.clientY - 25) + 'px';
-              });
-              itemDiv.addEventListener('pointerleave', (e) => {
-                if (e.pointerType === 'mouse' && mouseTooltip) mouseTooltip.classList.remove('is-visible');
-              });
-              techContainer.appendChild(itemDiv);
-            });
-          }
+        // Resultados ("taquilla"): cifras reales del proyecto, se ocultan si no hay
+        const wrapRes = document.getElementById('wrap-resultados');
+        const resContainer = document.getElementById('detalle-resultados');
+        const resultados: { valor: string; etiqueta: string }[] = d.contraportada?.resultados || [];
+        if (resContainer) {
+          resContainer.replaceChildren(...resultados.map(r => {
+            const item = document.createElement('div');
+            item.className = 'resultado';
+            const valor = document.createElement('dt');
+            valor.textContent = r.valor;
+            const etiqueta = document.createElement('dd');
+            etiqueta.textContent = r.etiqueta;
+            item.append(valor, etiqueta);
+            return item;
+          }));
+          toggleContent(wrapRes, resultados);
         }
 
-        // Fotos sin deformaciones ni cortes
+        // Tech Credits: ícono + nombre visible, igual en todos los temas (el tema solo cambia el estilo)
+        const wrapTech = document.getElementById('wrap-tech');
+        const techContainer = document.getElementById('detalle-tech-credits');
+        const techs = d.contraportada?.techCredits || [];
+        if (techContainer) {
+          techContainer.replaceChildren(...techs.map(tech => {
+            const li = document.createElement('li');
+            li.className = 'credito';
+            const icono = document.createElement('span');
+            icono.className = 'credito-icono';
+            icono.setAttribute('aria-hidden', 'true');
+            icono.style.setProperty('--icono', `url('${tech.icono}')`);
+            const nombre = document.createElement('span');
+            nombre.className = 'credito-nombre';
+            nombre.textContent = tech.nombre;
+            li.append(icono, nombre);
+            return li;
+          }));
+          toggleContent(wrapTech, techs);
+        }
+
+        // Fotos: cada tema las presenta distinto (evidencias, capturas de pantalla...)
         const fotosContainer = document.getElementById('detalle-contra-fotos');
+        const fotos = d.contraportada?.fotos || [];
+        const etiquetaFoto = proyecto.estilo?.etiquetaFoto || '';
         if (fotosContainer) {
-          fotosContainer.innerHTML = '';
-          toggleContent(fotosContainer, d.contraportada?.fotos);
-          if (d.contraportada?.fotos && d.contraportada.fotos.length > 0) {
-            currentGalleryPhotos = d.contraportada.fotos;
-            d.contraportada.fotos.forEach((fotoUrl, idx) => {
-              const box = document.createElement('div');
-              box.className = "w-full flex-1 overflow-hidden cursor-pointer group/photo bg-black/40 flex items-center justify-center";
-              box.innerHTML = `<img src="${fotoUrl}" alt="Preview" class="w-full h-full object-contain opacity-75 group-hover/photo:opacity-100 transition-all duration-300 group-hover/photo:scale-105" />`;
-              box.addEventListener('click', () => openGallery(idx));
-              fotosContainer.appendChild(box);
-            });
-          }
+          currentGalleryPhotos = fotos;
+          fotosContainer.replaceChildren(...fotos.map((fotoUrl, idx) => {
+            const box = document.createElement('button');
+            box.type = 'button';
+            box.className = 'foto-item';
+            box.setAttribute('aria-label', `Ver imagen ${idx + 1} de ${fotos.length}`);
+            const img = document.createElement('img');
+            img.src = fotoUrl;
+            img.alt = '';
+            img.loading = 'lazy';
+            box.append(img);
+            if (etiquetaFoto) {
+              const cap = document.createElement('span');
+              cap.className = 'foto-etiqueta';
+              cap.textContent = `${etiquetaFoto} ${String(idx + 1).padStart(2, '0')}`;
+              box.append(cap);
+            }
+            box.addEventListener('click', () => openGallery(idx));
+            return box;
+          }));
+          toggleContent(fotosContainer, fotos);
         }
 
         switchView(currentView, vistaDetalle);

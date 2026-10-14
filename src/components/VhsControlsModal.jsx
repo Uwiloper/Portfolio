@@ -35,14 +35,14 @@ export default function VhsControlsModal() {
     <>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-neutral-900/90 text-emerald-400 font-mono text-xs px-4 py-2 border border-emerald-500/40 shadow-2xl hover:bg-emerald-500 hover:text-black transition-colors cursor-pointer uppercase tracking-widest"
+        className="fixed top-16 right-4 lg:top-auto lg:bottom-6 lg:right-6 z-50 bg-neutral-900/90 text-emerald-400 font-mono text-[9px] lg:text-xs px-3 py-1.5 lg:px-4 lg:py-2 border border-emerald-500/40 shadow-2xl hover:bg-emerald-500 hover:text-black transition-colors cursor-pointer uppercase tracking-widest"
         style={{ fontFamily: "'Press Start 2P', monospace" }}
       >
         [ ⚙ SETUP ]
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div data-reel-lock className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="relative w-full max-w-sm bg-neutral-950 border-2 border-emerald-500/50 p-6 font-mono text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
             
             <div className="flex justify-between items-center border-b border-emerald-500/30 pb-3 mb-6">

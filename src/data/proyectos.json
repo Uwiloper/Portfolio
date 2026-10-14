@@ -8,14 +8,38 @@
       "titulo": "Inv. Lázaro",
       "categoria": "Ecommerce",
       "año": "2025",
-      "colorPrincipal": "#1e293b",
+      "colorPrincipal": "#d9a441",
       "imagen1": "/images/vhs/lazaro-vhs1.png",
       "imagen2": "/images/vhs/lazaro-vhs2.png",
       "descripcion": "Ecommerce con panel de gestión de inventario, ventas y stock en tiempo real.",
+      "estilo": {
+        "tema": "noir",
+        "paleta": {
+          "primario": "#d9a441",
+          "secundario": "#c0392b",
+          "fondo": "#0d0b09",
+          "panel": "#15120e",
+          "texto": "#ece3cf"
+        },
+        "tipografia": {
+          "googleFonts": "Limelight&family=Special+Elite&family=Spectral:wght@300;400",
+          "titulo": "'Limelight', 'Joyride', serif",
+          "etiquetas": "'Special Elite', 'Courier New', monospace",
+          "texto": "'Spectral', Georgia, serif"
+        },
+        "etiquetas": {
+          "sinopsis": "EL CASO",
+          "reto": "LA INVESTIGACIÓN",
+          "resultados": "VEREDICTO",
+          "tech": "CÓMPLICES"
+        },
+        "sello": "Caso cerrado",
+        "etiquetaFoto": "EVIDENCIA"
+      },
       "detalle": {
         "lomo": {
           "codigo": "PR-001",
-          "subtitulo": "Web Empresarial - Ecommerce & Gestion"
+          "subtitulo": "Ecommerce y gestión de inventario"
         },
         "portada": {
           "imagen": "/images/proyectos/lazaro-portada.jpg",
@@ -26,13 +50,14 @@
         "contraportada": {
           "badge": "",
           "badgeIcono": "",
-          "fraseItalica": "El almacén era un laberinto, los números no cuadraban y las ventas se desvanecían en la sombra del caos administrativo...",
-          "sinopsis": "Inversiones Lázaro. Lo que parecía un simple encargo de comercio electrónico resultó ser la construcción de un sistema de gestión implacable. La plataforma opera con doble identidad: un frente de tienda intuitivo que atrapa al cliente, y una trastienda administrativa que rastrea cada producto, venta y movimiento de stock sin dejar un solo cabo suelto.",
-          "reto": "El verdadero trabajo de campo: integrar un catálogo público con el control de inventario en tiempo real, manteniendo la base de datos impecable y sin que el servidor sudara una gota. \n\n¡Un thriller de código y arquitectura donde el orden siempre resuelve el caso.",
+          "fraseItalica": "El almacén era un laberinto. Los números no cuadraban y las ventas se perdían entre el caos administrativo.",
+          "sinopsis": "Inversiones Lázaro necesitaba vender en línea, pero el verdadero problema estaba en la trastienda. La plataforma opera con doble identidad: una tienda pública clara para el cliente y un panel administrativo que registra cada producto, venta y movimiento de stock sin dejar cabos sueltos.",
+          "reto": "Mantener el catálogo público y el inventario sincronizados en tiempo real: cada venta se refleja en el stock al instante y la base de datos queda ordenada para que el negocio pueda auditarla.\n\nUn thriller de código y arquitectura donde el orden siempre resuelve el caso.",
+          "resultados": [],
           "techCredits": [
             { "nombre": "Java", "icono": "/icons/java.svg" },
             { "nombre": "Spring Boot", "icono": "/icons/spring.svg" },
-            { "nombre": "Mysql", "icono": "/icons/mysql.svg" },
+            { "nombre": "MySQL", "icono": "/icons/mysql.svg" },
             { "nombre": "Thymeleaf", "icono": "/icons/thymeleaf.svg" },
             { "nombre": "Bootstrap", "icono": "/icons/bootstrap.svg" }
           ],
@@ -52,11 +77,35 @@
       "colorPrincipal": "#24da8d",
       "imagen1": "https://placehold.co/300x450/0b0b0b/24da8d?text=CHEKA",
       "imagen2": "https://placehold.co/300x450/24da8d/0b0b0b?text=CHEKA",
-      "descripcion": "Sistema de monitoreo de pagos (Payment Monitoring). Arquitectura en tiempo real y dashboards analíticos para control financiero.",
+      "descripcion": "Validación automática de pagos con Yape y Plin: una app Android conectada a un panel web en tiempo real.",
+      "estilo": {
+        "tema": "tech",
+        "paleta": {
+          "primario": "#24da8d",
+          "secundario": "#00d2ff",
+          "fondo": "#030806",
+          "panel": "#06100c",
+          "texto": "#d6f5e6"
+        },
+        "tipografia": {
+          "googleFonts": "Chakra+Petch:wght@500;700&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400",
+          "titulo": "'Chakra Petch', 'Joyride', sans-serif",
+          "etiquetas": "'Share Tech Mono', ui-monospace, monospace",
+          "texto": "'IBM Plex Sans', system-ui, sans-serif"
+        },
+        "etiquetas": {
+          "sinopsis": "resumen",
+          "reto": "reto_tecnico",
+          "resultados": "metricas",
+          "tech": "stack"
+        },
+        "sello": "Pago verificado",
+        "etiquetaFoto": "CAM"
+      },
       "detalle": {
         "lomo": {
           "codigo": "PR-002",
-          "subtitulo": "Tus finanzas validadas en automático"
+          "subtitulo": "Tus pagos validados en automático"
         },
         "portada": {
           "imagen": "",
@@ -67,9 +116,10 @@
         "contraportada": {
           "badge": "",
           "badgeIcono": "",
-          "fraseItalica": "En un mercado inundado de transacciones falsas y descuadres de caja, una web inteligente llegó para tomar el control...",
-          "sinopsis": "La respuesta para los negocios que buscan eliminar fraude en tiempo real. Cheka conecta tu móvil Android de manera privada con nuestra plataforma web, automatizando la validación de billeteras digitales como Yape y Plin.",
-          "reto": "Desarrollar un ecosistema inmutable capaz de procesar eventos asíncronos en tiempo real, manteniendo la privacidad sin comprometer la velocidad en el punto de venta.\n\n¡Una obra maestra de la sincronización y la seguridad que automatiza tus finanzas sin pestañear! No te la puedes perder!!!",
+          "fraseItalica": "En un mercado lleno de capturas falsas y cajas que no cuadran, alguien tenía que verificar cada pago.",
+          "sinopsis": "Cheka conecta un móvil Android del negocio con un panel web y valida en automático los pagos que llegan por Yape y Plin. El cajero ya no depende de una captura de pantalla: el pago aparece confirmado en el panel en tiempo real.",
+          "reto": "Llevar cada evento de pago desde el teléfono hasta la web en tiempo real, sin exponer datos sensibles del negocio y sin frenar la atención en el punto de venta.\n\nUn tecno-thriller de sincronización y seguridad que valida cada pago sin pestañear.",
+          "resultados": [],
           "techCredits": [
             { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
             { "nombre": "Android", "icono": "/icons/android.svg" },
