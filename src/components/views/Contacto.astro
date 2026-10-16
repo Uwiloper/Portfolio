@@ -1,5 +1,6 @@
 ---
 import data from '../../data/contacto.json';
+import IconoSkill from '../IconoSkill.astro';
 
 const tieneRedes = data.redes && data.redes.length > 0;
 // Si no hay valor en el JSON, por defecto será 1 (100% visible)
@@ -72,30 +73,7 @@ const opacidad = data.opacidadFirma || "1";
         {tieneRedes && (
           <div class="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6 order-1 sm:order-none">
             {data.redes.map((red) => (
-              <a 
-                href={red.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                class="skill-container group relative flex flex-col items-center justify-center pointer-events-auto cursor-pointer"
-              >
-                <div 
-                  class="icon-sharp w-6 h-6 md:w-7 md:h-7 bg-white/40 group-hover:bg-pink-500 group-hover:scale-125 transition-all duration-300 drop-shadow-[0_0_0px_transparent] group-hover:drop-shadow-[0_0_12px_rgba(236,72,153,0.9)]"
-                  style={`
-                    mask-image: url('${red.icono}');
-                    -webkit-mask-image: url('${red.icono}');
-                    mask-size: contain;
-                    mask-repeat: no-repeat;
-                    mask-position: center;
-                    -webkit-mask-size: contain;
-                    -webkit-mask-repeat: no-repeat;
-                    -webkit-mask-position: center;
-                  `}
-                ></div>
-
-                <span class="skill-label absolute -top-8 left-1/2 -translate-x-1/2 font-mono text-[8px] md:text-[9px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-all duration-300 bg-black/80 px-2 py-0.5 rounded-sm z-20">
-                  {red.nombre}
-                </span>
-              </a>
+              <IconoSkill icono={red.icono} nombre={red.nombre} href={red.url} size="md" />
             ))}
           </div>
         )}
@@ -123,25 +101,6 @@ const opacidad = data.opacidadFirma || "1";
   }
   .camera-focus-view {
     animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .icon-sharp {
-    shape-rendering: crispEdges; 
-    transform: translateZ(0); 
-    -webkit-font-smoothing: none; 
-  }
-
-  .skill-label {
-    filter: blur(8px);
-    will-change: filter, opacity, transform;
-  }
-  .skill-container:hover .skill-label,
-  .skill-container.is-active .skill-label {
-    opacity: 1;
-    filter: blur(0px);
-    transform: translate(-50%, 4px); 
-    color: #ffffff;
-    text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
   }
 
   .glitch-text {
@@ -199,14 +158,5 @@ const opacidad = data.opacidadFirma || "1";
         console.error('Error al copiar: ', err);
       }
     });
-  });
-
-  const skillContainers = document.querySelectorAll('.skill-container');
-  skillContainers.forEach((container) => {
-    container.addEventListener('touchstart', () => {
-      skillContainers.forEach(c => c.classList.remove('is-active'));
-      container.classList.add('is-active');
-      setTimeout(() => container.classList.remove('is-active'), 3000);
-    }, { passive: true });
   });
 </script>

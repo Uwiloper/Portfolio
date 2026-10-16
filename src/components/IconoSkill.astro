@@ -1,0 +1,72 @@
+---
+// Ícono monocromo con hover unificado: se tiñe de rosa, crece, brilla y muestra su nombre debajo.
+// En táctil, el toque activa el mismo estado (.is-active) durante 3s.
+interface Props {
+  icono: string;
+  nombre: string;
+  href?: string;
+  size?: 'sm' | 'md';
+}
+
+const { icono, nombre, href, size = 'sm' } = Astro.props;
+const Tag = href ? 'a' : 'div';
+const linkProps = href ? { href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': nombre } : {};
+---
+
+<Tag class="skill-container relative flex flex-col items-center justify-center pointer-events-auto" data-skill={nombre} {...linkProps}>
+  <span
+    class:list={['skill-icono', size === 'md' ? 'w-6 h-6 md:w-7 md:h-7' : 'w-5 h-5 sm:w-6 sm:h-6']}
+    style={`--icono: url('${icono}')`}
+    aria-hidden="true"
+  ></span>
+  <span class="skill-label absolute -bottom-5 left-1/2 font-mono text-[8px] md:text-[9px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none bg-black/80 px-2 py-0.5 rounded-sm z-20">
+    {nombre}
+  </span>
+</Tag>
+
+<style>
+  .skill-icono {
+    display: block;
+    background-color: rgba(255, 255, 255, 0.4);
+    -webkit-mask: var(--icono) center / contain no-repeat;
+    mask: var(--icono) center / contain no-repeat;
+    transform: translateZ(0);
+    transition: all .3s cubic-bezier(.4, 0, .2, 1);
+  }
+  .skill-container:hover .skill-icono,
+  .skill-container:focus-visible .skill-icono,
+  .skill-container.is-active .skill-icono {
+    background-color: #ec4899;
+    transform: translateZ(0) scale(1.25);
+    filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.9));
+  }
+
+  /* La etiqueta nace desenfocada bajo el ícono y se desliza en diagonal (izquierda y arriba)
+     mientras enfoca y pasa de rosa a blanco: todo con la misma curva, nada salta de golpe */
+  .skill-label {
+    transform: translateX(-50%);
+    filter: blur(8px);
+    transition: all .3s cubic-bezier(.4, 0, .2, 1);
+    will-change: filter, opacity, transform;
+  }
+  .skill-container:hover .skill-label,
+  .skill-container:focus-visible .skill-label,
+  .skill-container.is-active .skill-label {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(-100%, -4px);
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
+  }
+</style>
+
+<script>
+  const skillContainers = document.querySelectorAll('.skill-container');
+  skillContainers.forEach((container) => {
+    container.addEventListener('touchstart', () => {
+      skillContainers.forEach(c => c.classList.remove('is-active'));
+      container.classList.add('is-active');
+      setTimeout(() => container.classList.remove('is-active'), 3000);
+    }, { passive: true });
+  });
+</script>

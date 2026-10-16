@@ -1,12 +1,12 @@
 @import "tailwindcss";
 /* Press Start 2P se carga con <link> en Layout.astro */
 
-/* Variables globales modificables en tiempo real por el Modal */
+/* Ajuste final del fondo VHS, igual para todos: scanlines y viñeta al máximo, glitch de letras 4s.
+   La estática (40%) se dibuja en el canvas: ver src/js/vhs.js */
 :root {
-  --snow-opacity: 0.25;
-  --scanlines-opacity: 0.4;
-  --vignette-opacity: 0.7;
-  --glitch-speed: 2s;
+  --scanlines-opacity: 0.8;
+  --vignette-opacity: 1;
+  --glitch-speed: 4s;
 }
 
 /* 1. CONFIGURACIÓN DE TU FUENTE JOYRIDE */

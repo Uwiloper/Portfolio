@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import VhsControlsModal from '../components/VhsControlsModal.jsx';
 
 // Permite que las páginas que usen este layout le pasen un título personalizado
 interface Props {
@@ -80,8 +79,6 @@ const imageURL = new URL(image, Astro.site);
     </div>
 
     <slot />
-
-    <VhsControlsModal client:load />
 
     <script>
       // Inicia el motor VHS de Canvas

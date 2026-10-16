@@ -1,5 +1,6 @@
 ---
 import data from '../../data/experiencia.json';
+import IconoSkill from '../IconoSkill.astro';
 
 // Lógica para ocultar flechas en web si hay 2 o menos items
 const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
@@ -84,27 +85,7 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
             <div class="mt-2 md:mt-4">
               <div class="flex flex-wrap gap-3 sm:gap-4">
                 {trabajo.tecnologias.map((tech) => (
-                  <div class="skill-container group relative flex flex-col items-center justify-center pointer-events-auto">
-                    
-                    <div 
-                      class="icon-sharp w-5 h-5 sm:w-6 sm:h-6 bg-white/40 group-hover:bg-pink-500 group-hover:scale-125 group-active:scale-125 transition-all duration-300 drop-shadow-[0_0_0px_transparent] group-hover:drop-shadow-[0_0_12px_rgba(236,72,153,0.9)]"
-                      style={`
-                        mask-image: url('${tech.icono}');
-                        -webkit-mask-image: url('${tech.icono}');
-                        mask-size: contain;
-                        mask-repeat: no-repeat;
-                        mask-position: center;
-                        -webkit-mask-size: contain;
-                        -webkit-mask-repeat: no-repeat;
-                        -webkit-mask-position: center;
-                      `}
-                    ></div>
-
-                    <span class="skill-label absolute -bottom-5 left-1/2 -translate-x-1/2 font-mono text-[8px] text-pink-300 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-all duration-300 bg-black/80 px-2 py-0.5 rounded-sm z-20">
-                      {tech.nombre}
-                    </span>
-
-                  </div>
+                  <IconoSkill icono={tech.icono} nombre={tech.nombre} />
                 ))}
               </div>
             </div>
@@ -158,12 +139,6 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
   }
   .camera-focus-view {
     animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-  .icon-sharp { shape-rendering: crispEdges; transform: translateZ(0); -webkit-font-smoothing: none; }
-
-  .skill-label { filter: blur(8px); will-change: filter, opacity, transform; }
-  .skill-container:hover .skill-label, .skill-container.is-active .skill-label {
-    opacity: 1; filter: blur(0px); transform: translate(-50%, -4px); color: #ffffff; text-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
   }
 </style>
 
@@ -229,15 +204,5 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
     btn.addEventListener('click', () => {
       if (activeIndex < tabs.length - 1) activateTab(activeIndex + 1);
     });
-  });
-
-  // Efecto tooltips en móvil
-  const skillContainers = document.querySelectorAll('.skill-container');
-  skillContainers.forEach((container) => {
-    container.addEventListener('touchstart', () => {
-      skillContainers.forEach(c => c.classList.remove('is-active'));
-      container.classList.add('is-active');
-      setTimeout(() => container.classList.remove('is-active'), 3000);
-    }, { passive: true });
   });
 </script>

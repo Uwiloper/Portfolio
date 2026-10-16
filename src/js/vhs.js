@@ -6,11 +6,11 @@ export class RealVHSEffect {
         this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         this.lastDrawTime = 0;
         
+        // Ajuste final del fondo: estática al 40% (scanlines y viñeta van en global.css)
         this.config = {
             fps: 30,
-            snowOpacity: 0.25,
-            tapeAge: 40,
-            wobble: true
+            snowOpacity: 0.4,
+            tapeAge: 40
         };
 
         this.resize();
@@ -21,18 +21,6 @@ export class RealVHSEffect {
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-    }
-
-    updateConfig(newConfig) {
-        this.config = { ...this.config, ...newConfig };
-        const vhsLayer = document.getElementById('layer-2-vhs');
-        if (vhsLayer) {
-            if (this.config.wobble) {
-                vhsLayer.classList.add('wobbley');
-            } else {
-                vhsLayer.classList.remove('wobbley');
-            }
-        }
     }
 
     generateSnow() {
@@ -91,5 +79,5 @@ export class RealVHSEffect {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.vhsEffect = new RealVHSEffect('vhs-canvas');
+    new RealVHSEffect('vhs-canvas');
 });
