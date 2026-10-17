@@ -125,8 +125,19 @@ import navItems from '../data/navigation.json';
   let currentIndex = 0;
   let currentRotation = 0;
   let hasInteracted = false;
+  // Sección anunciada al visor: solo se vuelve a anunciar si cambia (no en cada resize)
+  let seccionAnunciada: string | null = null;
 
-  // Capas que se abren encima (detalle de proyecto, galería, estantería, SETUP) llevan
+  // Enlaces por sección (#proyectos, #contacto...): si la URL trae una, se arranca ahí
+  const ids = Array.from(labels).map(l => l.getAttribute('data-target'));
+  const indiceDelHash = () => ids.indexOf(decodeURIComponent(location.hash.slice(1)));
+  const inicial = indiceDelHash();
+  if (inicial > 0) {
+    currentIndex = inicial;
+    currentRotation = -(inicial * degreesPerStep);
+  }
+
+  // Capas que se abren encima (detalle de proyecto, galería, colección) llevan
   // data-reel-lock. Mientras alguna esté visible, el carrete no lee scroll ni arrastre.
   function isLocked() {
     return Array.from(document.querySelectorAll('[data-reel-lock]'))
@@ -179,6 +190,8 @@ import navItems from '../data/navigation.json';
       if (absDiff > 2) {
         (label as HTMLElement).style.opacity = '0';
         (label as HTMLElement).style.pointerEvents = 'none';
+        label.classList.remove('active');
+        label.removeAttribute('aria-current');
         return;
       }
 
@@ -199,10 +212,18 @@ import navItems from '../data/navigation.json';
 
       if (absDiff === 0) {
         label.classList.add('active');
+        label.setAttribute('aria-current', 'true');
         const targetId = label.getAttribute('data-target');
-        document.dispatchEvent(new CustomEvent('visor-change', { detail: targetId }));
+        if (targetId !== seccionAnunciada) {
+          seccionAnunciada = targetId;
+          document.dispatchEvent(new CustomEvent('visor-change', { detail: targetId }));
+          // La URL refleja la sección (sin crear historial); la portada queda sin #
+          const url = i === 0 ? location.pathname + location.search : `#${targetId}`;
+          history.replaceState(null, '', url);
+        }
       } else {
         label.classList.remove('active');
+        label.removeAttribute('aria-current');
       }
     });
 
@@ -263,7 +284,33 @@ import navItems from '../data/navigation.json';
   }
 
   renderTexts();
+  if (inicial > 0) {
+    if (rotator) rotator.style.transform = `rotate(${currentRotation}deg)`;
+    // El primer aviso sale antes de que el visor (index.astro) esté escuchando: se repite al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+      document.dispatchEvent(new CustomEvent('visor-change', { detail: ids[inicial] }));
+    });
+  }
   window.addEventListener('resize', renderTexts);
+
+  // Un link a #seccion dentro del sitio (o editar la URL) mueve el carrete hasta ahí
+  window.addEventListener('hashchange', () => {
+    const i = indiceDelHash();
+    if (i >= 0 && i !== currentIndex) { hideHint(); updateNavigation(i); }
+  });
+
+  // TECLADO: flechas y Re Pág/Av Pág cambian de sección (no con una capa abierta ni al escribir)
+  const TECLAS_SIGUIENTE = ['ArrowDown', 'ArrowRight', 'PageDown'];
+  const TECLAS_ANTERIOR = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+  window.addEventListener('keydown', (e) => {
+    if (e.repeat || e.altKey || e.ctrlKey || e.metaKey || isLocked()) return;
+    if ((e.target as HTMLElement | null)?.closest('input, textarea, select, [contenteditable="true"]')) return;
+    const paso = TECLAS_SIGUIENTE.includes(e.key) ? 1 : TECLAS_ANTERIOR.includes(e.key) ? -1 : 0;
+    if (!paso) return;
+    e.preventDefault();
+    hideHint();
+    updateNavigation(currentIndex + paso);
+  });
 
   labels.forEach((label, i) => {
     label.addEventListener('click', () => {
