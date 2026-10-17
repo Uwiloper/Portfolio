@@ -509,7 +509,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 <script>
   const container = document.getElementById('carousel-container');
   const track = document.getElementById('carousel-track');
-  const items = document.querySelectorAll('.vhs-item');
+  const items = document.querySelectorAll<HTMLElement>('.vhs-item');
   const mouseTooltip = document.getElementById('mouse-tooltip');
   
   let isPaused = false;
@@ -554,13 +554,13 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     if (container && items.length > 0) {
       const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
       let minDist = Infinity;
-      let nearestItem = null;
-      items.forEach(item => {
+      let nearestItem: HTMLElement | null = null;
+      for (const item of Array.from(items)) {
         const rect = item.getBoundingClientRect();
         const itemCenterX = rect.left + rect.width / 2;
         const dist = Math.abs(centerX - itemCenterX);
         if (dist < minDist) { minDist = dist; nearestItem = item; }
-      });
+      }
       if (nearestItem) {
         const itemCenterX = nearestItem.getBoundingClientRect().left + nearestItem.offsetWidth / 2;
         targetScroll += (itemCenterX - centerX);
@@ -633,10 +633,10 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   // ==========================================
   // MOTOR DEL MINIMODAL GALERÍA
   // ==========================================
-  let currentGalleryPhotos = [];
+  let currentGalleryPhotos: string[] = [];
   let currentPhotoIndex = 0;
   let isZoomed = false;
-  const galImg = document.getElementById('gallery-image');
+  const galImg = document.getElementById('gallery-image') as HTMLImageElement | null;
   const galCounter = document.getElementById('gallery-counter');
   const galZoomBox = document.getElementById('gallery-zoom-box');
   const galBackdropArea = document.getElementById('gallery-backdrop-area');
@@ -649,6 +649,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   }
 
   function toggleZoom() {
+    if (!galZoomBox) return;
     isZoomed = !isZoomed;
     if (isZoomed) {
       galZoomBox.classList.add('scale-150');
@@ -674,7 +675,8 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     }
   }
 
-  function openGallery(index) {
+  function openGallery(index: number) {
+    if (!galleryModal) return;
     currentPhotoIndex = index;
     updateGallery();
     galleryModal.classList.remove('hidden');
@@ -683,6 +685,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   }
 
   function closeGallery() {
+    if (!galleryModal) return;
     galleryModal.classList.replace('opacity-100', 'opacity-0');
     resetZoom();
     setTimeout(() => {
@@ -718,7 +721,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 
   // Eventos de teclado (Esc, Z, Flechas)
   window.addEventListener('keydown', (e) => {
-    if (galleryModal.classList.contains('hidden')) return;
+    if (!galleryModal || galleryModal.classList.contains('hidden')) return;
 
     if (e.key === 'Escape') {
       closeGallery();
@@ -733,7 +736,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     }
   });
 
-  function switchView(hideElement, showElement) {
+  function switchView(hideElement: HTMLElement | null, showElement: HTMLElement | null) {
     if (!hideElement || !showElement) return;
     hideElement.classList.replace('opacity-100', 'opacity-0');
     setTimeout(() => {
@@ -743,15 +746,15 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
       showElement.classList.add('flex');
       // Cada vista abre desde arriba (scrollTop solo funciona cuando ya es visible)
       showElement.scrollTop = 0;
-      showElement.querySelectorAll('.contra-texto').forEach(el => { el.scrollTop = 0; });
+      showElement.querySelectorAll<HTMLElement>('.contra-texto').forEach(el => { el.scrollTop = 0; });
       if (showElement === vistaCarrusel) startCarousel();
       setTimeout(() => showElement.classList.replace('opacity-0', 'opacity-100'), 50);
     }, 300);
   }
 
-  function toggleContent(element, content) {
+  function toggleContent(element: HTMLElement | null, content: unknown) {
     if (!element) return;
-    if (!content || content.toString().trim() === "" || (Array.isArray(content) && content.length === 0)) {
+    if (!content || String(content).trim() === "" || (Array.isArray(content) && content.length === 0)) {
       element.classList.add('hidden');
     } else {
       element.classList.remove('hidden');
@@ -761,7 +764,17 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   // ==========================================
   // TEMA POR PROYECTO (proyectos.json → estilo)
   // ==========================================
-  const fuentesCargadas = new Set();
+  // Forma de proyectos.json → estilo que usa el detalle
+  interface EstiloProyecto {
+    tema?: string;
+    paleta?: Record<string, string>;
+    tipografia?: { googleFonts?: string; titulo?: string; etiquetas?: string; texto?: string };
+    etiquetas?: Record<string, string>;
+    sello?: string;
+    etiquetaFoto?: string;
+  }
+
+  const fuentesCargadas = new Set<string>();
   const VARIABLES_PALETA = {
     primario: '--theme-color',
     secundario: '--theme-2',
@@ -770,7 +783,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     texto: '--theme-ink',
   };
 
-  function cargarFuentes(familias) {
+  function cargarFuentes(familias?: string) {
     if (!familias || fuentesCargadas.has(familias)) return;
     fuentesCargadas.add(familias);
     const link = document.createElement('link');
@@ -779,8 +792,9 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     document.head.appendChild(link);
   }
 
-  function aplicarEstilo(proyecto) {
-    const estilo = proyecto.estilo || {};
+  function aplicarEstilo(proyecto: { titulo: string; colorPrincipal?: string; estilo?: EstiloProyecto }) {
+    if (!vistaDetalle) return;
+    const estilo: EstiloProyecto = proyecto.estilo || {};
     vistaDetalle.dataset.tema = estilo.tema || 'default';
 
     // Limpia la paleta del proyecto anterior y aplica la nueva (detalle + galería)
@@ -790,9 +804,10 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
       el.style.removeProperty('--font-title');
       el.style.removeProperty('--font-label');
       el.style.removeProperty('--font-body');
-      const paleta = { primario: proyecto.colorPrincipal, ...estilo.paleta };
+      const paleta: Record<string, string | undefined> = { primario: proyecto.colorPrincipal, ...estilo.paleta };
       Object.entries(VARIABLES_PALETA).forEach(([clave, variable]) => {
-        if (paleta[clave]) el.style.setProperty(variable, paleta[clave]);
+        const valor = paleta[clave];
+        if (valor) el.style.setProperty(variable, valor);
       });
       if (estilo.tipografia?.titulo) el.style.setProperty('--font-title', estilo.tipografia.titulo);
       if (estilo.tipografia?.etiquetas) el.style.setProperty('--font-label', estilo.tipografia.etiquetas);
@@ -801,18 +816,18 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     cargarFuentes(estilo.tipografia?.googleFonts);
 
     // Etiquetas de sección propias del tema ("EL CASO", "> brief"...)
-    vistaDetalle.querySelectorAll('.detalle-label').forEach(el => {
-      el.textContent = estilo.etiquetas?.[el.dataset.label] || el.dataset.default;
+    vistaDetalle.querySelectorAll<HTMLElement>('.detalle-label').forEach(el => {
+      el.textContent = estilo.etiquetas?.[el.dataset.label ?? ''] || el.dataset.default || '';
     });
 
     const sello = document.getElementById('detalle-sello');
     if (sello) { sello.textContent = estilo.sello || ''; toggleContent(sello, estilo.sello); }
 
-    const portada = document.getElementById('detalle-portada-imagen');
+    const portada = document.getElementById('detalle-portada-imagen') as HTMLImageElement | null;
     if (portada) portada.alt = `Portada de ${proyecto.titulo}`;
   }
 
-  function openProjectDetail(projectId, currentView) {
+  function openProjectDetail(projectId: string | null, currentView: HTMLElement | null) {
     document.body.style.overflow = 'hidden';
 
     import('../../data/proyectos.json').then(module => {
@@ -837,7 +852,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
         if (lomoAn) { lomoAn.textContent = proyecto.año || ""; toggleContent(lomoAn, proyecto.año); }
 
         // PORTADA
-        const imgPort = document.getElementById('detalle-portada-imagen');
+        const imgPort = document.getElementById('detalle-portada-imagen') as HTMLImageElement | null;
         if (imgPort) { imgPort.src = d.portada?.imagen || ""; toggleContent(imgPort, d.portada?.imagen); }
 
         const tituloPort = document.getElementById('detalle-portada-titulo');
@@ -852,8 +867,8 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
         if (dirPort) { dirPort.textContent = d.portada?.director || ""; toggleContent(wrapDir, d.portada?.director); }
 
         // Botones VISITAR (Desktop & Mobile)
-        const btnDesk = document.getElementById('detalle-portada-btn-desk');
-        const btnMob = document.getElementById('detalle-portada-btn-mob');
+        const btnDesk = document.getElementById('detalle-portada-btn-desk') as HTMLAnchorElement | null;
+        const btnMob = document.getElementById('detalle-portada-btn-mob') as HTMLAnchorElement | null;
         const labels = document.querySelectorAll('.btn-visitar-label');
 
         if (d.portada?.linkBoton && d.portada.linkBoton.trim() !== "") {
@@ -877,7 +892,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
           toggleContent(badgeContra, d.contraportada?.badge);
           if (d.contraportada?.badgeIcono) {
             iconBadge.style.maskImage = `url('${d.contraportada.badgeIcono}')`;
-            iconBadge.style.webkitMaskImage = `url('${d.contraportada.badgeIcono}')`;
+            iconBadge.style.setProperty('-webkit-mask-image', `url('${d.contraportada.badgeIcono}')`);
             iconBadge.classList.remove('hidden');
           } else {
             iconBadge.classList.add('hidden');

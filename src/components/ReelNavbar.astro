@@ -211,7 +211,7 @@ import navItems from '../data/navigation.json';
   }
 
   // Animación de REBOTE cuando se llega al límite (Inicio o Fin)
-  function bounceLimit(direction) {
+  function bounceLimit(direction: -1 | 1) {
     if (!rotator) return;
     hideHint(); 
     
@@ -240,7 +240,7 @@ import navItems from '../data/navigation.json';
   }
 
   // Navegación principal
-  function updateNavigation(newIndex, animateSVG = true) {
+  function updateNavigation(newIndex: number, animateSVG = true) {
     if (newIndex < 0) {
       bounceLimit(-1);
       return;
@@ -298,7 +298,7 @@ import navItems from '../data/navigation.json';
   let startPos = 0;
   let swipeLocked = false;
 
-  const onPointerDown = (e) => {
+  const onPointerDown = (e: PointerEvent) => {
     if (e.button !== undefined && e.button !== 0) return;
     if (isLocked()) return;
 
@@ -309,7 +309,7 @@ import navItems from '../data/navigation.json';
     startPos = isDesktop ? e.clientY : e.clientX;
   };
 
-  const onPointerMove = (e) => {
+  const onPointerMove = (e: PointerEvent) => {
     if (!isDragging || swipeLocked || !rotator) return;
 
     const isDesktop = window.innerWidth >= 1024;

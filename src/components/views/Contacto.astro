@@ -106,7 +106,7 @@ const opacidad = data.opacidadFirma || "1";
         await navigator.clipboard.writeText(textToCopy);
         
         btn.classList.add('bg-pink-500', 'border-pink-500');
-        btn.querySelector('svg').classList.add('text-white');
+        btn.querySelector('svg')?.classList.add('text-white');
         
         if (labelElement) {
           labelElement.textContent = 'COPIADO';
@@ -115,7 +115,7 @@ const opacidad = data.opacidadFirma || "1";
         
         setTimeout(() => {
           btn.classList.remove('bg-pink-500', 'border-pink-500');
-          btn.querySelector('svg').classList.remove('text-white');
+          btn.querySelector('svg')?.classList.remove('text-white');
           if (labelElement) {
             labelElement.textContent = 'Copiar';
             labelElement.classList.remove('text-white');

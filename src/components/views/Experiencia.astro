@@ -119,7 +119,7 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
   let activeIndex = 0;
 
   // Función centralizada para cambiar de pestaña y hacer scroll
-  function activateTab(index) {
+  function activateTab(index: number) {
     if (index < 0 || index >= tabs.length) return;
     activeIndex = index;
     const selectedTab = tabs[index];
@@ -128,17 +128,17 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
     tabs.forEach(t => {
       t.classList.remove('border-pink-500', 'bg-white/5');
       t.classList.add('border-white/10');
-      t.querySelector('span:first-child').classList.replace('text-pink-400', 'text-white/40');
-      t.querySelector('span:last-child').classList.replace('text-white', 'text-white/60');
-      t.querySelector('span:last-child').classList.remove('drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]');
+      t.querySelector('span:first-child')?.classList.replace('text-pink-400', 'text-white/40');
+      t.querySelector('span:last-child')?.classList.replace('text-white', 'text-white/60');
+      t.querySelector('span:last-child')?.classList.remove('drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]');
     });
 
     // Activar la pestaña seleccionada
     selectedTab.classList.remove('border-white/10');
     selectedTab.classList.add('border-pink-500', 'bg-white/5');
-    selectedTab.querySelector('span:first-child').classList.replace('text-white/40', 'text-pink-400');
-    selectedTab.querySelector('span:last-child').classList.replace('text-white/60', 'text-white');
-    selectedTab.querySelector('span:last-child').classList.add('drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]');
+    selectedTab.querySelector('span:first-child')?.classList.replace('text-white/40', 'text-pink-400');
+    selectedTab.querySelector('span:last-child')?.classList.replace('text-white/60', 'text-white');
+    selectedTab.querySelector('span:last-child')?.classList.add('drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]');
 
     // Cambiar contenido visible
     const targetId = selectedTab.getAttribute('data-target');
