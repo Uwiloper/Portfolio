@@ -1,0 +1,20 @@
+---
+// Las cuatro esquinas del visor de cámara alrededor del contenido de una vista.
+// El contenedor padre debe ser `relative`.
+interface Props {
+  tono?: 'suave' | 'fuerte';
+}
+
+const { tono = 'suave' } = Astro.props;
+const color = tono === 'fuerte' ? 'border-white/40' : 'border-white/30';
+const esquinas = [
+  'top-0 left-0 border-t-2 border-l-2',
+  'top-0 right-0 border-t-2 border-r-2',
+  'bottom-0 left-0 border-b-2 border-l-2',
+  'bottom-0 right-0 border-b-2 border-r-2',
+];
+---
+
+{esquinas.map((posicion) => (
+  <div class:list={['absolute w-6 h-6 pointer-events-none', posicion, color]} aria-hidden="true"></div>
+))}

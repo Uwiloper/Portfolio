@@ -1,6 +1,7 @@
 ---
 import data from '../../data/experiencia.json';
 import IconoSkill from '../IconoSkill.astro';
+import CameraFrame from '../CameraFrame.astro';
 
 // Lógica para ocultar flechas en web si hay 2 o menos items
 const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
@@ -10,10 +11,7 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
   
   <div class="max-w-[700px] w-full mx-auto relative p-4 sm:p-8">
     
-    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/30 pointer-events-none"></div>
+    <CameraFrame />
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-2">
       
@@ -100,9 +98,6 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
 </article>
 
 <style>
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
   .slider-mask {
     mask-image: linear-gradient(to right, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
@@ -112,33 +107,6 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
       mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
     }
-  }
-
-  .glitch-text {
-    animation: rgb-jitter-idle 2s linear infinite alternate;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .glitch-action-link:hover .glitch-text,
-  .glitch-action-link:active .glitch-text {
-    color: white;
-    animation: rgb-jitter-active 0.15s linear infinite alternate;
-  }
-  @keyframes rgb-jitter-idle {
-    0% { text-shadow: -1px 0 0 rgba(0, 255, 255, 0.4), 1px 0 0 rgba(255, 0, 255, 0.4); }
-    100% { text-shadow: 1px 0 0 rgba(0, 255, 255, 0.4), -1px 0 0 rgba(255, 0, 255, 0.4); }
-  }
-  @keyframes rgb-jitter-active {
-    0% { text-shadow: -2px 0 0 rgba(0, 255, 255, 0.9), 2px 0 0 rgba(255, 0, 255, 0.9); }
-    50% { text-shadow: 2px 0 0 rgba(0, 255, 255, 0.9), -2px 0 0 rgba(255, 0, 255, 0.9); }
-    100% { text-shadow: -1px 0 1px rgba(0, 255, 255, 0.9), 1px 0 1px rgba(255, 0, 255, 0.9); }
-  }
-
-  @keyframes camera-ready {
-    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
-    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
-  }
-  .camera-focus-view {
-    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 </style>
 

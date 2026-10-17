@@ -1,6 +1,7 @@
 ---
 import data from '../../data/contacto.json';
 import IconoSkill from '../IconoSkill.astro';
+import CameraFrame from '../CameraFrame.astro';
 
 const tieneRedes = data.redes && data.redes.length > 0;
 // Si no hay valor en el JSON, por defecto será 1 (100% visible)
@@ -11,11 +12,7 @@ const opacidad = data.opacidadFirma || "1";
   
   <div class="max-w-[700px] w-full mx-auto relative p-6 sm:p-8 flex flex-col justify-center min-h-[400px]">
     
-    <!-- Marcas de Cámara -->
-    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/30 pointer-events-none"></div>
-    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/30 pointer-events-none"></div>
+    <CameraFrame />
 
     <div class="flex flex-col gap-5 sm:gap-8">
       
@@ -93,36 +90,6 @@ const opacidad = data.opacidadFirma || "1";
     </div>
   </div>
 </article>
-
-<style>
-  @keyframes camera-ready {
-    0% { opacity: 0; filter: blur(15px) brightness(2); transform: scale(1.05); }
-    100% { opacity: 1; filter: blur(0px) brightness(1); transform: scale(1); }
-  }
-  .camera-focus-view {
-    animation: camera-ready 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  }
-
-  .glitch-text {
-    animation: rgb-jitter-idle 2.5s linear infinite alternate;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  .glitch-wrapper:hover .glitch-text,
-  .glitch-wrapper:active .glitch-text {
-    color: white;
-    animation: rgb-jitter-active 0.15s linear infinite alternate;
-  }
-
-  @keyframes rgb-jitter-idle {
-    0% { text-shadow: -1px 0 0 rgba(0, 255, 255, 0.4), 1px 0 0 rgba(255, 0, 255, 0.4); }
-    100% { text-shadow: 1px 0 0 rgba(0, 255, 255, 0.4), -1px 0 0 rgba(255, 0, 255, 0.4); }
-  }
-  @keyframes rgb-jitter-active {
-    0% { text-shadow: -2px 0 0 rgba(0, 255, 255, 0.9), 2px 0 0 rgba(255, 0, 255, 0.9); }
-    50% { text-shadow: 2px 0 0 rgba(0, 255, 255, 0.9), -2px 0 0 rgba(255, 0, 255, 0.9); }
-    100% { text-shadow: -1px 0 1px rgba(0, 255, 255, 0.9), 1px 0 1px rgba(255, 0, 255, 0.9); }
-  }
-</style>
 
 <script>
   const copyButtons = document.querySelectorAll('.copy-btn');
