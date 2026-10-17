@@ -1,6 +1,7 @@
 ---
 import data from '../../data/proyectos.json';
 import CameraFrame from '../CameraFrame.astro';
+import VisorFotos from '../VisorFotos.astro';
 
 // El bucle infinito necesita recorrido de sobra: con pocos proyectos se repiten más veces
 // (mínimo 3 copias y unas 12 cintas en total) para que el salto de vuelta nunca quede fuera del scroll.
@@ -188,34 +189,8 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
       </div>
     </div>
 
-    <!-- MINIMODAL GALERÍA LIGHTBOX                -->
-    <!-- ========================================== -->
-    <div id="gallery-modal" data-reel-lock class="hidden fixed inset-0 z-[10005] bg-black/95 flex-col items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-auto backdrop-blur-md">
-      
-      <button id="gallery-close" class="absolute top-6 right-6 font-mono text-xs sm:text-sm text-white hover:text-theme tracking-widest p-4 transition-colors z-20 cursor-pointer">
-        [ CERRAR X / ESC ]
-      </button>
-
-      <button id="gallery-prev" class="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 p-4 text-white hover:text-theme transition-colors z-20 cursor-pointer">
-        <svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 rotate-180 drop-shadow-theme"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-
-      <button id="gallery-next" class="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 p-4 text-white hover:text-theme transition-colors z-20 cursor-pointer">
-        <svg viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-theme"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-
-      <!-- Contenedor con Detección de Clic Fuera -->
-      <div id="gallery-backdrop-area" class="absolute inset-0 w-full h-full flex items-center justify-center p-4 sm:p-12">
-        <div id="gallery-zoom-box" class="relative max-w-full max-h-full flex items-center justify-center transition-transform duration-300 cursor-zoom-in">
-          <img id="gallery-image" src="" alt="Vista Previa" class="max-w-[85vw] max-h-[80vh] object-contain border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.9)] select-none transition-all duration-300" />
-        </div>
-      </div>
-
-      <div class="absolute bottom-6 flex items-center gap-4 font-mono text-theme text-xs tracking-widest pointer-events-none z-20">
-        <span id="gallery-counter">1 / 3</span>
-        <span class="text-white/30 hidden sm:inline">[ CLIC O TECLA 'Z' PARA ZOOM ]</span>
-      </div>
-    </div>
+    <!-- VISOR DE FOTOS (capa sobre el detalle; comportamiento en src/js/visor-fotos.ts) -->
+    <VisorFotos />
 
   </div>
 </article>
@@ -270,15 +245,6 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 
   .skill-label { filter: blur(8px); will-change: filter, opacity, transform; }
   .skill-label.is-visible { opacity: 1; filter: blur(0px); color: #ffffff; text-shadow: 0 0 8px var(--theme-color, #00d2ff); }
-
-  /* Animación de Transición de Imagen en la Galería */
-  .gallery-glitch-switch {
-    animation: gallery-pop 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-  }
-  @keyframes gallery-pop {
-    0% { transform: scale(0.95); opacity: 0.3; filter: blur(6px) brightness(1.8); }
-    100% { transform: scale(1); opacity: 1; filter: blur(0px) brightness(1); }
-  }
 </style>
 
 <!-- ============================================================ -->
@@ -507,6 +473,9 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 </style>
 
 <script>
+  import { abrirCapa, cerrarCapa, capaAbierta } from '../../js/capas';
+  import { abrirVisorFotos } from '../../js/visor-fotos';
+
   const container = document.getElementById('carousel-container');
   const track = document.getElementById('carousel-track');
   const items = document.querySelectorAll<HTMLElement>('.vhs-item');
@@ -621,120 +590,32 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   const vistaCarrusel = document.getElementById('vista-carrusel');
   const vistaEstanteria = document.getElementById('vista-estanteria');
   const vistaDetalle = document.getElementById('vista-detalle');
-  const galleryModal = document.getElementById('gallery-modal');
-  
+  const visorFotos = document.getElementById('visor-fotos');
+
   if (vistaDetalle && vistaDetalle.parentNode !== document.body) document.body.appendChild(vistaDetalle);
-  if (galleryModal && galleryModal.parentNode !== document.body) document.body.appendChild(galleryModal);
   if (mouseTooltip && mouseTooltip.parentNode !== document.body) document.body.appendChild(mouseTooltip);
 
   const btnVerEstanteria = document.getElementById('btn-ver-estanteria');
   const btnsVolver = document.querySelectorAll('.btn-volver');
 
   // ==========================================
-  // MOTOR DEL MINIMODAL GALERÍA
+  // CAPAS: colección → detalle → fotos (src/js/capas.ts)
+  // Esc, "atrás" del navegador y REBOBINAR cierran solo la de más arriba.
   // ==========================================
-  let currentGalleryPhotos: string[] = [];
-  let currentPhotoIndex = 0;
-  let isZoomed = false;
-  const galImg = document.getElementById('gallery-image') as HTMLImageElement | null;
-  const galCounter = document.getElementById('gallery-counter');
-  const galZoomBox = document.getElementById('gallery-zoom-box');
-  const galBackdropArea = document.getElementById('gallery-backdrop-area');
+  // Desde dónde se abrió el detalle: al cerrarlo se vuelve ahí (carrusel o colección)
+  let origenDetalle: HTMLElement | null = null;
 
-  function triggerGlitchTransition() {
-    if (!galImg) return;
-    galImg.classList.remove('gallery-glitch-switch');
-    void galImg.offsetWidth;
-    galImg.classList.add('gallery-glitch-switch');
+  function abrirColeccion() {
+    if (capaAbierta()) return;
+    switchView(vistaCarrusel, vistaEstanteria);
+    abrirCapa('coleccion', () => switchView(vistaEstanteria, vistaCarrusel));
   }
 
-  function toggleZoom() {
-    if (!galZoomBox) return;
-    isZoomed = !isZoomed;
-    if (isZoomed) {
-      galZoomBox.classList.add('scale-150');
-      galZoomBox.classList.replace('cursor-zoom-in', 'cursor-zoom-out');
-    } else {
-      galZoomBox.classList.remove('scale-150');
-      galZoomBox.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
-    }
+  function cerrarDetalleUI() {
+    document.body.style.overflow = '';
+    mouseTooltip?.classList.remove('is-visible');
+    switchView(vistaDetalle, origenDetalle ?? vistaCarrusel);
   }
-
-  function resetZoom() {
-    isZoomed = false;
-    galZoomBox?.classList.remove('scale-150');
-    galZoomBox?.classList.replace('cursor-zoom-out', 'cursor-zoom-in');
-  }
-
-  function updateGallery() {
-    if (currentGalleryPhotos.length > 0 && galImg && galCounter) {
-      resetZoom();
-      galImg.src = currentGalleryPhotos[currentPhotoIndex];
-      galCounter.textContent = `${currentPhotoIndex + 1} / ${currentGalleryPhotos.length}`;
-      triggerGlitchTransition();
-    }
-  }
-
-  function openGallery(index: number) {
-    if (!galleryModal) return;
-    currentPhotoIndex = index;
-    updateGallery();
-    galleryModal.classList.remove('hidden');
-    galleryModal.classList.add('flex');
-    setTimeout(() => galleryModal.classList.replace('opacity-0', 'opacity-100'), 10);
-  }
-
-  function closeGallery() {
-    if (!galleryModal) return;
-    galleryModal.classList.replace('opacity-100', 'opacity-0');
-    resetZoom();
-    setTimeout(() => {
-      galleryModal.classList.add('hidden');
-      galleryModal.classList.remove('flex');
-    }, 300);
-  }
-
-  document.getElementById('gallery-close')?.addEventListener('click', closeGallery);
-  
-  document.getElementById('gallery-next')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    currentPhotoIndex = (currentPhotoIndex + 1) % currentGalleryPhotos.length;
-    updateGallery();
-  });
-
-  document.getElementById('gallery-prev')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    currentPhotoIndex = (currentPhotoIndex - 1 + currentGalleryPhotos.length) % currentGalleryPhotos.length;
-    updateGallery();
-  });
-
-  // Clic en la foto para zoom
-  galZoomBox?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleZoom();
-  });
-
-  // Clic fuera para cerrar
-  galBackdropArea?.addEventListener('click', (e) => {
-    if (e.target === galBackdropArea) closeGallery();
-  });
-
-  // Eventos de teclado (Esc, Z, Flechas)
-  window.addEventListener('keydown', (e) => {
-    if (!galleryModal || galleryModal.classList.contains('hidden')) return;
-
-    if (e.key === 'Escape') {
-      closeGallery();
-    } else if (e.key === 'z' || e.key === 'Z') {
-      toggleZoom();
-    } else if (e.key === 'ArrowRight') {
-      currentPhotoIndex = (currentPhotoIndex + 1) % currentGalleryPhotos.length;
-      updateGallery();
-    } else if (e.key === 'ArrowLeft') {
-      currentPhotoIndex = (currentPhotoIndex - 1 + currentGalleryPhotos.length) % currentGalleryPhotos.length;
-      updateGallery();
-    }
-  });
 
   function switchView(hideElement: HTMLElement | null, showElement: HTMLElement | null) {
     if (!hideElement || !showElement) return;
@@ -798,7 +679,8 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     vistaDetalle.dataset.tema = estilo.tema || 'default';
 
     // Limpia la paleta del proyecto anterior y aplica la nueva (detalle + galería)
-    [vistaDetalle, galleryModal].forEach(el => {
+    if (visorFotos) visorFotos.dataset.tema = estilo.tema || 'default';
+    [vistaDetalle, visorFotos].forEach(el => {
       if (!el) return;
       Object.values(VARIABLES_PALETA).forEach(v => el.style.removeProperty(v));
       el.style.removeProperty('--font-title');
@@ -959,7 +841,6 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
         const fotos = d.contraportada?.fotos || [];
         const etiquetaFoto = proyecto.estilo?.etiquetaFoto || '';
         if (fotosContainer) {
-          currentGalleryPhotos = fotos;
           fotosContainer.replaceChildren(...fotos.map((fotoUrl, idx) => {
             const box = document.createElement('button');
             box.type = 'button';
@@ -976,27 +857,22 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
               cap.textContent = `${etiquetaFoto} ${String(idx + 1).padStart(2, '0')}`;
               box.append(cap);
             }
-            box.addEventListener('click', () => openGallery(idx));
+            box.addEventListener('click', () => abrirVisorFotos({ fotos, indice: idx, etiqueta: etiquetaFoto || 'FOTO', titulo: proyecto.titulo, origen: box }));
             return box;
           }));
           toggleContent(fotosContainer, fotos);
         }
 
+        origenDetalle = currentView;
         switchView(currentView, vistaDetalle);
+        abrirCapa('detalle', cerrarDetalleUI);
       }
     }).catch(err => console.error("Error al cargar datos:", err));
   }
 
-  if (btnVerEstanteria) btnVerEstanteria.addEventListener('click', () => switchView(vistaCarrusel, vistaEstanteria));
-  
-  btnsVolver.forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.body.style.overflow = '';
-      if (mouseTooltip) mouseTooltip.classList.remove('is-visible');
-      if (vistaEstanteria && !vistaEstanteria.classList.contains('hidden')) switchView(vistaEstanteria, vistaCarrusel);
-      if (vistaDetalle && !vistaDetalle.classList.contains('hidden')) switchView(vistaDetalle, vistaCarrusel);
-    });
-  });
+  btnVerEstanteria?.addEventListener('click', abrirColeccion);
+  // REBOBINAR (colección y detalle) retrocede una capa, igual que Esc o "atrás"
+  btnsVolver.forEach(btn => btn.addEventListener('click', cerrarCapa));
 
   items.forEach(item => {
     item.addEventListener('pointermove', (e) => {

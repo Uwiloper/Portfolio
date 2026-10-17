@@ -1,0 +1,150 @@
+---
+// Visor de fotos del detalle de proyecto. El comportamiento vive en src/js/visor-fotos.ts;
+// la paleta y tipografías del proyecto se aplican como variables desde Proyectos (aplicarEstilo).
+---
+
+<div id="visor-fotos" data-reel-lock data-tema="default" class="visor-fotos" hidden role="dialog" aria-modal="true" aria-label="Fotos del proyecto">
+  <div class="vf-grano" aria-hidden="true"></div>
+
+  <header class="vf-barra">
+    <p class="vf-rotulo">
+      <span class="vf-rec" aria-hidden="true"></span>
+      <span id="vf-etiqueta">FOTO 01</span>
+      <span class="vf-contador"><b id="vf-actual">01</b> / <span id="vf-total">01</span></span>
+    </p>
+    <div class="vf-acciones">
+      <div class="vf-zoom" role="group" aria-label="Zoom">
+        <button type="button" id="vf-alejar" aria-label="Alejar">−</button>
+        <output id="vf-nivel" aria-live="polite">100%</output>
+        <button type="button" id="vf-acercar" aria-label="Acercar">+</button>
+      </div>
+      <button type="button" id="vf-cerrar" class="vf-cerrar" aria-label="Cerrar fotos">CERRAR <span aria-hidden="true">✕</span></button>
+    </div>
+  </header>
+
+  <div id="vf-escenario" class="vf-escenario">
+    <span class="vf-esquina vf-esquina-1" aria-hidden="true"></span>
+    <span class="vf-esquina vf-esquina-2" aria-hidden="true"></span>
+    <span class="vf-esquina vf-esquina-3" aria-hidden="true"></span>
+    <span class="vf-esquina vf-esquina-4" aria-hidden="true"></span>
+    <div class="vf-lienzo">
+      <img id="vf-imagen" class="vf-imagen" src="" alt="" draggable="false" />
+    </div>
+    <button type="button" id="vf-anterior" class="vf-flecha vf-flecha-izq" aria-label="Foto anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <button type="button" id="vf-siguiente" class="vf-flecha vf-flecha-der" aria-label="Foto siguiente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <footer class="vf-pie">
+    <div id="vf-miniaturas" class="vf-miniaturas" role="tablist" aria-label="Elegir foto"></div>
+    <p class="vf-ayuda vf-ayuda-mouse">Clic o rueda: zoom · Arrastra para mover · ← → cambiar · Esc cerrar</p>
+    <p class="vf-ayuda vf-ayuda-tactil">Pellizca o toca dos veces: zoom · Desliza para cambiar</p>
+  </footer>
+</div>
+
+<style is:global>
+  /* ---------- BASE (el tema del proyecto redefine las variables) ---------- */
+  #visor-fotos {
+    --theme-color: #00d2ff;
+    --theme-2: #ec4899;
+    --theme-bg: #030303;
+    --theme-ink: #f1f5f9;
+    --font-label: ui-monospace, monospace;
+    position: fixed; inset: 0; z-index: 10005;
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    background: color-mix(in srgb, var(--theme-bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    color: var(--theme-ink);
+    font-family: var(--font-label);
+    opacity: 0; transition: opacity .3s;
+    user-select: none; -webkit-user-select: none;
+  }
+  #visor-fotos[hidden] { display: none; }
+  #visor-fotos.is-open { opacity: 1; }
+
+  .vf-grano {
+    position: absolute; inset: 0; pointer-events: none; opacity: .07; mix-blend-mode: screen;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Barra superior: rótulo de la foto a la izquierda, zoom y cerrar a la derecha */
+  .vf-barra { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem clamp(1rem, 3vw, 2rem); }
+  .vf-rotulo { display: flex; align-items: baseline; gap: .9rem; margin: 0; font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--theme-color); }
+  .vf-contador { color: color-mix(in srgb, var(--theme-ink) 55%, transparent); font-variant-numeric: tabular-nums; }
+  .vf-contador b { color: var(--theme-ink); font-weight: 400; }
+  .vf-rec { display: none; }
+  .vf-acciones { display: flex; align-items: center; gap: .75rem; }
+  .vf-zoom { display: flex; align-items: center; border: 1px solid color-mix(in srgb, var(--theme-ink) 20%, transparent); }
+  .vf-zoom button { width: 2.25rem; height: 2.25rem; font-size: 1.1rem; color: var(--theme-ink); background: transparent; transition: color .2s, background .2s; }
+  .vf-zoom button:hover:not(:disabled) { color: var(--theme-color); background: color-mix(in srgb, var(--theme-color) 12%, transparent); }
+  .vf-zoom button:disabled { opacity: .3; cursor: default; }
+  .vf-zoom output { min-width: 3.5rem; text-align: center; font-size: .75rem; letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+  .vf-cerrar { padding: .55rem .9rem; font-size: .75rem; letter-spacing: .2em; color: var(--theme-ink); border: 1px solid color-mix(in srgb, var(--theme-ink) 20%, transparent); background: transparent; transition: color .2s, border-color .2s; }
+  .vf-cerrar:hover { color: var(--theme-color); border-color: var(--theme-color); }
+  #visor-fotos button { cursor: pointer; }
+  #visor-fotos button:focus-visible { outline: 1px solid var(--theme-color); outline-offset: 2px; }
+
+  /* Escenario: la foto se mueve y escala dentro; las esquinas de cámara quedan fijas */
+  .vf-escenario { position: relative; z-index: 1; overflow: hidden; margin: 0 clamp(.5rem, 3vw, 2rem); touch-action: none; cursor: zoom-in; }
+  .vf-escenario.con-zoom { cursor: grab; }
+  .vf-escenario.arrastrando { cursor: grabbing; }
+  .vf-lienzo { position: absolute; inset: clamp(.75rem, 2vw, 1.5rem); display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .vf-imagen { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; will-change: transform; box-shadow: 0 20px 60px rgba(0, 0, 0, .7); transition: transform .25s cubic-bezier(.22, 1, .36, 1); }
+  .vf-escenario.arrastrando .vf-imagen { transition: none; }
+  .vf-imagen.entra-der { animation: vf-entra-der .35s cubic-bezier(.22, 1, .36, 1); }
+  .vf-imagen.entra-izq { animation: vf-entra-izq .35s cubic-bezier(.22, 1, .36, 1); }
+  @keyframes vf-entra-der { from { opacity: 0; filter: blur(6px) brightness(1.6); translate: 40px 0; } to { opacity: 1; filter: none; translate: 0 0; } }
+  @keyframes vf-entra-izq { from { opacity: 0; filter: blur(6px) brightness(1.6); translate: -40px 0; } to { opacity: 1; filter: none; translate: 0 0; } }
+
+  .vf-esquina { position: absolute; z-index: 2; width: 1.5rem; height: 1.5rem; border: 0 solid color-mix(in srgb, var(--theme-color) 60%, transparent); pointer-events: none; }
+  .vf-esquina-1 { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+  .vf-esquina-2 { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+  .vf-esquina-3 { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+  .vf-esquina-4 { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
+
+  .vf-flecha { position: absolute; top: 50%; z-index: 3; translate: 0 -50%; width: 3rem; height: 3rem; display: grid; place-items: center; color: var(--theme-ink); background: color-mix(in srgb, var(--theme-bg) 70%, transparent); border: 1px solid color-mix(in srgb, var(--theme-ink) 15%, transparent); transition: color .2s, border-color .2s, opacity .2s; }
+  .vf-flecha svg { width: 1.4rem; height: 1.4rem; }
+  .vf-flecha:hover { color: var(--theme-color); border-color: var(--theme-color); }
+  .vf-flecha-izq { left: .75rem; }
+  .vf-flecha-der { right: .75rem; }
+  .vf-escenario.con-zoom .vf-flecha { opacity: 0; pointer-events: none; }
+
+  /* Pie: tira de miniaturas y ayuda */
+  .vf-pie { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: .9rem 1rem 1.1rem; }
+  .vf-miniaturas { display: flex; gap: .5rem; max-width: 100%; overflow-x: auto; scrollbar-width: none; padding: 3px; }
+  .vf-miniaturas::-webkit-scrollbar { display: none; }
+  .vf-mini { flex: 0 0 auto; width: 4.5rem; height: 3rem; padding: 0; border: 0; background: #000; opacity: .4; transition: opacity .2s, outline-color .2s; outline: 1px solid transparent; outline-offset: 2px; }
+  .vf-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .vf-mini:hover { opacity: .75; }
+  .vf-mini[aria-selected="true"] { opacity: 1; outline-color: var(--theme-color); }
+  .vf-ayuda { margin: 0; font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; color: color-mix(in srgb, var(--theme-ink) 45%, transparent); text-align: center; }
+  .vf-ayuda-tactil { display: none; }
+  @media (hover: none) {
+    .vf-ayuda-mouse { display: none; }
+    .vf-ayuda-tactil { display: block; }
+    .vf-flecha { display: none; }
+  }
+  @media (max-width: 640px) {
+    .vf-barra { padding: .75rem; }
+    .vf-zoom { display: none; }
+    .vf-rotulo { font-size: .7rem; gap: .6rem; }
+    .vf-mini { width: 3.5rem; height: 2.4rem; }
+  }
+
+  /* ---------- NOIR: la foto es una evidencia sobre la mesa ---------- */
+  #visor-fotos[data-tema="noir"] .vf-imagen { border: 8px solid var(--theme-ink); border-bottom-width: 28px; box-shadow: 0 25px 60px rgba(0, 0, 0, .85); }
+  #visor-fotos[data-tema="noir"] .vf-rotulo { color: var(--theme-2); }
+  #visor-fotos[data-tema="noir"] .vf-esquina { border-color: color-mix(in srgb, var(--theme-ink) 25%, transparent); border-style: dashed; }
+  #visor-fotos[data-tema="noir"] .vf-mini { filter: grayscale(1) sepia(.35); }
+  #visor-fotos[data-tema="noir"] .vf-mini[aria-selected="true"] { filter: none; }
+
+  /* ---------- TECH: la foto es la señal de un monitor ---------- */
+  #visor-fotos[data-tema="tech"] .vf-imagen { border: 1px solid var(--theme-color); box-shadow: 0 0 0 4px color-mix(in srgb, var(--theme-color) 12%, transparent), 0 0 40px color-mix(in srgb, var(--theme-color) 25%, transparent); }
+  #visor-fotos[data-tema="tech"] .vf-escenario::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0, 0, 0, .22) 3px 4px); }
+  #visor-fotos[data-tema="tech"] .vf-rec { display: inline-block; width: .5rem; height: .5rem; border-radius: 50%; background: var(--theme-2); box-shadow: 0 0 8px var(--theme-2); animation: vf-rec 1s steps(2) infinite; align-self: center; }
+  @keyframes vf-rec { 50% { opacity: .2; } }
+</style>
