@@ -13,7 +13,8 @@
 @font-face {
   font-family: 'Joyride';
   /* Asegúrate de que la ruta coincida con la ubicación en tu carpeta public/fonts/ */
-  src: url('/fonts/Joyride.otf') format('opentype');
+  src: url('/fonts/Joyride.woff2') format('woff2'),
+       url('/fonts/Joyride.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

@@ -42,6 +42,9 @@ const imageURL = new URL(image, Astro.site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
 
+    <!-- Joyride (títulos): se precarga para que no parpadee la fuente de respaldo -->
+    <link rel="preload" href="/fonts/Joyride.woff2" as="font" type="font/woff2" crossorigin />
+
     <!-- Fuente del HUD: en <link> porque un @import después de Tailwind se descarta -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -51,9 +54,9 @@ const imageURL = new URL(image, Astro.site);
   <body class="bg-[#121010] text-slate-100 font-sans min-h-screen overflow-hidden selection:bg-pink-500 selection:text-white">
     
     <div id="layer-1-bg" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-      <img src="/images/proyectos/lazaro-portada.jpg" class="bg-project-image" alt="" />
-      <img src="/images/proyectos/invlazaro-foto1.jpg" class="bg-project-image" alt="" />
-      <img src="/images/proyectos/invlazaro-foto2.jpg" class="bg-project-image" alt="" />
+      <img src="/images/proyectos/lazaro-portada.webp" class="bg-project-image" alt="" decoding="async" />
+      <img src="/images/proyectos/invlazaro-foto1.webp" class="bg-project-image" alt="" decoding="async" />
+      <img src="/images/proyectos/invlazaro-foto2.webp" class="bg-project-image" alt="" decoding="async" />
     </div>
 
     <div id="layer-2-vhs" class="fixed inset-0 z-10 pointer-events-none wobbley">

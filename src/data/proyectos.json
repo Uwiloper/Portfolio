@@ -10,8 +10,8 @@
       "categoria": "Ecommerce",
       "año": "2025",
       "colorPrincipal": "#d9a441",
-      "imagen1": "/images/vhs/lazaro-vhs1.png",
-      "imagen2": "/images/vhs/lazaro-vhs2.png",
+      "imagen1": "/images/vhs/lazaro-vhs1.webp",
+      "imagen2": "/images/vhs/lazaro-vhs2.webp",
       "descripcion": "Ecommerce con panel de gestión de inventario, ventas y stock en tiempo real.",
       "estilo": {
         "tema": "noir",
@@ -43,7 +43,7 @@
           "subtitulo": "Ecommerce y gestión de inventario"
         },
         "portada": {
-          "imagen": "/images/proyectos/lazaro-portada.jpg",
+          "imagen": "/images/proyectos/lazaro-portada.webp",
           "textoBoton": "Ver Demo",
           "linkBoton": "/demos/invlazaro/index.html",
           "director": "Uwil"
@@ -63,9 +63,9 @@
             { "nombre": "Bootstrap", "icono": "/icons/bootstrap.svg" }
           ],
           "fotos": [
-            "/images/proyectos/invlazaro-foto1.jpg",
-            "/images/proyectos/invlazaro-foto2.jpg",
-            "/images/proyectos/invlazaro-foto3.jpg"
+            "/images/proyectos/invlazaro-foto1.webp",
+            "/images/proyectos/invlazaro-foto2.webp",
+            "/images/proyectos/invlazaro-foto3.webp"
           ]
         }
       }
