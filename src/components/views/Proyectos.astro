@@ -1,7 +1,10 @@
 ---
 import data from '../../data/proyectos.json';
 
-const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyectos];
+// El bucle infinito necesita recorrido de sobra: con pocos proyectos se repiten más veces
+// (mínimo 3 copias y unas 12 cintas en total) para que el salto de vuelta nunca quede fuera del scroll.
+const copias = Math.max(3, Math.ceil(12 / data.proyectos.length));
+const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).flat();
 ---
 
 <article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center p-4 pt-14 lg:pt-0 pb-52 lg:pb-0 z-10 select-none overflow-hidden">
@@ -22,7 +25,7 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
       </header>
 
       <div id="carousel-container" class="slider-mask relative w-full overflow-hidden py-10 touch-pan-y cursor-grab active:cursor-grabbing">
-        <div id="carousel-track" class="flex items-center gap-4 sm:gap-10 w-max pointer-events-auto will-change-transform">
+        <div id="carousel-track" data-copias={copias} class="flex items-center gap-4 sm:gap-10 w-max pointer-events-auto will-change-transform">
           {carruselInfinito.map((proyecto) => (
             <button class="vhs-item group relative flex-shrink-0 w-[140px] md:w-[180px] aspect-[2/3] transition-transform duration-100 block" data-id={proyecto.id} data-title={proyecto.titulo}>
               <img src={proyecto.imagen1} alt={proyecto.titulo} class="absolute inset-0 w-full h-full object-contain transition-opacity duration-300 z-10 opacity-100 group-hover:opacity-0 group-[.is-opening]:opacity-0 pointer-events-none" />
@@ -529,8 +532,12 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
   let startX = 0;
   let dragStartScroll = 0;
 
+  // Ancho de una copia de la lista: el scroll se mantiene entre la 2.ª y la 3.ª copia
+  const COPIAS = Number(track?.dataset.copias) || 3;
+  const anchoCopia = () => (track ? track.scrollWidth / COPIAS : 0);
+
   if (track) {
-    targetScroll = track.scrollWidth / 3;
+    targetScroll = anchoCopia();
     if(container) container.scrollLeft = targetScroll;
   }
 
@@ -574,13 +581,22 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
     }
   });
 
+  // El bucle solo corre mientras el carrusel se ve: se detiene solo al ocultarse
+  // (otra vista del visor, la colección o el detalle) y startCarousel() lo reanuda.
+  let carouselRunning = false;
+
   function updateCarousel() {
     if (!container || !track) return;
-    if (!isPaused && !isDragging) targetScroll += 0.6; 
-    const singleSetWidth = track.scrollWidth / 3;
-    if (targetScroll >= singleSetWidth * 2) {
-      targetScroll -= singleSetWidth;
-      container.scrollLeft -= singleSetWidth;
+    if (container.offsetParent === null) { carouselRunning = false; return; }
+    if (!isPaused && !isDragging) targetScroll += 0.6;
+    // Saltos invisibles de una copia entera, hacia atrás al avanzar y hacia adelante al arrastrar a la izquierda
+    const set = anchoCopia();
+    if (targetScroll >= set * 2) {
+      targetScroll -= set;
+      container.scrollLeft -= set;
+    } else if (targetScroll < set) {
+      targetScroll += set;
+      container.scrollLeft += set;
     }
     container.scrollLeft += (targetScroll - container.scrollLeft) * 0.08;
     const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
@@ -596,7 +612,23 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
     });
     requestAnimationFrame(updateCarousel);
   }
-  if (container) updateCarousel();
+
+  function startCarousel() {
+    if (carouselRunning || !container || !track) return;
+    // Si la página cargó con Proyectos oculto, el ancho era 0: se ubica en la segunda copia al mostrarse
+    if (targetScroll === 0) {
+      targetScroll = anchoCopia();
+      container.scrollLeft = targetScroll;
+    }
+    carouselRunning = true;
+    requestAnimationFrame(updateCarousel);
+  }
+
+  startCarousel();
+  // index.astro muestra la vista a los 150 ms del evento
+  document.addEventListener('visor-change', (e) => {
+    if ((e as CustomEvent).detail === 'proyectos') setTimeout(startCarousel, 200);
+  });
 
   // Teletransportaciones al Body
   const vistaCarrusel = document.getElementById('vista-carrusel');
@@ -725,6 +757,7 @@ const carruselInfinito = [...data.proyectos, ...data.proyectos, ...data.proyecto
       // Cada vista abre desde arriba (scrollTop solo funciona cuando ya es visible)
       showElement.scrollTop = 0;
       showElement.querySelectorAll('.contra-texto').forEach(el => { el.scrollTop = 0; });
+      if (showElement === vistaCarrusel) startCarousel();
       setTimeout(() => showElement.classList.replace('opacity-0', 'opacity-100'), 50);
     }, 300);
   }
