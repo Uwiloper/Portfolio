@@ -50,8 +50,9 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
         <rect x="30" y="20" width="360" height="12" rx="3" fill="url(#cs-franja)" />
         <text x="46" y="60" class="cs-titulo">{cinta}</text>
         <text x="372" y="62" class="cs-lado" text-anchor="end">{lado}</text>
-        <text class="cs-lista" x="210" y="164" text-anchor="middle">
-          {pistas.map((p, i) => <tspan data-pista={i}>{`${dos(i + 1)} ${p.titulo.toUpperCase()}${i < pistas.length - 1 ? '  ·  ' : ''}`}</tspan>)}
+        <!-- Lista escrita: la pista actual con la anterior y la siguiente (la rellena el script) -->
+        <text id="cs-lista" class="cs-lista" x="210" y="164" text-anchor="middle">
+          {pistas.slice(0, 3).map((p, i) => <tspan class={i === 0 ? 'actual' : undefined}>{`${dos(i + 1)} ${p.titulo.toUpperCase().slice(0, 18)}${i < Math.min(3, pistas.length) - 1 ? '  ·  ' : ''}`}</tspan>)}
         </text>
 
         <!-- Ventana: rollos de cinta (cambian de tamaño) y ejes (giran) -->
@@ -202,7 +203,8 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .cs-titulo { font-family: 'Joyride', sans-serif; font-style: italic; font-size: 19px; fill: #1a1414; letter-spacing: .04em; }
   .cs-lado { font-family: 'Joyride', sans-serif; font-size: 30px; fill: var(--rosa); }
   .cs-lista { font-size: 8.5px; letter-spacing: .06em; fill: #5b504b; font-family: ui-monospace, monospace; }
-  .cs-lista tspan.actual { fill: #c2185b; font-weight: 700; }
+  /* Los tspan los crea el script (no llevan el atributo del estilo con alcance): por eso :global */
+  .cs-lista :global(tspan.actual) { fill: #c2185b; font-weight: 700; }
 
   /* Panel derecho */
   .deck-panel { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto 1fr; gap: 12px; align-content: start; }
@@ -320,7 +322,9 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   const ruedas = deck?.querySelectorAll<HTMLElement>('.contador-rueda') ?? [];
   const vfdPista = $('vfd-pista'), vfdTiempo = $('vfd-tiempo'), vfdTitulo = $('vfd-titulo');
   const indicadores = deck?.querySelectorAll<HTMLElement>('.vfd-indicadores span') ?? [];
-  const lista = deck?.querySelectorAll<SVGTSpanElement>('.cs-lista tspan') ?? [];
+  const lista = $('cs-lista');
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const recortar = (t: string, max = 18) => (t.length > max ? t.slice(0, max - 1) + '…' : t);
   const teclas = Object.fromEntries([...(deck?.querySelectorAll<HTMLButtonElement>('.tecla') ?? [])].map(t => [t.dataset.tecla, t]));
 
   const dos = (n: number) => String(n).padStart(2, '0');
@@ -376,13 +380,24 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     pistaMostrada = i;
     if (vfdPista) vfdPista.textContent = `TRK ${dos(i + 1)}`;
     if (vfdTitulo) {
-      vfdTitulo.textContent = `${cinta.pistas[i].titulo.toUpperCase()} · ${cinta.pistas[i].artista.toUpperCase()}`;
+      const { titulo, artista } = cinta.pistas[i];
+      vfdTitulo.textContent = (artista ? `${titulo} · ${artista}` : titulo).toUpperCase();
       // Si el título no cabe, se desliza (solo mientras suena)
       const desborde = vfdTitulo.scrollWidth - (vfdTitulo.parentElement?.clientWidth ?? 0);
       vfdTitulo.classList.toggle('desborda', desborde > 0);
       vfdTitulo.style.setProperty('--desborde', `${-Math.max(0, desborde)}px`);
     }
-    lista.forEach((t, k) => t.classList.toggle('actual', k === i));
+    // Etiqueta: ventana de hasta 3 pistas alrededor de la actual
+    if (lista) {
+      const desde = Math.max(0, Math.min(i - 1, cinta.pistas.length - 3));
+      const ventana = cinta.pistas.slice(desde, desde + 3);
+      lista.replaceChildren(...ventana.map((p, k) => {
+        const t = document.createElementNS(SVG_NS, 'tspan');
+        t.textContent = `${dos(desde + k + 1)} ${recortar(p.titulo.toUpperCase())}${k < ventana.length - 1 ? '  ·  ' : ''}`;
+        if (desde + k === i) t.setAttribute('class', 'actual');
+        return t;
+      }));
+    }
   }
 
   function pintarEstado() {
