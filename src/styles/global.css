@@ -202,6 +202,45 @@
 /* ==================================================== */
 .vhs-hud-container {
   font-family: 'Press Start 2P', monospace;
+  /* Móvil: el HUD es fondo; chico y tenue para no competir con el contenido */
+  padding: 14px 16px;
+  opacity: .55;
+}
+.hud-sup { font-size: 10px; }
+.hud-inf { font-size: 9px; }
+@media (min-width: 768px) {
+  .vhs-hud-container { padding: 28px 32px; opacity: .8; }
+  .hud-sup { font-size: 16px; }
+  .hud-inf { font-size: 13px; }
+}
+
+/* ==================================================== */
+/* ESCALA DEL ESCENARIO (escritorio)                     */
+/* --escala la calcula Layout.astro: referencia 1440×810 */
+/* ==================================================== */
+:root { --escala: 1; }
+@media (min-width: 1024px) {
+  /* El escenario completo (visor + carrete) se dibuja a escala, como una sola pieza:
+     mide la pantalla dividida por la escala y zoom lo devuelve al tamaño real, nítido */
+  #main-layout {
+    zoom: var(--escala);
+    width: calc(100vw / var(--escala));
+    height: calc(100vh / var(--escala));
+    min-height: 0;
+  }
+  .vhs-hud-container { padding: calc(40px * var(--escala)); opacity: 1; }
+  .hud-sup { font-size: calc(24px * var(--escala)); }
+  .hud-inf { font-size: calc(20px * var(--escala)); }
+}
+
+/* En pantallas chicas el glitch RGB del HUD se separa menos (a 10px de letra, 5px es demasiado) */
+@media (max-width: 1023px) {
+  .rgb-glitch-text { animation-name: rgbTextSuave; }
+}
+@keyframes rgbTextSuave {
+  0%, 25%, 55% { text-shadow: -1px 0 3px rgba(255, 255, 255, 0.35), 0 0 1px rgba(251, 0, 231, 0.6), 0 0 2px rgba(0, 233, 235, 0.6); }
+  45%, 90% { text-shadow: -1px 0 3px rgba(255, 255, 255, 0.35), 1.5px 0 1px rgba(251, 0, 231, 0.7), -1.5px 0 1px rgba(0, 233, 235, 0.7); }
+  50%, 100% { text-shadow: -1px 0 3px rgba(255, 255, 255, 0.35), -1.5px 0 1px rgba(251, 0, 231, 0.7), 1.5px 0 1px rgba(0, 242, 14, 0.6); }
 }
 
 .rgb-glitch-text {

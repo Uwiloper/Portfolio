@@ -509,11 +509,21 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     container.addEventListener('mouseleave', () => { if (!isDragging) isPaused = false; });
   }
 
+  // En escritorio el escenario está escalado (zoom): las posiciones en pantalla (clientX,
+  // getBoundingClientRect) y las del scroll interno no miden lo mismo. Se mide en pantalla
+  // y se convierte a unidades de scroll al mover.
+  const enPantalla = (el: Element) => { const r = el.getBoundingClientRect(); return { centro: r.left + r.width / 2, ancho: r.width }; };
+  const aScroll = (px: number) => {
+    if (!container) return px;
+    const ancho = container.getBoundingClientRect().width;
+    return ancho ? px * container.offsetWidth / ancho : px;
+  };
+
   window.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
     const diff = e.clientX - startX;
     if (Math.abs(diff) > 5) hasDragged = true;
-    targetScroll = dragStartScroll - (diff * 2.5); 
+    targetScroll = dragStartScroll - aScroll(diff * 2.5);
   });
 
   window.addEventListener('pointerup', () => {
@@ -521,7 +531,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     isDragging = false;
     if (container && !container.matches(':hover')) isPaused = false;
     if (container && items.length > 0) {
-      const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
+      const centerX = enPantalla(container).centro;
       let minDist = Infinity;
       let nearestItem: HTMLElement | null = null;
       for (const item of Array.from(items)) {
@@ -530,10 +540,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
         const dist = Math.abs(centerX - itemCenterX);
         if (dist < minDist) { minDist = dist; nearestItem = item; }
       }
-      if (nearestItem) {
-        const itemCenterX = nearestItem.getBoundingClientRect().left + nearestItem.offsetWidth / 2;
-        targetScroll += (itemCenterX - centerX);
-      }
+      if (nearestItem) targetScroll += aScroll(enPantalla(nearestItem).centro - centerX);
     }
   });
 
@@ -555,12 +562,10 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
       container.scrollLeft += set;
     }
     container.scrollLeft += (targetScroll - container.scrollLeft) * 0.08;
-    const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
+    const { centro: centerX, ancho } = enPantalla(container);
+    const maxDist = ancho / 2;
     items.forEach(item => {
-      const rect = item.getBoundingClientRect();
-      const itemCenterX = rect.left + rect.width / 2;
-      const dist = Math.abs(centerX - itemCenterX);
-      const maxDist = container.offsetWidth / 2;
+      const dist = Math.abs(centerX - enPantalla(item).centro);
       let scale = 1.25 - (dist / maxDist) * 0.5; 
       scale = Math.max(0.75, Math.min(1.25, scale));
       item.style.transform = `scale(${scale})`;
@@ -890,9 +895,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
       const projectId = item.getAttribute('data-id');
       if (e.pointerType === 'touch') {
         if (container) {
-          const centerX = container.getBoundingClientRect().left + container.offsetWidth / 2;
-          const itemCenterX = item.getBoundingClientRect().left + item.offsetWidth / 2;
-          targetScroll += (itemCenterX - centerX);
+          targetScroll += aScroll(enPantalla(item).centro - enPantalla(container).centro);
         }
         item.classList.add('is-opening');
         setTimeout(() => {

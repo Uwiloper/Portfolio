@@ -43,6 +43,22 @@ const imageURL = new URL(image, Astro.site);
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
 
+    <!-- Escala del escenario en escritorio: el diseño de referencia mide 1440×810 y todo el sitio
+         (visor, carrete y HUD) se agranda o achica para ocupar la misma proporción en cualquier
+         pantalla. Va en línea en el head para que se aplique antes del primer dibujado. -->
+    <script is:inline>
+      (function () {
+        var raiz = document.documentElement;
+        function calcular() {
+          var w = innerWidth, h = innerHeight;
+          var e = w >= 1024 ? Math.min(2.4, Math.max(0.8, Math.min(w / 1440, h / 810))) : 1;
+          raiz.style.setProperty('--escala', e.toFixed(3));
+        }
+        calcular();
+        addEventListener('resize', calcular);
+      })();
+    </script>
+
     <!-- Joyride (títulos): se precarga para que no parpadee la fuente de respaldo -->
     <link rel="preload" href="/fonts/Joyride.woff2" as="font" type="font/woff2" crossorigin />
 
@@ -65,15 +81,15 @@ const imageURL = new URL(image, Astro.site);
       <div class="scanlines"></div>
       <div class="crt-vignette"></div>
 
-      <div class="absolute inset-0 flex flex-col justify-between p-6 md:p-10 vhs-hud-container mix-blend-difference pointer-events-none z-30">
-        <div class="flex justify-between items-start text-sm md:text-xl lg:text-2xl font-bold tracking-widest uppercase">
+      <div class="absolute inset-0 flex flex-col justify-between vhs-hud-container mix-blend-difference pointer-events-none z-30">
+        <div class="hud-sup flex justify-between items-start font-bold tracking-widest uppercase">
           <div class="rgb-glitch-text flex items-center gap-2">
             <span class="text-red-500">●</span> REC
           </div>
           <div id="vhs-timer" class="rgb-glitch-text">00:00:00</div>
         </div>
 
-        <div class="flex justify-between items-end text-xs md:text-lg lg:text-xl font-bold tracking-widest uppercase">
+        <div class="hud-inf flex justify-between items-end font-bold tracking-widest uppercase">
           <div class="rgb-glitch-text flex items-center gap-3">
             <span>uwil</span>
           </div>
