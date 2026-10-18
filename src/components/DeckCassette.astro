@@ -8,9 +8,11 @@ interface Props { pistas: Pista[]; cinta: string; lado?: string }
 const { pistas, cinta, lado = 'A' } = Astro.props;
 const dos = (n: number) => String(n).padStart(2, '0');
 const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60))}`;
+// Sin pistas todavía: el deck funciona (POWER, EJECT, perilla) pero la cinta avisa que está en preparación
+const proximamente = pistas.length === 0;
 ---
 
-<section id="deck" class="deck" data-pistas={JSON.stringify(pistas)} data-cinta={cinta} aria-label={`Reproductor de cassette: ${cinta}`}>
+<section id="deck" class:list={['deck', { proximamente }]} data-pistas={JSON.stringify(pistas)} data-cinta={cinta} aria-label={`Reproductor de cassette: ${cinta}${proximamente ? ' (próximamente)' : ''}`}>
 
   <!-- Placa superior: marca, modelo y encendido -->
   <header class="deck-placa">
@@ -55,7 +57,9 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
         <text x="372" y="62" class="cs-lado" text-anchor="end">{lado}</text>
         <!-- Lista escrita: la pista actual con la anterior y la siguiente (la rellena el script) -->
         <text id="cs-lista" class="cs-lista" x="210" y="164" text-anchor="middle">
-          {pistas.slice(0, 3).map((p, i) => <tspan class={i === 0 ? 'actual' : undefined}>{`${dos(i + 1)} ${p.titulo.toUpperCase().slice(0, 18)}${i < Math.min(3, pistas.length) - 1 ? '  ·  ' : ''}`}</tspan>)}
+          {proximamente
+            ? <tspan class="actual">{`PRÓXIMAMENTE · LADO ${lado} EN GRABACIÓN`}</tspan>
+            : pistas.slice(0, 3).map((p, i) => <tspan class={i === 0 ? 'actual' : undefined}>{`${dos(i + 1)} ${p.titulo.toUpperCase().slice(0, 18)}${i < Math.min(3, pistas.length) - 1 ? '  ·  ' : ''}`}</tspan>)}
         </text>
 
         <!-- Ventana: rollos de cinta (cambian de tamaño) y ejes (giran) -->
@@ -103,10 +107,10 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
 
       <div class="vfd" aria-live="off">
         <div class="vfd-fila">
-          <span id="vfd-pista">TRK 01</span>
-          <span id="vfd-tiempo">00:00 / {mmss(pistas[0]?.duracion ?? 0)}</span>
+          <span id="vfd-pista">{proximamente ? 'TRK --' : 'TRK 01'}</span>
+          <span id="vfd-tiempo">{proximamente ? '--:-- / --:--' : `00:00 / ${mmss(pistas[0].duracion)}`}</span>
         </div>
-        <div class="vfd-titulo"><span id="vfd-titulo">{pistas[0]?.titulo.toUpperCase()}</span></div>
+        <div class="vfd-titulo"><span id="vfd-titulo">{proximamente ? 'PROXIMAMENTE · CINTA EN PREPARACION' : pistas[0].titulo.toUpperCase()}</span></div>
         <div class="vfd-indicadores">
           <span data-ind="rew">◀◀ REW</span>
           <span data-ind="play">▶ PLAY</span>
@@ -251,7 +255,8 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .vfd-fila { display: flex; justify-content: space-between; font-size: 9px; letter-spacing: .05em; font-variant-numeric: tabular-nums; }
   .vfd-titulo { margin: 9px 0 8px; font-size: 8px; white-space: nowrap; overflow: hidden; }
   .vfd-titulo span { display: inline-block; }
-  .deck.is-playing .vfd-titulo span.desborda { animation: vfd-desliza 9s linear infinite; }
+  .deck.is-playing .vfd-titulo span.desborda,
+  .deck.proximamente .vfd-titulo span.desborda { animation: vfd-desliza 9s linear infinite; }
   @keyframes vfd-desliza { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(var(--desborde, 0px)); } }
   .vfd-indicadores { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 6px; letter-spacing: .05em; }
   .vfd-indicadores span { opacity: .14; text-shadow: none; transition: opacity .15s; }
@@ -299,7 +304,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     touch-action: none;
   }
   .tecla:hover:not(:disabled) { color: var(--rosa); }
-  .tecla:disabled { cursor: not-allowed; }
+  .tecla:disabled { cursor: not-allowed; opacity: .55; }
   .tecla.hundida, .tecla[aria-pressed="true"] {
     translate: 0 4px;
     box-shadow: 0 1px 0 #4a4c52, 0 2px 4px rgba(0, 0, 0, .7), inset 0 2px 5px rgba(0, 0, 0, .35);
@@ -344,6 +349,8 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   const pistas: Pista[] = JSON.parse(deck?.dataset.pistas || '[]');
   const cinta = crearCinta(pistas, deck?.dataset.cinta);
   const zumbido = new Zumbido(cinta);
+  // Sin pistas: la cinta está "en preparación" (sin transporte ni arrastre; POWER, EJECT y perilla sí)
+  const proximamente = pistas.length === 0;
 
   // ---------- geometría del cassette (unidades del SVG) ----------
   const R_VACIO = 22;            // radio del eje sin cinta
@@ -424,10 +431,19 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
       if (ruedas[i]) ruedas[i].style.transform = `translateY(${-Number(d) * 21}px)`;
     });
 
+    if (proximamente) return; // la pantalla y la etiqueta muestran el aviso fijo
     const i = cinta.indiceEn(pos);
     const local = pos - cinta.inicioDe(i);
     if (vfdTiempo) vfdTiempo.textContent = `${mmss(local)} / ${mmss(cinta.pistas[i].duracion)}`;
     if (i !== pistaMostrada) pintarPista(i);
+  }
+
+  // Si el título no cabe en la pantalla, se desliza (mientras suena, o siempre en "próximamente")
+  function ajustarDesborde() {
+    if (!vfdTitulo) return;
+    const desborde = vfdTitulo.scrollWidth - (vfdTitulo.parentElement?.clientWidth ?? 0);
+    vfdTitulo.classList.toggle('desborda', desborde > 0);
+    vfdTitulo.style.setProperty('--desborde', `${-Math.max(0, desborde)}px`);
   }
 
   function pintarPista(i: number) {
@@ -436,10 +452,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     if (vfdTitulo) {
       const { titulo, artista } = cinta.pistas[i];
       vfdTitulo.textContent = (artista ? `${titulo} · ${artista}` : titulo).toUpperCase();
-      // Si el título no cabe, se desliza (solo mientras suena)
-      const desborde = vfdTitulo.scrollWidth - (vfdTitulo.parentElement?.clientWidth ?? 0);
-      vfdTitulo.classList.toggle('desborda', desborde > 0);
-      vfdTitulo.style.setProperty('--desborde', `${-Math.max(0, desborde)}px`);
+      ajustarDesborde();
     }
     // Etiqueta: ventana de hasta 3 pistas alrededor de la actual
     if (lista) {
@@ -472,7 +485,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     teclas.ff?.classList.toggle('hundida', e === 'avanzando');
     teclas.rew?.classList.toggle('hundida', e === 'rebobinando');
     // Apagado o con la tapa abierta, las teclas de transporte no responden
-    Object.values(teclas).forEach(t => { t.disabled = !encendido || puertaAbierta; });
+    Object.values(teclas).forEach(t => { t.disabled = !encendido || puertaAbierta || proximamente; });
     if (btnEject) btnEject.toggleAttribute('disabled', !encendido);
     pintarPosicion();
   }
@@ -577,7 +590,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   let arrastre: { id: number; x: number; movido: boolean } | null = null;
 
   puerta?.addEventListener('pointerdown', (e) => {
-    if (!encendido || e.button > 0 || (e.target as HTMLElement).closest('button')) return;
+    if (!encendido || proximamente || e.button > 0 || (e.target as HTMLElement).closest('button')) return;
     if (puertaAbierta) return; // con la tapa abierta, el clic la cierra (ver 'click')
     arrastre = { id: e.pointerId, x: e.clientX, movido: false };
   });
@@ -607,7 +620,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   // Rueda sobre la cinta: abajo adelanta, arriba rebobina (el carrete de navegación la ignora aquí)
   let finRueda = 0;
   puerta?.addEventListener('wheel', (e) => {
-    if (!encendido || puertaAbierta) return;
+    if (!encendido || puertaAbierta || proximamente) return;
     e.preventDefault();
     if (cinta.estado !== 'arrastrando') { cinta.prepararAudio(); cinta.empezarArrastre(); }
     cinta.moverArrastre(limitar(e.deltaY, -120, 120) * 0.06);
@@ -688,5 +701,11 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   });
 
   pintarEstado();
+  if (proximamente) {
+    puerta?.removeAttribute('title');
+    // El aviso se mide cuando el Lobby está visible (oculto, su ancho es 0)
+    ajustarDesborde();
+    document.addEventListener('visor-change', (e) => { if ((e as CustomEvent).detail === 'lobby') setTimeout(ajustarDesborde, 200); });
+  }
   if (import.meta.env.DEV) (window as unknown as { cinta: typeof cinta }).cinta = cinta;
 </script>

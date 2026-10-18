@@ -4,8 +4,11 @@ import DeckCassette from '../DeckCassette.astro';
 
 // Si existe playlist.local.json (ignorado por git) se usa en su lugar: sirve para probar
 // en local con otras pistas sin que lleguen al repo ni a producción.
-const locales = import.meta.glob<typeof playlistOficial>('../../data/playlist.local.json', { eager: true, import: 'default' });
-const playlist = Object.values(locales)[0] ?? playlistOficial;
+type Cancion = { id: string; titulo: string; artista: string; duracion: number; archivo: string };
+type Playlist = { tituloPlaylist: string; cinta: string; lado: string; canciones: Cancion[] };
+const locales = import.meta.glob<Playlist>('../../data/playlist.local.json', { eager: true, import: 'default' });
+// Sin canciones (lista oficial vacía), el deck se muestra en modo "PRÓXIMAMENTE"
+const playlist: Playlist = Object.values(locales)[0] ?? playlistOficial;
 
 // Las pistas se sirven desde public/audio/ salvo que PUBLIC_AUDIO_BASE apunte a otro lugar (ej. Cloudflare R2)
 const base = (import.meta.env.PUBLIC_AUDIO_BASE ?? '/audio/').replace(/\/?$/, '/');
