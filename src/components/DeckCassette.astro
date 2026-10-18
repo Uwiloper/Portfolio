@@ -1,6 +1,7 @@
 ---
 // Deck de cassette de mesa (estilo años 80) para el Lobby FM.
-// Dibuja el estado del motor (src/js/cassette.ts): bobinas, contador, pantalla y teclas.
+// Dibuja el estado del motor (src/js/cassette.ts) y traduce los gestos: teclas (toque = salto
+// de pista, mantener = bobinar), arrastre y rueda sobre la cinta, perilla de volumen, POWER y EJECT.
 interface Pista { id: string; titulo: string; artista: string; duracion: number; src: string }
 interface Props { pistas: Pista[]; cinta: string; lado?: string }
 
@@ -15,13 +16,15 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   <header class="deck-placa">
     <span class="deck-marca">UWIL</span>
     <span class="deck-modelo">STEREO CASSETTE DECK · LF-1</span>
-    <span class="deck-power"><i aria-hidden="true"></i>POWER</span>
+    <button type="button" id="deck-power" class="deck-power" aria-pressed="true" aria-label="Encendido">
+      <i aria-hidden="true"></i>POWER
+    </button>
   </header>
 
   <div class="deck-cuerpo">
 
-    <!-- Puerta con el cassette -->
-    <div class="deck-puerta">
+    <!-- Puerta con el cassette: se arrastra (o se usa la rueda) para mover la cinta -->
+    <div id="deck-puerta" class="deck-puerta" data-reel-ignorar-rueda title="Arrastra la cinta para adelantar o rebobinar">
       <svg class="cassette" viewBox="0 0 420 270" role="img" aria-label={`Cassette ${cinta}, lado ${lado}`}>
         <defs>
           <linearGradient id="cs-carcasa" x1="0" y1="0" x2="0" y2="1">
@@ -75,14 +78,15 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
           </g>
         ))}
 
-        <!-- Base trapezoidal con las aberturas de los cabezales -->
+        <!-- Base trapezoidal: la cinta pasa por los cabezales (las marcas corren con la cinta) -->
         <path d="M112 265 L128 200 L292 200 L308 265 Z" fill="#202026" stroke="#0a0a0c" stroke-width="2" />
         <rect x="132" y="246" width="156" height="5" fill="#3b2a1f" />
+        <line id="cinta-marcas" x1="132" y1="248.5" x2="288" y2="248.5" stroke="#6b4c39" stroke-width="5" stroke-dasharray="2 9" />
         {[150, 270].map(cx => <circle cx={cx} cy="226" r="7" fill="#0b0b0d" />)}
         {[185, 235].map(x => <rect x={x - 8} y="218" width="16" height="12" rx="2" fill="#0b0b0d" />)}
       </svg>
       <div class="deck-acrilico" aria-hidden="true"></div>
-      <span class="deck-eject" aria-hidden="true">⏏ EJECT</span>
+      <button type="button" id="deck-eject" class="deck-eject" aria-expanded="false" aria-controls="deck-puerta">⏏ EJECT</button>
     </div>
 
     <!-- Panel: contador, pantalla, vúmetros y volumen -->
@@ -108,6 +112,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
           <span data-ind="play">▶ PLAY</span>
           <span data-ind="ff">FF ▶▶</span>
           <span data-ind="pause">❚❚ PAUSE</span>
+          <span data-ind="open">⏏ OPEN</span>
           <span data-ind="error">NO SIGNAL</span>
         </div>
       </div>
@@ -133,7 +138,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
       </div>
 
       <div class="deck-volumen">
-        <div id="deck-perilla" class="perilla" aria-hidden="true"><i></i></div>
+        <div id="deck-perilla" class="perilla" role="slider" tabindex="0" aria-label="Volumen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" aria-valuetext="80 %" data-reel-ignorar-rueda><i></i></div>
         <span class="deck-rotulo">VOLUME</span>
       </div>
     </div>
@@ -141,9 +146,9 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
 
   <!-- Teclas de transporte tipo piano -->
   <div class="deck-teclas" role="group" aria-label="Controles de la cinta">
-    <button type="button" class="tecla" data-tecla="rew" aria-label="Rebobinar (toque: pista anterior)"><span class="tecla-icono">◀◀</span><span class="tecla-nombre">REW</span></button>
+    <button type="button" class="tecla" data-tecla="rew" aria-label="Rebobinar: toque para la pista anterior, mantener para bobinar"><span class="tecla-icono">◀◀</span><span class="tecla-nombre">REW</span></button>
     <button type="button" class="tecla tecla-play" data-tecla="play" aria-label="Reproducir" aria-pressed="false"><i class="tecla-led" aria-hidden="true"></i><span class="tecla-icono">▶</span><span class="tecla-nombre">PLAY</span></button>
-    <button type="button" class="tecla" data-tecla="ff" aria-label="Avance rápido (toque: pista siguiente)"><span class="tecla-icono">▶▶</span><span class="tecla-nombre">FF</span></button>
+    <button type="button" class="tecla" data-tecla="ff" aria-label="Avance rápido: toque para la pista siguiente, mantener para bobinar"><span class="tecla-icono">▶▶</span><span class="tecla-nombre">FF</span></button>
     <button type="button" class="tecla" data-tecla="stop" aria-label="Detener"><span class="tecla-icono">■</span><span class="tecla-nombre">STOP</span></button>
     <button type="button" class="tecla" data-tecla="pause" aria-label="Pausa" aria-pressed="false"><span class="tecla-icono">❚❚</span><span class="tecla-nombre">PAUSE</span></button>
   </div>
@@ -169,6 +174,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     user-select: none;
   }
   .deck-rotulo { font-size: 9px; letter-spacing: .25em; color: #8b8d94; }
+  .deck button:focus-visible, .perilla:focus-visible { outline: 2px solid var(--rosa); outline-offset: 3px; }
 
   /* Placa de aluminio cepillado */
   .deck-placa {
@@ -182,24 +188,41 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   }
   .deck-marca { font-family: 'Joyride', sans-serif; font-size: 15px; letter-spacing: .12em; font-style: italic; }
   .deck-modelo { font-size: 9px; letter-spacing: .25em; }
-  .deck-power { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: .2em; }
-  .deck-power i { width: 7px; height: 7px; border-radius: 50%; background: var(--rosa); box-shadow: 0 0 8px var(--rosa); }
+  .deck-power {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+    font: inherit; font-size: 9px; letter-spacing: .2em; color: #1c1d21; cursor: pointer;
+    padding: 4px 8px; border: 1px solid rgba(0, 0, 0, .35); border-radius: 3px;
+    background: linear-gradient(#eceef1, #b9bcc2); box-shadow: 0 2px 0 rgba(0, 0, 0, .45);
+  }
+  .deck-power:active { translate: 0 2px; box-shadow: none; }
+  .deck-power i { width: 7px; height: 7px; border-radius: 50%; background: var(--rosa); box-shadow: 0 0 8px var(--rosa); transition: background .3s, box-shadow .3s; }
 
   .deck-cuerpo { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 16px; padding: 0 18px; }
 
-  /* Puerta con acrílico ahumado */
+  /* Puerta con acrílico ahumado; al expulsar, la tapa se inclina y el cassette asoma */
   .deck-puerta {
     position: relative; padding: 14px; border-radius: 6px;
     background: #050506; border: 1px solid #000;
     box-shadow: inset 0 0 0 2px #26262c, inset 0 10px 25px rgba(0, 0, 0, .8);
+    perspective: 900px; cursor: grab; touch-action: pan-y;
   }
-  .cassette { display: block; width: 100%; height: auto; }
+  .deck-puerta.arrastrando { cursor: grabbing; }
+  .cassette { display: block; width: 100%; height: auto; transition: transform .55s cubic-bezier(.2, .8, .2, 1), filter .55s; transform-origin: 50% 100%; }
   .deck-acrilico {
     position: absolute; inset: 14px; border-radius: 4px; pointer-events: none;
     background: linear-gradient(115deg, rgba(255, 255, 255, .09) 0%, rgba(255, 255, 255, .02) 35%, transparent 36%, transparent 70%, rgba(255, 255, 255, .04) 71%, transparent 85%);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06);
+    transform-origin: 50% 100%; transition: transform .55s cubic-bezier(.2, .8, .2, 1), background .55s;
   }
-  .deck-eject { position: absolute; bottom: -1px; left: 50%; translate: -50% 50%; font-size: 8px; letter-spacing: .25em; color: #6f7178; background: var(--deck-negro); padding: 0 8px; }
+  .deck-puerta.abierta { cursor: pointer; }
+  .deck-puerta.abierta .deck-acrilico { transform: rotateX(38deg) translateY(6%); background: linear-gradient(115deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .04) 40%, rgba(255, 255, 255, .08)); }
+  .deck-puerta.abierta .cassette { transform: translateY(-9%) rotateX(16deg) scale(.95); filter: drop-shadow(0 18px 14px rgba(0, 0, 0, .8)); }
+  .deck-eject {
+    position: absolute; bottom: -1px; left: 50%; translate: -50% 50%; z-index: 2;
+    font: inherit; font-size: 8px; letter-spacing: .25em; color: #9a9ca3; cursor: pointer;
+    background: var(--deck-negro); padding: 3px 9px; border: 1px solid #2c2c33; border-radius: 3px;
+  }
+  .deck-eject:hover, .deck-eject[aria-expanded="true"] { color: var(--rosa); border-color: var(--rosa); }
   .cs-titulo { font-family: 'Joyride', sans-serif; font-style: italic; font-size: 19px; fill: #1a1414; letter-spacing: .04em; }
   .cs-lado { font-family: 'Joyride', sans-serif; font-size: 30px; fill: var(--rosa); }
   .cs-lista { font-size: 8.5px; letter-spacing: .06em; fill: #5b504b; font-family: ui-monospace, monospace; }
@@ -213,7 +236,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .contador-celda { width: 15px; height: 21px; overflow: hidden; background: linear-gradient(#1a1a1a, #0a0a0a 45%, #1a1a1a); border-radius: 2px; }
   .contador-rueda { display: flex; flex-direction: column; transition: transform .18s cubic-bezier(.3, .7, .4, 1); }
   .contador-rueda span { height: 21px; line-height: 21px; text-align: center; font-size: 15px; color: #f2f2f2; font-variant-numeric: tabular-nums; }
-  .deck-reset { margin-left: auto; font-size: 8px; letter-spacing: .2em; padding: 5px 7px; color: #1c1d21; background: linear-gradient(#e5e7ea, var(--metal-osc)); border: 1px solid #000; border-radius: 2px; cursor: pointer; box-shadow: 0 2px 0 #000; }
+  .deck-reset { margin-left: auto; font: inherit; font-size: 8px; letter-spacing: .2em; padding: 5px 7px; color: #1c1d21; background: linear-gradient(#e5e7ea, var(--metal-osc)); border: 1px solid #000; border-radius: 2px; cursor: pointer; box-shadow: 0 2px 0 #000; }
   .deck-reset:active { translate: 0 2px; box-shadow: none; }
 
   /* Pantalla fluorescente (VFD) */
@@ -223,6 +246,7 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     border: 1px solid #000; box-shadow: inset 0 0 18px rgba(0, 0, 0, .9);
     font-family: 'Press Start 2P', ui-monospace, monospace; color: var(--vfd);
     text-shadow: 0 0 6px rgba(94, 240, 255, .8);
+    transition: opacity .4s;
   }
   .vfd-fila { display: flex; justify-content: space-between; font-size: 9px; letter-spacing: .05em; font-variant-numeric: tabular-nums; }
   .vfd-titulo { margin: 9px 0 8px; font-size: 8px; white-space: nowrap; overflow: hidden; }
@@ -233,12 +257,15 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .vfd-indicadores span { opacity: .14; text-shadow: none; transition: opacity .15s; }
   .vfd-indicadores span.on { opacity: 1; text-shadow: 0 0 6px rgba(94, 240, 255, .8); }
   .vfd-indicadores span[data-ind="error"].on { color: #ff5c7a; text-shadow: 0 0 6px rgba(255, 92, 122, .8); }
+  /* "NO SIGNAL" solo aparece cuando hay error: así la pantalla no gana una línea de más */
+  .vfd-indicadores span[data-ind="error"]:not(.on) { display: none; }
 
   /* Vúmetros */
   .deck-medidores { grid-column: 1 / 2; display: flex; gap: 6px; }
   .vu { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .vu svg { width: 100%; height: auto; }
-  .vu-cara { fill: #efe6c9; stroke: #000; }
+  .vu-cara { fill: #efe6c9; stroke: #000; transition: fill .4s; }
+  .deck.is-playing .vu-cara { fill: #f6ecc6; }
   .vu-escala { fill: none; stroke: #2b2b2b; stroke-width: 1.2; }
   .vu-rojo { fill: none; stroke: #d6263b; stroke-width: 2.5; }
   .vu-num { font-size: 7px; fill: #2b2b2b; font-family: ui-monospace, monospace; }
@@ -250,8 +277,8 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   /* Perilla de volumen */
   .deck-volumen { grid-column: 2 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
   .perilla {
-    --angulo: 90deg;
-    position: relative; width: 54px; height: 54px; border-radius: 50%;
+    --angulo: 81deg;
+    position: relative; width: 54px; height: 54px; border-radius: 50%; cursor: ns-resize; touch-action: none;
     background:
       repeating-conic-gradient(from 0deg, rgba(255, 255, 255, .08) 0 4deg, transparent 4deg 10deg),
       radial-gradient(circle at 35% 30%, #4a4a52, #18181c 70%);
@@ -264,15 +291,15 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .deck-teclas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 16px 18px 0; padding: 8px; background: #08080a; border: 1px solid #000; border-radius: 4px; box-shadow: inset 0 3px 8px rgba(0, 0, 0, .8); }
   .tecla {
     position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-    height: 58px; color: #1c1d21; cursor: pointer;
+    height: 58px; color: #1c1d21; cursor: pointer; font: inherit;
     background: linear-gradient(180deg, #eef0f2, #c3c6cc 70%, #a3a7ae);
     border: 1px solid #000; border-radius: 3px 3px 5px 5px;
     box-shadow: 0 5px 0 #4a4c52, 0 6px 10px rgba(0, 0, 0, .7);
-    transition: translate .08s, box-shadow .08s, background .08s;
+    transition: translate .08s, box-shadow .08s, background .08s, opacity .3s;
     touch-action: none;
   }
-  .tecla:hover { color: var(--rosa); }
-  .tecla:focus-visible { outline: 2px solid var(--rosa); outline-offset: 3px; }
+  .tecla:hover:not(:disabled) { color: var(--rosa); }
+  .tecla:disabled { cursor: not-allowed; }
   .tecla.hundida, .tecla[aria-pressed="true"] {
     translate: 0 4px;
     box-shadow: 0 1px 0 #4a4c52, 0 2px 4px rgba(0, 0, 0, .7), inset 0 2px 5px rgba(0, 0, 0, .35);
@@ -283,8 +310,14 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
   .tecla-led { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: #1f3b22; }
   .tecla-play[aria-pressed="true"] .tecla-led { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
 
-  /* Ejes girando: los mueve el script (rotate), aquí solo se suaviza el render */
   .cs-eje { will-change: transform; }
+
+  /* APAGADO: todo pierde color y brillo, como un aparato sin corriente */
+  .deck-cuerpo, .deck-teclas { transition: filter .5s; }
+  .deck.apagado .deck-cuerpo, .deck.apagado .deck-teclas { filter: saturate(.2) brightness(.5); }
+  .deck.apagado .vfd { opacity: .08; }
+  .deck.apagado .deck-power i { background: #3a1f2b; box-shadow: none; }
+  .deck.apagado .deck-puerta { cursor: default; }
 
   @media (max-width: 640px) {
     .deck { padding-bottom: 12px; }
@@ -305,30 +338,42 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
 
 <script>
   import { crearCinta, type Pista } from '../js/cassette';
+  import { clic, Zumbido } from '../js/deck-sfx';
 
   const deck = document.getElementById('deck');
   const pistas: Pista[] = JSON.parse(deck?.dataset.pistas || '[]');
   const cinta = crearCinta(pistas, deck?.dataset.cinta);
+  const zumbido = new Zumbido(cinta);
 
   // ---------- geometría del cassette (unidades del SVG) ----------
   const R_VACIO = 22;            // radio del eje sin cinta
   const R_LLENO = 56;            // radio de un rollo con toda la cinta
   const VEL_CINTA = 95;          // avance de la cinta por segundo de audio, en unidades del SVG
   const VUELTAS_CONTADOR = 600;  // lo que marca el contador con la cinta entera (como un C60)
+  const GIRO_MAX = 38;           // grados por cuadro: más rápido se vería girar al revés
 
   const $ = (id: string) => document.getElementById(id);
   const rolloIzq = $('rollo-izq'), rolloDer = $('rollo-der');
   const ejeIzq = $('eje-izq'), ejeDer = $('eje-der');
+  const marcas = $('cinta-marcas');
+  const puerta = $('deck-puerta');
+  const perilla = $('deck-perilla');
+  const btnPower = $('deck-power'), btnEject = $('deck-eject');
   const ruedas = deck?.querySelectorAll<HTMLElement>('.contador-rueda') ?? [];
   const vfdPista = $('vfd-pista'), vfdTiempo = $('vfd-tiempo'), vfdTitulo = $('vfd-titulo');
   const indicadores = deck?.querySelectorAll<HTMLElement>('.vfd-indicadores span') ?? [];
+  const agujas = deck?.querySelectorAll<SVGLineElement>('.vu-aguja') ?? [];
   const lista = $('cs-lista');
+  const teclas: Record<string, HTMLButtonElement> = Object.fromEntries(
+    [...(deck?.querySelectorAll<HTMLButtonElement>('.tecla') ?? [])].map(t => [t.dataset.tecla ?? '', t]),
+  );
   const SVG_NS = 'http://www.w3.org/2000/svg';
-  const recortar = (t: string, max = 18) => (t.length > max ? t.slice(0, max - 1) + '…' : t);
-  const teclas = Object.fromEntries([...(deck?.querySelectorAll<HTMLButtonElement>('.tecla') ?? [])].map(t => [t.dataset.tecla, t]));
 
   const dos = (n: number) => String(n).padStart(2, '0');
   const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60))}`;
+  const recortar = (t: string, max = 18) => (t.length > max ? t.slice(0, max - 1) + '…' : t);
+  const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+  const visible = () => !!deck && deck.offsetParent !== null;
 
   // Radios de los rollos: la cinta pasa de izquierda a derecha conservando el área
   const radios = (p: number) => ({
@@ -336,17 +381,23 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     der: Math.sqrt(R_VACIO ** 2 + (R_LLENO ** 2 - R_VACIO ** 2) * p),
   });
 
-  let anguloIzq = 0, anguloDer = 0;
+  let anguloIzq = 0, anguloDer = 0, desplazamientoMarcas = 0;
   let posAnterior = cinta.posicion;
   let offsetContador = 0;
   let pistaMostrada = -1;
+  let encendido = true;
+  let puertaAbierta = false;
+  let sonabaAlAbrir = false;
 
+  // ---------- dibujo ----------
   function pintarPosicion() {
     if (!deck) return;
     const pos = cinta.posicion;
     const delta = pos - posAnterior;
     posAnterior = pos;
-    if (deck.offsetParent === null) return; // Lobby oculto: no se dibuja (la música puede seguir)
+    // Zumbido de bobinado: sigue a la velocidad real de la cinta (también al arrastrar)
+    zumbido.actualizar(cinta.bobinando || cinta.estado === 'arrastrando' ? cinta.velocidad : 0);
+    if (!visible()) return; // Lobby oculto: no se dibuja (la música puede seguir)
 
     const p = cinta.duracionTotal ? pos / cinta.duracionTotal : 0;
     const r = radios(p);
@@ -354,13 +405,16 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     rolloDer?.setAttribute('r', r.der.toFixed(2));
 
     // Los ejes giran según la cinta que pasa: más rápido el que tiene el rollo más chico.
-    // Un salto grande (buscar) no se anima como giro.
-    if (Math.abs(delta) < 30) {
+    // Un salto instantáneo (buscar) no se anima; bobinados y arrastres sí.
+    const enMovimiento = cinta.bobinando || cinta.estado === 'arrastrando';
+    if (enMovimiento || Math.abs(delta) < 5) {
       const largo = delta * VEL_CINTA;
-      anguloIzq += (largo / r.izq) * 180 / Math.PI;
-      anguloDer += (largo / r.der) * 180 / Math.PI;
+      anguloIzq += limitar((largo / r.izq) * 180 / Math.PI, -GIRO_MAX, GIRO_MAX);
+      anguloDer += limitar((largo / r.der) * 180 / Math.PI, -GIRO_MAX, GIRO_MAX);
+      desplazamientoMarcas -= limitar(largo * 0.25, -9, 9);
       if (ejeIzq) ejeIzq.style.transform = `rotate(${anguloIzq % 360}deg)`;
       if (ejeDer) ejeDer.style.transform = `rotate(${anguloDer % 360}deg)`;
+      marcas?.setAttribute('stroke-dashoffset', (desplazamientoMarcas % 11).toFixed(2));
     }
 
     // Contador mecánico: cuenta vueltas del rollo derecho (no avanza parejo, como en un deck real)
@@ -404,23 +458,27 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     const e = cinta.estado;
     deck?.classList.toggle('is-playing', cinta.sonando);
     const on: Record<string, boolean> = {
-      play: e === 'reproduciendo' || e === 'pausado',
-      pause: e === 'pausado',
-      ff: e === 'avanzando',
-      rew: e === 'rebobinando',
+      play: e === 'reproduciendo' || (e === 'pausado' && !puertaAbierta),
+      pause: e === 'pausado' && !puertaAbierta,
+      ff: e === 'avanzando' || (e === 'arrastrando' && cinta.velocidad > 0),
+      rew: e === 'rebobinando' || (e === 'arrastrando' && cinta.velocidad < 0),
+      open: puertaAbierta,
       error: cinta.sinSenal,
     };
     indicadores.forEach(s => s.classList.toggle('on', !!on[s.dataset.ind ?? '']));
     // Como en un deck: PLAY queda trabada mientras suena o está en pausa; PAUSE se traba encima
-    teclas.play?.setAttribute('aria-pressed', String(e === 'reproduciendo' || e === 'pausado'));
-    teclas.pause?.setAttribute('aria-pressed', String(e === 'pausado'));
+    teclas.play?.setAttribute('aria-pressed', String(e === 'reproduciendo' || (e === 'pausado' && !puertaAbierta)));
+    teclas.pause?.setAttribute('aria-pressed', String(e === 'pausado' && !puertaAbierta));
     teclas.ff?.classList.toggle('hundida', e === 'avanzando');
     teclas.rew?.classList.toggle('hundida', e === 'rebobinando');
+    // Apagado o con la tapa abierta, las teclas de transporte no responden
+    Object.values(teclas).forEach(t => { t.disabled = !encendido || puertaAbierta; });
+    if (btnEject) btnEject.toggleAttribute('disabled', !encendido);
     pintarPosicion();
   }
 
   cinta.addEventListener('posicion', pintarPosicion);
-  cinta.addEventListener('estado', pintarEstado);
+  cinta.addEventListener('estado', () => { pintarEstado(); arrancarVumetros(); });
   cinta.addEventListener('pista', pintarEstado);
   cinta.addEventListener('duraciones', pintarEstado);
   // Al volver al Lobby, se dibuja de inmediato el estado actual
@@ -428,16 +486,205 @@ const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60)
     if ((e as CustomEvent).detail === 'lobby') setTimeout(() => { posAnterior = cinta.posicion; pintarEstado(); }, 200);
   });
 
-  // ---------- teclas (el "mantener presionado" y el arrastre llegan en el paso 4) ----------
+  // ---------- vúmetros: nivel real de cada canal ----------
+  // VU: 0 dB del medidor ≈ -18 dBFS; escala de -20 a +3 sobre ±50°; la aguja tiene inercia (~300 ms)
+  const muestras = new Float32Array(1024);
+  const agujaActual = [-50, -50];
+  let rafVu = 0, ultimoVu = 0;
+
+  function nivelCanal(analizador: AnalyserNode) {
+    analizador.getFloatTimeDomainData(muestras);
+    let suma = 0;
+    for (let k = 0; k < muestras.length; k++) suma += muestras[k] * muestras[k];
+    const rms = Math.sqrt(suma / muestras.length);
+    const db = 20 * Math.log10(rms || 1e-6) + 18;
+    return -50 + (limitar(db, -20, 3) + 20) / 23 * 100;
+  }
+
+  function arrancarVumetros() {
+    if (rafVu) return;
+    ultimoVu = performance.now();
+    const tick = (ahora: number) => {
+      const dt = (ahora - ultimoVu) / 1000;
+      ultimoVu = ahora;
+      const a = cinta.analizadores;
+      const activa = cinta.sonando && encendido && !!a;
+      const objetivo = activa ? [nivelCanal(a!.izq), nivelCanal(a!.der)] : [-50, -50];
+      const k = 1 - Math.exp(-dt / 0.09);
+      agujaActual[0] += (objetivo[0] - agujaActual[0]) * k;
+      agujaActual[1] += (objetivo[1] - agujaActual[1]) * k;
+      if (visible()) agujas.forEach((ag, i) => { ag.style.transform = `rotate(${agujaActual[i].toFixed(1)}deg)`; });
+      const enReposo = !activa && agujaActual.every(v => v < -49.5);
+      rafVu = enReposo ? 0 : requestAnimationFrame(tick);
+    };
+    rafVu = requestAnimationFrame(tick);
+  }
+
+  // ---------- teclas ----------
+  // Cada tecla suena al hundirse; el primer toque también prepara el audio (es un gesto del usuario)
+  function sonarTecla(fuerte = false) { cinta.prepararAudio(); clic(cinta, fuerte); }
+
+  teclas.play?.addEventListener('pointerdown', () => sonarTecla(true));
+  teclas.stop?.addEventListener('pointerdown', () => sonarTecla(true));
+  teclas.pause?.addEventListener('pointerdown', () => sonarTecla());
   teclas.play?.addEventListener('click', () => cinta.reproducir());
   teclas.pause?.addEventListener('click', () => (cinta.estado === 'pausado' ? cinta.reproducir() : cinta.pausar()));
   teclas.stop?.addEventListener('click', () => cinta.detener());
-  teclas.rew?.addEventListener('click', () => cinta.anterior());
-  teclas.ff?.addEventListener('click', () => cinta.siguiente());
+
+  // REW / FF: toque = salto animado a la pista anterior/siguiente; mantener = bobinar mientras se sostiene
+  function teclaDeBobinado(tecla: HTMLButtonElement | undefined, direccion: 1 | -1) {
+    if (!tecla) return;
+    let temporizador = 0;
+    let mantenida = false;
+    let activa = false;
+    const saltar = () => (direccion > 0 ? cinta.siguiente() : cinta.anterior());
+    tecla.addEventListener('pointerdown', (e) => {
+      if (tecla.disabled || e.button > 0) return;
+      e.preventDefault();
+      tecla.setPointerCapture(e.pointerId);
+      sonarTecla();
+      activa = true;
+      mantenida = false;
+      tecla.classList.add('hundida');
+      temporizador = window.setTimeout(() => { mantenida = true; cinta.iniciarBobinado(direccion); }, 280);
+    });
+    const soltar = (cancelar: boolean) => {
+      if (!activa) return;
+      activa = false;
+      clearTimeout(temporizador);
+      if (mantenida) cinta.terminarBobinado();
+      else if (!cancelar) saltar();
+      if (!cinta.bobinando) tecla.classList.remove('hundida');
+    };
+    tecla.addEventListener('pointerup', () => soltar(false));
+    tecla.addEventListener('pointercancel', () => soltar(true));
+    // Teclado (Enter / Espacio): un toque
+    tecla.addEventListener('click', (e) => { if (e.detail === 0) { sonarTecla(); saltar(); } });
+  }
+  teclaDeBobinado(teclas.rew, -1);
+  teclaDeBobinado(teclas.ff, 1);
+
   $('deck-reset')?.addEventListener('click', () => {
+    sonarTecla();
     const r = radios(cinta.duracionTotal ? cinta.posicion / cinta.duracionTotal : 0);
     offsetContador = Math.floor(VUELTAS_CONTADOR * (r.der - R_VACIO) / (R_LLENO - R_VACIO));
     pintarPosicion();
+  });
+
+  // ---------- la cinta: arrastrar o usar la rueda para adelantar / rebobinar ----------
+  // Arrastrar a la derecha adelanta; cuanto más rápido el gesto, más cinta corre
+  const SEG_POR_PX = 0.35;
+  let arrastre: { id: number; x: number; movido: boolean } | null = null;
+
+  puerta?.addEventListener('pointerdown', (e) => {
+    if (!encendido || e.button > 0 || (e.target as HTMLElement).closest('button')) return;
+    if (puertaAbierta) return; // con la tapa abierta, el clic la cierra (ver 'click')
+    arrastre = { id: e.pointerId, x: e.clientX, movido: false };
+  });
+  puerta?.addEventListener('pointermove', (e) => {
+    if (!arrastre || e.pointerId !== arrastre.id) return;
+    const dx = e.clientX - arrastre.x;
+    if (!arrastre.movido) {
+      if (Math.abs(dx) < 6) return;
+      arrastre.movido = true;
+      puerta.setPointerCapture(e.pointerId);
+      puerta.classList.add('arrastrando');
+      cinta.prepararAudio();
+      cinta.empezarArrastre();
+    }
+    arrastre.x = e.clientX;
+    cinta.moverArrastre(dx * SEG_POR_PX * (1 + Math.min(Math.abs(dx), 40) / 10));
+    pintarEstado();
+  });
+  const terminarArrastre = () => {
+    if (!arrastre) return;
+    if (arrastre.movido) { puerta?.classList.remove('arrastrando'); cinta.soltarArrastre(); }
+    arrastre = null;
+  };
+  puerta?.addEventListener('pointerup', terminarArrastre);
+  puerta?.addEventListener('pointercancel', terminarArrastre);
+
+  // Rueda sobre la cinta: abajo adelanta, arriba rebobina (el carrete de navegación la ignora aquí)
+  let finRueda = 0;
+  puerta?.addEventListener('wheel', (e) => {
+    if (!encendido || puertaAbierta) return;
+    e.preventDefault();
+    if (cinta.estado !== 'arrastrando') { cinta.prepararAudio(); cinta.empezarArrastre(); }
+    cinta.moverArrastre(limitar(e.deltaY, -120, 120) * 0.06);
+    pintarEstado();
+    clearTimeout(finRueda);
+    finRueda = window.setTimeout(() => cinta.soltarArrastre(), 260);
+  }, { passive: false });
+
+  // ---------- EJECT: abre la tapa y pausa; otro clic la cierra y retoma ----------
+  function alternarPuerta() {
+    if (!encendido) return;
+    sonarTecla(true);
+    puertaAbierta = !puertaAbierta;
+    puerta?.classList.toggle('abierta', puertaAbierta);
+    btnEject?.setAttribute('aria-expanded', String(puertaAbierta));
+    if (puertaAbierta) sonabaAlAbrir = cinta.bloquear('puerta');
+    else cinta.desbloquear('puerta', sonabaAlAbrir);
+    pintarEstado();
+  }
+  btnEject?.addEventListener('click', alternarPuerta);
+  puerta?.addEventListener('click', (e) => {
+    if (puertaAbierta && !(e.target as HTMLElement).closest('button')) alternarPuerta();
+  });
+
+  // ---------- POWER ----------
+  btnPower?.addEventListener('click', () => {
+    cinta.prepararAudio();
+    if (encendido) { clic(cinta, true); cinta.bloquear('apagado'); }
+    encendido = !encendido;
+    deck?.classList.toggle('apagado', !encendido);
+    btnPower.setAttribute('aria-pressed', String(encendido));
+    btnPower.setAttribute('aria-label', encendido ? 'Encendido' : 'Apagado');
+    if (encendido) { cinta.desbloquear('apagado'); clic(cinta, true); }
+    pintarEstado();
+  });
+
+  // ---------- volumen: arrastrar (arriba/derecha sube), rueda o flechas ----------
+  const ANGULO_MIN = -135, ANGULO_MAX = 135;
+  const CLAVE_VOLUMEN = 'lobby-fm-volumen';
+
+  function aplicarVolumen(v: number, guardar = true) {
+    v = limitar(v, 0, 1);
+    cinta.volumen = v;
+    const porcentaje = Math.round(v * 100);
+    perilla?.style.setProperty('--angulo', `${ANGULO_MIN + (ANGULO_MAX - ANGULO_MIN) * v}deg`);
+    perilla?.setAttribute('aria-valuenow', String(porcentaje));
+    perilla?.setAttribute('aria-valuetext', `${porcentaje} %`);
+    if (guardar) { try { localStorage.setItem(CLAVE_VOLUMEN, String(v)); } catch { /* sin almacenamiento */ } }
+  }
+  try { const guardado = localStorage.getItem(CLAVE_VOLUMEN); aplicarVolumen(guardado !== null ? Number(guardado) : 0.8, false); } catch { aplicarVolumen(0.8, false); }
+
+  let giro: { id: number; x: number; y: number; v: number } | null = null;
+  perilla?.addEventListener('pointerdown', (e) => {
+    if (!encendido) return;
+    perilla.setPointerCapture(e.pointerId);
+    cinta.prepararAudio();
+    giro = { id: e.pointerId, x: e.clientX, y: e.clientY, v: cinta.volumen };
+  });
+  perilla?.addEventListener('pointermove', (e) => {
+    if (!giro || e.pointerId !== giro.id) return;
+    aplicarVolumen(giro.v + ((giro.y - e.clientY) + (e.clientX - giro.x)) / 160);
+  });
+  perilla?.addEventListener('pointerup', () => { giro = null; });
+  perilla?.addEventListener('pointercancel', () => { giro = null; });
+  perilla?.addEventListener('wheel', (e) => {
+    if (!encendido) return;
+    e.preventDefault();
+    aplicarVolumen(cinta.volumen - limitar(e.deltaY, -100, 100) / 1000);
+  }, { passive: false });
+  perilla?.addEventListener('keydown', (e) => {
+    if (!encendido) return;
+    const pasos: Record<string, number> = { ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05, PageUp: 0.2, PageDown: -0.2 };
+    if (e.key in pasos) aplicarVolumen(cinta.volumen + pasos[e.key]);
+    else if (e.key === 'Home') aplicarVolumen(0);
+    else if (e.key === 'End') aplicarVolumen(1);
+    else return;
+    e.preventDefault();
   });
 
   pintarEstado();

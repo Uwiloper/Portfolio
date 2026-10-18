@@ -304,7 +304,8 @@ import navItems from '../data/navigation.json';
   const TECLAS_ANTERIOR = ['ArrowUp', 'ArrowLeft', 'PageUp'];
   window.addEventListener('keydown', (e) => {
     if (e.repeat || e.altKey || e.ctrlKey || e.metaKey || isLocked()) return;
-    if ((e.target as HTMLElement | null)?.closest('input, textarea, select, [contenteditable="true"]')) return;
+    // Ni al escribir ni sobre controles que usan las flechas (como la perilla de volumen del Lobby)
+    if ((e.target as HTMLElement | null)?.closest('input, textarea, select, [contenteditable="true"], [role="slider"]')) return;
     const paso = TECLAS_SIGUIENTE.includes(e.key) ? 1 : TECLAS_ANTERIOR.includes(e.key) ? -1 : 0;
     if (!paso) return;
     e.preventDefault();
@@ -324,6 +325,8 @@ import navItems from '../data/navigation.json';
 
   window.addEventListener('wheel', (e) => {
     if (isLocked()) return;
+    // Zonas que usan la rueda para otra cosa (la cinta y la perilla del Lobby) no cambian de sección
+    if ((e.target as Element | null)?.closest?.('[data-reel-ignorar-rueda]')) return;
     hideHint();
     if (isWheelLocked) return;
     

@@ -2,18 +2,33 @@
 // cinta con una línea de tiempo continua: "posición" son segundos desde el inicio de la cinta.
 // La UI solo dibuja el estado y llama a estos métodos; el motor no sabe nada del diseño.
 //
-// Bobinado (REW/FF mantenidos) y arrastre sobre el cassette mueven una posición "virtual"
-// sin tocar el audio; al soltar se busca ese punto una sola vez y se retoma lo que sonaba.
+// Bobinado (REW/FF mantenidos), saltos animados entre pistas y arrastre sobre el cassette mueven
+// una posición "virtual" sin tocar el audio; al terminar se busca ese punto una sola vez y se
+// retoma lo que sonaba.
+//
+// El audio pasa por Web Audio (creado en el primer play, que es un gesto del usuario): la
+// ganancia controla el volumen (también en iOS, donde audio.volume no funciona) y dos
+// analizadores, uno por canal, alimentan los vúmetros. Las pistas son del mismo dominio, así
+// que no hace falta CORS.
 
 export type Pista = { id: string; titulo: string; artista: string; duracion: number; src: string };
 export type Estado = 'detenido' | 'pausado' | 'reproduciendo' | 'avanzando' | 'rebobinando' | 'arrastrando';
+/** Motivos por los que la cinta no puede sonar: deck apagado o tapa abierta. */
+export type Bloqueo = 'apagado' | 'puerta';
 
-/** Velocidad del bobinado rápido (veces la velocidad normal). */
-const VELOCIDAD_BOBINADO = 12;
+/** Bobinado mantenido: arranca a esta velocidad (veces la normal)... */
+const BOBINADO_INICIAL = 8;
+/** ...y acelera hasta esta en ACELERACION_S segundos, como el motor de un deck. */
+const BOBINADO_MAXIMO = 40;
+const ACELERACION_S = 2;
 /** "Anterior" vuelve al inicio de la pista actual si ya sonaron más de estos segundos. */
 const UMBRAL_ANTERIOR = 3;
 
 const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+const suave = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+type Grafo = { ctx: AudioContext; ganancia: GainNode; izq: AnalyserNode; der: AnalyserNode };
+type Animacion = { origen: number; destino: number; inicio: number; duracion: number };
 
 export class Cinta extends EventTarget {
   readonly pistas: Pista[];
@@ -24,14 +39,22 @@ export class Cinta extends EventTarget {
   private _estado: Estado = 'detenido';
   private _cargando = false;
   private _sinSenal = false;
-  /** Posición mientras se bobina o arrastra (el audio queda quieto). */
+  /** Posición mientras se bobina, salta o arrastra (el audio queda quieto). */
   private virtual: number | null = null;
+  /** Salto animado en curso (FF/REW de un toque, ir a una pista). */
+  private animacion: Animacion | null = null;
+  private inicioBobinado = 0;
   /** Tiempo local a aplicar cuando la pista termine de cargar sus metadatos. */
   private pendiente: number | null = null;
   /** Si sonaba antes de bobinar/arrastrar, se retoma al soltar. */
   private reanudar = false;
+  private bloqueos = new Set<Bloqueo>();
+  private grafo: Grafo | null = null;
+  private _volumen = 0.8;
+  private _velocidad = 0;
   private raf = 0;
   private ultimoTick = 0;
+  private ultimaPos = 0;
   private ultimaSesion = 0;
 
   constructor(pistas: Pista[], album = 'LOBBY FM') {
@@ -52,6 +75,11 @@ export class Cinta extends EventTarget {
   get pista() { return this.pistas[this._indice]; }
   get duracionTotal() { return this.inicios[this.pistas.length] ?? 0; }
   get sonando() { return this._estado === 'reproduciendo'; }
+  get bobinando() { return this._estado === 'avanzando' || this._estado === 'rebobinando'; }
+  get bloqueado() { return this.bloqueos.size > 0; }
+  estaBloqueado(motivo: Bloqueo) { return this.bloqueos.has(motivo); }
+  /** Velocidad de la cinta en el último cuadro (segundos de cinta por segundo; 1 = normal). */
+  get velocidad() { return this._velocidad; }
   inicioDe(i: number) { return this.inicios[i] ?? 0; }
 
   /** Segundos desde el inicio de la cinta. */
@@ -59,19 +87,58 @@ export class Cinta extends EventTarget {
     if (this.virtual !== null) return this.virtual;
     return this.inicioDe(this._indice) + (this.pendiente ?? this.audio.currentTime);
   }
+  /** Adónde va la cinta: el destino del salto en curso o la posición actual. */
+  get posicionObjetivo() { return this.animacion?.destino ?? this.posicion; }
   /** Segundos desde el inicio de la pista actual. */
   get posicionEnPista() { return this.posicion - this.inicioDe(this.indiceEn(this.posicion)); }
-  /** Pista que corresponde a una posición de la cinta (útil durante bobinado y arrastre). */
+  /** Pista que corresponde a una posición de la cinta. */
   indiceEn(segundos: number) {
     let i = 0;
     while (i < this.pistas.length - 1 && segundos >= this.inicios[i + 1]) i++;
     return i;
   }
 
+  // ---------- audio procesado (volumen y vúmetros) ----------
+  get analizadores() { return this.grafo ? { izq: this.grafo.izq, der: this.grafo.der } : null; }
+  /** Contexto y salida para los sonidos del deck (clics, bobinado); pasan por el volumen. */
+  get salidaEfectos() { return this.grafo ? { ctx: this.grafo.ctx, destino: this.grafo.ganancia } : null; }
+
+  /** Crea el grafo de Web Audio. Debe llamarse desde un gesto del usuario (clic, toque). */
+  prepararAudio() {
+    if (this.grafo) { if (this.grafo.ctx.state === 'suspended') this.grafo.ctx.resume(); return; }
+    const Contexto = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Contexto) return;
+    try {
+      const ctx = new Contexto();
+      const fuente = ctx.createMediaElementSource(this.audio);
+      const ganancia = ctx.createGain();
+      ganancia.gain.value = this._volumen;
+      // Los vúmetros miden la señal antes del volumen, como en un deck (nivel de línea)
+      const separador = ctx.createChannelSplitter(2);
+      const izq = ctx.createAnalyser(), der = ctx.createAnalyser();
+      izq.fftSize = der.fftSize = 1024;
+      fuente.connect(ganancia).connect(ctx.destination);
+      fuente.connect(separador);
+      separador.connect(izq, 0);
+      separador.connect(der, 1);
+      this.grafo = { ctx, ganancia, izq, der };
+    } catch { /* sin Web Audio: el audio sigue sonando directo, sin vúmetros */ }
+  }
+
+  set volumen(v: number) {
+    this._volumen = limitar(v, 0, 1);
+    if (this.grafo) this.grafo.ganancia.gain.setTargetAtTime(this._volumen, this.grafo.ctx.currentTime, 0.02);
+    else this.audio.volume = this._volumen;
+    this.emitir('volumen');
+  }
+  get volumen() { return this._volumen; }
+
   // ---------- transporte ----------
   async reproducir() {
-    if (this.virtual !== null || !this.pistas.length) return;
-    if (this.posicion >= this.duracionTotal - 0.05) this.buscar(0); // cinta al final: vuelve al inicio
+    if (this.bloqueado || this.virtual !== null || !this.pistas.length) return;
+    this.prepararAudio();
+    // Cinta al final: se rebobina (animado) y arranca desde el inicio
+    if (this.posicion >= this.duracionTotal - 0.05) { this.reanudar = true; this.saltarA(0, true); return; }
     if (!this.audio.src) this.cargar(this._indice);
     this._sinSenal = false;
     this.cambiarEstado('reproduciendo');
@@ -96,23 +163,44 @@ export class Cinta extends EventTarget {
 
   alternar() { return this.sonando ? this.pausar() : this.reproducir(); }
 
-  /** Salto a la pista siguiente (como el buscador de canciones de un deck). En la última, va al final. */
+  /** Salto animado a la pista siguiente (como el buscador de canciones de un deck). En la última, al final. */
   siguiente() {
-    if (this._indice < this.pistas.length - 1) this.irAPista(this._indice + 1);
-    else { this.buscar(this.duracionTotal); this.detener(); }
+    const i = this.indiceEn(this.posicionObjetivo);
+    this.saltarA(i < this.pistas.length - 1 ? this.inicioDe(i + 1) : this.duracionTotal);
   }
 
-  /** Vuelve al inicio de la pista; si recién empezó, a la anterior. */
+  /** Vuelve al inicio de la pista; si recién empezó, a la anterior. Animado. */
   anterior() {
-    const destino = this.posicionEnPista > UMBRAL_ANTERIOR ? this._indice : Math.max(0, this._indice - 1);
-    this.irAPista(destino);
+    const objetivo = this.posicionObjetivo;
+    const i = this.indiceEn(objetivo);
+    const enPista = objetivo - this.inicioDe(i);
+    this.saltarA(this.inicioDe(enPista > UMBRAL_ANTERIOR ? i : Math.max(0, i - 1)));
   }
 
-  irAPista(i: number) {
-    this.buscar(this.inicioDe(limitar(i, 0, this.pistas.length - 1)));
+  irAPista(i: number) { this.saltarA(this.inicioDe(limitar(i, 0, this.pistas.length - 1))); }
+
+  /**
+   * Lleva la cinta a una posición bobinando rápido (animado): los rollos corren hasta el punto
+   * y luego retoma lo que sonaba. Si se llama durante otro salto, sigue desde donde va.
+   */
+  saltarA(destino: number, forzarReanudar = false) {
+    if (this.bloqueado) return;
+    destino = limitar(destino, 0, this.duracionTotal);
+    if (this.virtual === null) {
+      this.reanudar = forzarReanudar || this.sonando;
+      this.virtual = this.posicion;
+      this.audio.pause();
+    } else if (forzarReanudar) this.reanudar = true;
+    const origen = this.virtual;
+    const distancia = Math.abs(destino - origen);
+    if (distancia < 0.3) { this.terminarMovimiento(true); return; }
+    // Más lejos = más tiempo, pero siempre entre medio segundo y casi dos
+    this.animacion = { origen, destino, inicio: performance.now(), duracion: limitar(0.45 + distancia / 220, 0.5, 1.8) * 1000 };
+    this.cambiarEstado(destino > origen ? 'avanzando' : 'rebobinando');
+    this.arrancarReloj();
   }
 
-  /** Lleva la cinta a una posición (segundos desde el inicio) manteniendo si suena o no. */
+  /** Lleva la cinta a una posición al instante, manteniendo si suena o no. */
   buscar(segundos: number) {
     segundos = limitar(segundos, 0, this.duracionTotal);
     const i = this.indiceEn(segundos);
@@ -124,32 +212,54 @@ export class Cinta extends EventTarget {
     this.emitir('posicion');
   }
 
-  // ---------- bobinado rápido (REW / FF mantenidos) ----------
+  // ---------- bobinado mantenido (REW / FF) ----------
   iniciarBobinado(direccion: 1 | -1) {
-    if (this.virtual !== null) return;
-    this.empezarMovimiento(direccion > 0 ? 'avanzando' : 'rebobinando');
+    if (this.bloqueado) return;
+    if (this.animacion) this.animacion = null; // un salto en curso se convierte en bobinado
+    if (this.virtual === null) this.empezarMovimiento(direccion > 0 ? 'avanzando' : 'rebobinando');
+    else this.cambiarEstado(direccion > 0 ? 'avanzando' : 'rebobinando');
+    this.inicioBobinado = performance.now();
+    this.arrancarReloj();
   }
   terminarBobinado() {
-    if (this._estado === 'avanzando' || this._estado === 'rebobinando') this.terminarMovimiento(true);
+    if (this.bobinando && !this.animacion) this.terminarMovimiento(true);
   }
 
   // ---------- arrastre sobre el cassette ----------
   empezarArrastre() {
-    if (this.virtual !== null) return;
-    this.empezarMovimiento('arrastrando');
+    if (this.bloqueado) return;
+    this.animacion = null;
+    if (this.virtual === null) this.empezarMovimiento('arrastrando');
+    else this.cambiarEstado('arrastrando');
   }
   /** Mueve la cinta: positivo adelanta, negativo rebobina (en segundos). */
   moverArrastre(segundos: number) {
     if (this._estado !== 'arrastrando' || this.virtual === null) return;
+    const antes = this.virtual;
     this.virtual = limitar(this.virtual + segundos, 0, this.duracionTotal);
+    this._velocidad = (this.virtual - antes) * 60; // aproximado a 60 cuadros por segundo
     this.emitir('posicion');
   }
   soltarArrastre() {
-    if (this._estado === 'arrastrando') this.terminarMovimiento(true);
+    if (this._estado === 'arrastrando') { this._velocidad = 0; this.terminarMovimiento(true); }
   }
 
-  set volumen(v: number) { this.audio.volume = limitar(v, 0, 1); }
-  get volumen() { return this.audio.volume; }
+  // ---------- POWER y EJECT ----------
+  /** Bloquea la cinta (deck apagado o tapa abierta). Devuelve si estaba sonando, para retomar luego. */
+  bloquear(motivo: Bloqueo) {
+    const sonaba = this.sonando || (this.virtual !== null && this.reanudar);
+    if (this.virtual !== null) { this.reanudar = false; this.terminarMovimiento(true); }
+    this.audio.pause();
+    this.bloqueos.add(motivo);
+    this.cambiarEstado(motivo === 'apagado' ? 'detenido' : (this._estado === 'detenido' ? 'detenido' : 'pausado'));
+    this.emitir('estado');
+    return sonaba;
+  }
+  desbloquear(motivo: Bloqueo, reanudar = false) {
+    this.bloqueos.delete(motivo);
+    this.emitir('estado');
+    if (reanudar && !this.bloqueado) this.reproducir();
+  }
 
   // ---------- internos ----------
   private empezarMovimiento(estado: Estado) {
@@ -163,11 +273,12 @@ export class Cinta extends EventTarget {
     if (this.virtual === null) return;
     const destino = this.virtual;
     this.virtual = null;
+    this.animacion = null;
+    this._velocidad = 0;
     if (aplicar) this.buscar(destino);
     const alFinal = destino >= this.duracionTotal - 0.05;
-    if (this.reanudar && !alFinal) { this.cambiarEstado('pausado'); this.reproducir(); }
-    else this.cambiarEstado(alFinal ? 'detenido' : 'pausado');
-    this.reanudar = false;
+    if (this.reanudar && !alFinal && !this.bloqueado) { this.cambiarEstado('pausado'); this.reanudar = false; this.reproducir(); }
+    else { this.reanudar = false; this.cambiarEstado(alFinal ? 'detenido' : 'pausado'); }
   }
 
   private recalcular() {
@@ -186,31 +297,45 @@ export class Cinta extends EventTarget {
   private cambiarEstado(estado: Estado) {
     if (this._estado === estado) return;
     this._estado = estado;
-    if (estado === 'reproduciendo' || estado === 'avanzando' || estado === 'rebobinando') this.arrancarReloj();
+    if (estado === 'reproduciendo' || this.bobinando) this.arrancarReloj();
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = estado === 'reproduciendo' ? 'playing' : 'paused';
     this.emitir('estado');
   }
 
-  private emitir(tipo: 'estado' | 'pista' | 'posicion' | 'duraciones') {
+  private emitir(tipo: 'estado' | 'pista' | 'posicion' | 'duraciones' | 'volumen') {
     this.dispatchEvent(new Event(tipo));
   }
 
-  /** Reloj de la cinta: avisa la posición en cada cuadro y avanza el bobinado. */
+  /** Reloj de la cinta: avanza saltos y bobinados y avisa la posición en cada cuadro. */
   private arrancarReloj() {
     if (this.raf) return;
     this.ultimoTick = performance.now();
+    this.ultimaPos = this.posicion;
     const tick = (ahora: number) => {
-      const dt = (ahora - this.ultimoTick) / 1000;
+      const dt = Math.max(0.001, (ahora - this.ultimoTick) / 1000);
       this.ultimoTick = ahora;
-      if ((this._estado === 'avanzando' || this._estado === 'rebobinando') && this.virtual !== null) {
+
+      if (this.animacion && this.virtual !== null) {
+        const a = this.animacion;
+        const t = limitar((ahora - a.inicio) / a.duracion, 0, 1);
+        this.virtual = a.origen + (a.destino - a.origen) * suave(t);
+        if (t >= 1) this.terminarMovimiento(true);
+      } else if (this.bobinando && this.virtual !== null) {
         const dir = this._estado === 'avanzando' ? 1 : -1;
-        this.virtual = limitar(this.virtual + dir * VELOCIDAD_BOBINADO * dt, 0, this.duracionTotal);
+        const avance = limitar((ahora - this.inicioBobinado) / 1000 / ACELERACION_S, 0, 1);
+        const vel = BOBINADO_INICIAL + (BOBINADO_MAXIMO - BOBINADO_INICIAL) * avance;
+        this.virtual = limitar(this.virtual + dir * vel * dt, 0, this.duracionTotal);
         // Tope de cinta: el bobinado se detiene solo, como en un deck
         if (this.virtual === 0 || this.virtual === this.duracionTotal) this.terminarMovimiento(true);
       }
+
+      const pos = this.posicion;
+      if (this._estado !== 'arrastrando') this._velocidad = (pos - this.ultimaPos) / dt;
+      this.ultimaPos = pos;
       this.emitir('posicion');
       if (this.sonando && ahora - this.ultimaSesion > 1000) { this.ultimaSesion = ahora; this.actualizarPosicionSesion(); }
-      const sigue = this._estado === 'reproduciendo' || this._estado === 'avanzando' || this._estado === 'rebobinando';
+      const sigue = this.sonando || this.bobinando;
+      if (!sigue) this._velocidad = 0;
       this.raf = sigue ? requestAnimationFrame(tick) : 0;
     };
     this.raf = requestAnimationFrame(tick);
@@ -248,6 +373,7 @@ export class Cinta extends EventTarget {
       this._sinSenal = true;
       this._cargando = false;
       this.virtual = null;
+      this.animacion = null;
       this.cambiarEstado('detenido');
       this.emitir('estado');
     });
