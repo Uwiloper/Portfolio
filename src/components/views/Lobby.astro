@@ -1,8 +1,14 @@
 ---
 import playlist from '../../data/playlist.json';
+
+// Las pistas se sirven desde public/audio/ salvo que PUBLIC_AUDIO_BASE apunte a otro lugar (ej. Cloudflare R2)
+const base = (import.meta.env.PUBLIC_AUDIO_BASE ?? '/audio/').replace(/\/?$/, '/');
+const pistas = playlist.canciones.map(({ id, titulo, artista, duracion, archivo }) => ({
+  id, titulo, artista, duracion, src: base + archivo,
+}));
 ---
 
-<article id="lobby-player" data-playlist={JSON.stringify(playlist.canciones)} class="camera-focus-view relative w-full h-full flex flex-col items-center justify-center p-4 lg:p-0 z-10 select-none pb-40 lg:pb-0">
+<article id="lobby-player" data-pistas={JSON.stringify(pistas)} data-cinta={playlist.cinta} class="camera-focus-view relative w-full h-full flex flex-col items-center justify-center p-4 lg:p-0 z-10 select-none pb-40 lg:pb-0">
   
   <div class="w-full max-w-[400px] flex flex-col items-center gap-8 relative">
     
@@ -42,7 +48,7 @@ import playlist from '../../data/playlist.json';
              <!-- Marquesina con el nombre de la canción -->
              <div class="w-full overflow-hidden whitespace-nowrap px-2">
                 <span id="track-marquee" class="font-mono text-[8px] text-pink-300 tracking-widest uppercase inline-block">
-                   [ {playlist.canciones[0].titulo} ] - READY TO PLAY
+                   [ {pistas[0]?.titulo} ] - READY TO PLAY
                 </span>
              </div>
           </div>
@@ -81,7 +87,7 @@ import playlist from '../../data/playlist.json';
       <div class="flex justify-between gap-2 mt-2">
         
         <button id="btn-prev" aria-label="Pista anterior" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 rotate-180"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
 
         <button id="btn-play-pause" aria-label="Reproducir" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
@@ -92,7 +98,7 @@ import playlist from '../../data/playlist.json';
         </button>
 
         <button id="btn-next" aria-label="Pista siguiente" class="player-btn flex-1 bg-[#e2e8f0] border-b-4 border-r-2 border-[#94a3b8] py-3 rounded-sm flex items-center justify-center active:border-0 active:translate-y-1 active:translate-x-0.5 transition-all text-zinc-500 hover:text-pink-500">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 rotate-180"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
         </button>
 
       </div>
@@ -126,10 +132,13 @@ import playlist from '../../data/playlist.json';
 </style>
 
 <script>
-  type Track = { id: string; titulo: string; artista: string; duracion: string; url: string };
+  // Lobby FM: este script solo refleja el estado del motor (src/js/cassette.ts) en el reproductor.
+  // El deck definitivo (bobinas, contador, arrastre) llega en el paso de diseño.
+  import { crearCinta, type Pista } from '../../js/cassette';
 
   const player = document.getElementById('lobby-player');
-  const tracks: Track[] = JSON.parse(player?.dataset.playlist || '[]');
+  const pistas: Pista[] = JSON.parse(player?.dataset.pistas || '[]');
+  const cinta = crearCinta(pistas, player?.dataset.cinta);
 
   const btnPrev = document.getElementById('btn-prev');
   const btnPlay = document.getElementById('btn-play-pause');
@@ -140,63 +149,36 @@ import playlist from '../../data/playlist.json';
   const statusText = document.getElementById('player-status');
   const statusDot = document.getElementById('status-dot');
 
-  const audio = new Audio();
-  audio.preload = 'none';
-  let current = 0;
+  function pintarEstado() {
+    const sonando = cinta.sonando;
+    player?.classList.toggle('is-playing', sonando);
+    iconPlay?.classList.toggle('hidden', sonando);
+    iconPause?.classList.toggle('hidden', !sonando);
+    btnPlay?.setAttribute('aria-label', sonando ? 'Pausar' : 'Reproducir');
 
-  function setStatus(label: string, color: 'red' | 'green' | 'amber') {
-    if (statusText) statusText.textContent = label;
-    if (!statusDot) return;
-    statusDot.classList.remove('bg-red-500', 'bg-green-400', 'bg-amber-400');
-    statusDot.classList.add(color === 'green' ? 'bg-green-400' : color === 'amber' ? 'bg-amber-400' : 'bg-red-500');
+    const [texto, color] = cinta.sinSenal ? ['NO SIGNAL', 'bg-red-500']
+      : cinta.cargando ? ['LOADING', 'bg-amber-400']
+      : sonando ? ['PLAYING', 'bg-green-400']
+      : cinta.estado === 'avanzando' ? ['FF ▶▶', 'bg-amber-400']
+      : cinta.estado === 'rebobinando' ? ['◀◀ REW', 'bg-amber-400']
+      : ['PAUSED', 'bg-red-500'];
+    if (statusText) statusText.textContent = texto;
+    statusDot?.classList.remove('bg-red-500', 'bg-green-400', 'bg-amber-400');
+    statusDot?.classList.add(color);
+
+    const pista = cinta.pistas[cinta.indiceEn(cinta.posicion)];
+    if (marquee && pista) marquee.textContent = `[ ${pista.titulo} ] - ${cinta.sinSenal ? 'SIN SEÑAL' : sonando ? 'NOW PLAYING' : 'READY TO PLAY'}`;
   }
 
-  function setPlayingUI(playing: boolean) {
-    player?.classList.toggle('is-playing', playing);
-    iconPlay?.classList.toggle('hidden', playing);
-    iconPause?.classList.toggle('hidden', !playing);
-    btnPlay?.setAttribute('aria-label', playing ? 'Pausar' : 'Reproducir');
+  cinta.addEventListener('estado', pintarEstado);
+  cinta.addEventListener('pista', pintarEstado);
+
+  if (pistas.length > 0) {
+    btnPlay?.addEventListener('click', () => cinta.alternar());
+    btnPrev?.addEventListener('click', () => cinta.anterior());
+    btnNext?.addEventListener('click', () => cinta.siguiente());
   }
 
-  function setMarquee(suffix: string) {
-    if (marquee && tracks[current]) marquee.textContent = `[ ${tracks[current].titulo} ] - ${suffix}`;
-  }
-
-  function load(index: number) {
-    current = (index + tracks.length) % tracks.length;
-    audio.src = tracks[current].url;
-  }
-
-  async function play() {
-    if (!audio.src) load(current);
-    setStatus('LOADING', 'amber');
-    try {
-      await audio.play();
-    } catch {
-      // Error de autoplay o archivo inexistente: lo resuelve el handler de 'error' o se queda en pausa
-      if (!audio.error) { setPlayingUI(false); setStatus('PAUSED', 'red'); }
-    }
-  }
-
-  function changeTrack(step: number) {
-    const wasPlaying = !audio.paused;
-    load(current + step);
-    setMarquee(wasPlaying ? 'NOW PLAYING' : 'READY TO PLAY');
-    if (wasPlaying) play();
-  }
-
-  audio.addEventListener('playing', () => { setPlayingUI(true); setStatus('PLAYING', 'green'); setMarquee('NOW PLAYING'); });
-  audio.addEventListener('pause', () => { setPlayingUI(false); if (!audio.error) setStatus('PAUSED', 'red'); });
-  audio.addEventListener('ended', () => changeTrack(1));
-  audio.addEventListener('error', () => {
-    setPlayingUI(false);
-    setStatus('NO SIGNAL', 'red');
-    setMarquee('SIN SEÑAL');
-  });
-
-  if (tracks.length > 0) {
-    btnPlay?.addEventListener('click', () => (audio.paused ? play() : audio.pause()));
-    btnPrev?.addEventListener('click', () => changeTrack(-1));
-    btnNext?.addEventListener('click', () => changeTrack(1));
-  }
+  // Solo en desarrollo: acceso desde la consola para probar el motor
+  if (import.meta.env.DEV) (window as unknown as { cinta: typeof cinta }).cinta = cinta;
 </script>

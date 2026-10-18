@@ -1,2 +1,9 @@
-Coloca aquí los MP3 del Lobby FM con los nombres de src/data/playlist.json
-(trk-01.mp3, trk-02.mp3, trk-03.mp3). Los hotlinks de Pixabay devuelven 403.
+Pistas del Lobby FM (mixtape "LOBBY FM VOL. 1", lado A).
+
+- Nombres: los de "archivo" en src/data/playlist.json (trk-01.mp3, trk-02.mp3...).
+- Formato: MP3 128 kbps, 44,1 kHz, estéreo. 2 a 3 minutos por pista.
+- Volumen parejo entre pistas (unos -14 LUFS) y sin silencio al inicio ni al final.
+- La "duracion" del JSON es en segundos; el reproductor la corrige sola al leer el archivo.
+
+Los MP3 de esta carpeta no entran a git (ver .gitignore) mientras sean de prueba.
+Para servirlos desde otro lugar (por ejemplo Cloudflare R2), define PUBLIC_AUDIO_BASE en .env.

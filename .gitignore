@@ -27,3 +27,7 @@ pnpm-debug.log*
 *.ai
 *.psd
 edits/
+
+# Audio del Lobby FM: mientras sea de prueba no entra al repo.
+# Al publicar se decide: subir los MP3 finales (quitar esta línea) o servirlos desde R2.
+public/audio/*.mp3
