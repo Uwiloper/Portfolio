@@ -63,6 +63,65 @@
 .iv-banda-3 { height: 14%; animation-duration: 1.6s; animation-delay: -.9s; opacity: .45; }
 @keyframes iv-banda { from { top: -15%; transform: skewX(-8deg) translateX(-2%); } to { top: 110%; transform: skewX(6deg) translateX(2%); } }
 
+/* Tarjeta de título: UWIL emerge de la estática (tiembla, se separa en rosa/cian, una franja se
+   rasga con el tracking) y al estabilizarse queda nítida con "Just tasteful" debajo */
+#intro-vcr { --iv-marca: 64px; --iv-lema: 12px; }
+@media (min-width: 768px) { #intro-vcr { --iv-marca: 96px; --iv-lema: 16px; } }
+@media (min-width: 1024px) { #intro-vcr { --iv-marca: calc(118px * var(--escala)); --iv-lema: calc(19px * var(--escala)); } }
+
+.iv-titulo {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--iv-lema) * 1.1);
+  opacity: 0; pointer-events: none;
+}
+.iv-marca {
+  position: relative; display: block; line-height: 1;
+  font-family: 'Joyride', sans-serif; font-style: italic; font-size: var(--iv-marca); letter-spacing: .06em; color: #fff;
+  transition: text-shadow .35s ease, filter .35s ease;
+}
+/* Copias del texto en rosa y cian, recortadas en franjas: la separación RGB y el "rasgado" */
+.iv-marca::before, .iv-marca::after {
+  content: attr(data-texto); position: absolute; inset: 0; mix-blend-mode: screen; text-shadow: none;
+  transition: transform .35s ease, opacity .35s ease;
+}
+.iv-marca::before { color: #ec4899; clip-path: inset(8% 0 52% 0); transform: translateX(-.07em); }
+.iv-marca::after { color: #22d3ee; clip-path: inset(55% 0 6% 0); transform: translateX(.07em); }
+.iv-lema {
+  font-family: 'Joyride', sans-serif; font-style: italic; font-size: var(--iv-lema);
+  letter-spacing: .38em; color: rgba(255, 255, 255, .62); padding-left: .38em; /* compensa el espaciado del final */
+  opacity: 0; transition: opacity .45s ease .12s, letter-spacing .6s ease;
+}
+
+/* Con la estática: inestable */
+#intro-vcr[data-fase="senal"] .iv-titulo { opacity: 1; animation: iv-inestable .32s steps(2) infinite; }
+#intro-vcr[data-fase="senal"] .iv-marca { filter: blur(.6px) contrast(1.2); text-shadow: 0 0 12px rgba(255, 255, 255, .35); }
+#intro-vcr[data-fase="senal"] .iv-marca::before { animation: iv-rasgado-a .45s steps(3) infinite; }
+#intro-vcr[data-fase="senal"] .iv-marca::after { animation: iv-rasgado-b .38s steps(3) infinite; }
+#intro-vcr[data-fase="senal"] .iv-lema { opacity: .25; letter-spacing: .55em; }
+@keyframes iv-inestable {
+  0% { transform: translate(0, 0) skewX(0); opacity: .85; }
+  50% { transform: translate(-.4%, .3%) skewX(-3deg); opacity: .6; }
+  100% { transform: translate(.3%, -.2%) skewX(2deg); opacity: .9; }
+}
+@keyframes iv-rasgado-a {
+  0% { clip-path: inset(8% 0 52% 0); transform: translateX(-.09em); }
+  33% { clip-path: inset(40% 0 30% 0); transform: translateX(.05em); }
+  66% { clip-path: inset(70% 0 4% 0); transform: translateX(-.12em); }
+}
+@keyframes iv-rasgado-b {
+  0% { clip-path: inset(55% 0 6% 0); transform: translateX(.09em); }
+  33% { clip-path: inset(15% 0 62% 0); transform: translateX(-.06em); }
+  66% { clip-path: inset(30% 0 45% 0); transform: translateX(.11em); }
+}
+
+/* Señal estable: título nítido sobre negro, con brillo suave y la firma debajo */
+#intro-vcr[data-fase="estable"] .iv-titulo,
+#intro-vcr[data-fase="fin"] .iv-titulo { opacity: 1; }
+#intro-vcr[data-fase="estable"] .iv-marca { text-shadow: 0 0 22px rgba(255, 255, 255, .28), 0 0 2px rgba(255, 255, 255, .6); }
+#intro-vcr[data-fase="estable"] .iv-marca::before { transform: translateX(-.015em); opacity: .85; }
+#intro-vcr[data-fase="estable"] .iv-marca::after { transform: translateX(.015em); opacity: .85; }
+#intro-vcr:is([data-fase="estable"], [data-fase="fin"]) .iv-lema { opacity: 1; }
+
 /* OSD de la casetera */
 .iv-osd { position: absolute; inset: 0; padding: var(--iv-margen); text-shadow: 0 0 6px rgba(255, 255, 255, .6), 2px 0 0 rgba(255, 0, 85, .35), -2px 0 0 rgba(0, 210, 255, .35); }
 .iv-osd > span { position: absolute; opacity: 0; transition: opacity .1s steps(1); }
