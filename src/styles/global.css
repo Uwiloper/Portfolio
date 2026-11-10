@@ -22,6 +22,69 @@
 .font-display { font-family: 'Joyride', sans-serif; }
 
 /* ==================================================== */
+/* PRELOADER: encendido de VCR (Layout.astro)           */
+/* fases: azul → play → senal → estable → fin           */
+/* ==================================================== */
+#intro-vcr {
+  --iv-letra: 11px;
+  --iv-margen: 18px;
+  position: fixed; inset: 0; z-index: 10050; overflow: hidden; cursor: pointer;
+  background: #050506; color: #f2f2f2;
+  font-family: 'Press Start 2P', ui-monospace, monospace; font-size: var(--iv-letra); letter-spacing: .12em;
+  transition: opacity .4s ease;
+  user-select: none; -webkit-user-select: none;
+}
+.sin-intro #intro-vcr { display: none; }
+@media (min-width: 768px) { #intro-vcr { --iv-letra: 16px; --iv-margen: 32px; } }
+@media (min-width: 1024px) { #intro-vcr { --iv-letra: calc(22px * var(--escala)); --iv-margen: calc(48px * var(--escala)); } }
+#intro-vcr[data-fase="fin"] { opacity: 0; pointer-events: none; }
+
+/* Azul de "sin señal" de una videocasetera; se corta de golpe cuando entra la señal */
+.iv-azul { position: absolute; inset: 0; background: #1b2bd8; }
+#intro-vcr:is([data-fase="senal"], [data-fase="estable"], [data-fase="fin"]) .iv-azul { opacity: 0; }
+
+/* Señal: estática que salta + barras de tracking que corren hacia abajo */
+.iv-senal {
+  position: absolute; inset: -4% 0; opacity: 0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    #2a2a2e;
+  background-blend-mode: luminosity;
+  filter: contrast(1.6) brightness(.75);
+  animation: iv-ruido .2s steps(4) infinite, iv-rodar .5s steps(3) infinite;
+}
+#intro-vcr[data-fase="senal"] .iv-senal { opacity: 1; }
+#intro-vcr[data-fase="estable"] .iv-senal { opacity: 0; transition: opacity .42s steps(5); }
+@keyframes iv-ruido { 0% { background-position: 0 0; } 25% { background-position: -60px 40px; } 50% { background-position: 50px -70px; } 75% { background-position: -30px -20px; } }
+@keyframes iv-rodar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5%); } }
+
+.iv-banda { position: absolute; left: 0; right: 0; height: 9%; background: linear-gradient(transparent, rgba(255, 255, 255, .55) 40%, rgba(255, 255, 255, .85) 50%, rgba(255, 255, 255, .4) 60%, transparent); mix-blend-mode: screen; animation: iv-banda 1.1s linear infinite; }
+.iv-banda-2 { height: 4%; animation-duration: .8s; animation-delay: -.35s; opacity: .7; }
+.iv-banda-3 { height: 14%; animation-duration: 1.6s; animation-delay: -.9s; opacity: .45; }
+@keyframes iv-banda { from { top: -15%; transform: skewX(-8deg) translateX(-2%); } to { top: 110%; transform: skewX(6deg) translateX(2%); } }
+
+/* OSD de la casetera */
+.iv-osd { position: absolute; inset: 0; padding: var(--iv-margen); text-shadow: 0 0 6px rgba(255, 255, 255, .6), 2px 0 0 rgba(255, 0, 85, .35), -2px 0 0 rgba(0, 210, 255, .35); }
+.iv-osd > span { position: absolute; opacity: 0; transition: opacity .1s steps(1); }
+.iv-av, .iv-play { top: var(--iv-margen); left: var(--iv-margen); }
+.iv-play { font-size: calc(var(--iv-letra) * 1.25); }
+.iv-tracking { left: 50%; bottom: calc(var(--iv-margen) * 1.6); translate: -50% 0; display: flex; align-items: center; gap: .6em; white-space: nowrap; }
+.iv-tracking i { display: inline-block; width: .55em; height: 1em; background: currentColor; opacity: .15; animation: iv-tramo 1s steps(1) infinite; }
+.iv-tracking i:nth-child(2) { animation-delay: .1s; } .iv-tracking i:nth-child(3) { animation-delay: .2s; }
+.iv-tracking i:nth-child(4) { animation-delay: .3s; } .iv-tracking i:nth-child(5) { animation-delay: .4s; }
+.iv-tracking i:nth-child(6) { animation-delay: .5s; } .iv-tracking i:nth-child(7) { animation-delay: .6s; }
+.iv-tracking i:nth-child(8) { animation-delay: .7s; }
+@keyframes iv-tramo { 0%, 100% { opacity: .15; } 30%, 70% { opacity: 1; } }
+.iv-saltar { right: var(--iv-margen); bottom: var(--iv-margen); font-size: calc(var(--iv-letra) * .7); }
+/* En móvil, abajo no caben TRACKING y SALTAR juntos: SALTAR sube a la esquina superior */
+@media (max-width: 767px) { .iv-saltar { bottom: auto; top: calc(var(--iv-margen) + .3em); } }
+
+#intro-vcr[data-fase="azul"] .iv-av { opacity: 1; }
+#intro-vcr:is([data-fase="play"], [data-fase="senal"], [data-fase="estable"]) .iv-play { opacity: 1; }
+#intro-vcr[data-fase="senal"] .iv-tracking { opacity: 1; }
+#intro-vcr:not([data-fase="fin"]) .iv-saltar { opacity: .55; }
+
+/* ==================================================== */
 /* 2. PIEZAS COMPARTIDAS POR LAS VISTAS DEL VISOR        */
 /* ==================================================== */
 

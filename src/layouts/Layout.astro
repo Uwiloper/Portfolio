@@ -56,6 +56,8 @@ const imageURL = new URL(image, Astro.site);
         }
         calcular();
         addEventListener('resize', calcular);
+        // El preloader de encendido solo se ve una vez por sesión: si ya se vio, se oculta antes de dibujar
+        try { if (sessionStorage.getItem('uwil-intro-vista')) raiz.classList.add('sin-intro'); } catch (e) { /* sin almacenamiento: se muestra */ }
       })();
     </script>
 
@@ -69,7 +71,76 @@ const imageURL = new URL(image, Astro.site);
   </head>
   
   <body class="bg-[#121010] text-slate-100 font-sans min-h-screen overflow-hidden selection:bg-pink-500 selection:text-white">
-    
+
+    <!-- PRELOADER: encendido de VCR (pantalla azul → PLAY → señal con tracking → se estabiliza → corte).
+         Va en línea para verse desde el primer cuadro; el sitio carga debajo mientras tanto. -->
+    <div id="intro-vcr" data-fase="azul" aria-hidden="true">
+      <div class="iv-senal">
+        <span class="iv-banda iv-banda-1"></span>
+        <span class="iv-banda iv-banda-2"></span>
+        <span class="iv-banda iv-banda-3"></span>
+      </div>
+      <div class="iv-azul"></div>
+      <div class="iv-osd">
+        <span class="iv-av">AV-1</span>
+        <span class="iv-play">▶ PLAY</span>
+        <span class="iv-tracking">TRACKING <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="iv-saltar">SALTAR ▶▶</span>
+      </div>
+    </div>
+    <script is:inline>
+      (function () {
+        var intro = document.getElementById('intro-vcr');
+        var raiz = document.documentElement;
+        if (!intro) return;
+        if (raiz.classList.contains('sin-intro')) { intro.remove(); return; }
+
+        var inicio = performance.now();
+        var MIN = 1500, MAX = 3200;        // nunca menos de 1,5 s (se lee la secuencia) ni más de 3,2 s
+        var listo = false, terminado = false;
+        var fase = function (f) { intro.setAttribute('data-fase', f); };
+
+        // 1) Azul con AV-1 → aparece PLAY  2) Entra la señal con tracking
+        setTimeout(function () { if (!terminado) fase('play'); }, 350);
+        setTimeout(function () { if (!terminado) fase('senal'); }, 750);
+
+        // 3) Se estabiliza cuando cargaron fuentes y fondo (o al llegar al máximo)
+        function intentar() {
+          if (terminado || !listo) return;
+          var espera = Math.max(0, MIN - (performance.now() - inicio));
+          setTimeout(estabilizar, espera);
+        }
+        function estabilizar() {
+          if (terminado) return;
+          fase('estable');
+          setTimeout(terminar, 420);
+        }
+        // 4) Corte: entra el sitio con el glitch de cambio de canal y la vista hace su enfoque
+        function terminar() {
+          if (terminado) return;
+          terminado = true;
+          try { sessionStorage.setItem('uwil-intro-vista', '1'); } catch (e) { /* sin almacenamiento */ }
+          fase('fin');
+          var activa = document.querySelector('.nav-label.active');
+          var vista = (activa && activa.getAttribute('data-target')) || 'sobre-mi';
+          document.dispatchEvent(new CustomEvent('visor-change', { detail: vista }));
+          setTimeout(function () { intro.remove(); }, 450);
+          removeEventListener('keydown', saltar);
+        }
+        function saltar() { if (!terminado) terminar(); }
+
+        var fuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+        var carga = new Promise(function (ok) {
+          if (document.readyState === 'complete') ok(); else addEventListener('load', ok, { once: true });
+        });
+        Promise.all([fuentes, carga]).then(function () { listo = true; intentar(); });
+        setTimeout(function () { listo = true; intentar(); }, MAX - 420);
+
+        intro.addEventListener('pointerdown', saltar);
+        addEventListener('keydown', saltar);
+      })();
+    </script>
+
     <div id="layer-1-bg" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       <img src="/images/proyectos/lazaro-portada.webp" class="bg-project-image" alt="" decoding="async" />
       <img src="/images/proyectos/invlazaro-foto1.webp" class="bg-project-image" alt="" decoding="async" />
