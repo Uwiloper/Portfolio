@@ -93,7 +93,14 @@ const imageURL = new URL(image, Astro.site);
       <div class="iv-osd">
         <span class="iv-av">AV-1</span>
         <span class="iv-play">▶ PLAY</span>
-        <span class="iv-tracking">TRACKING <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        <!-- Auto-tracking: el marcador busca el centro de la regla y se calma a medida que carga -->
+        <span class="iv-tracking">
+          <span>TRACKING</span>
+          <span class="iv-tr-flecha">◀</span>
+          <span class="iv-tr-regla"><i class="iv-tr-marca"></i></span>
+          <span class="iv-tr-flecha">▶</span>
+          <span class="iv-tr-ok">OK</span>
+        </span>
         <span class="iv-saltar">SALTAR ▶▶</span>
       </div>
     </div>
@@ -105,8 +112,12 @@ const imageURL = new URL(image, Astro.site);
         if (raiz.classList.contains('sin-intro')) { intro.remove(); return; }
 
         var inicio = performance.now();
-        var MIN = 1500, MAX = 3200;        // nunca menos de 1,5 s (se lee la secuencia) ni más de 3,2 s
-        var listo = false, terminado = false;
+        var SENAL_DESDE = 750;   // ms: termina el azul y entra la señal
+        var BUSQUEDA_MIN = 900;  // ms mínimos buscando señal, para que el tracking se alcance a ver
+        var ESTABLE = 750;       // ms de tarjeta de título nítida antes del corte
+        var MAX = 3200;          // nunca más de 3,2 s en total, aunque la carga se demore
+        var terminado = false, enSenal = false, inicioSenal = 0;
+        var p = 0;               // sintonía de 0 a 1: mueve el tracking, limpia la imagen y calma el título
         var fase = function (f) { intro.setAttribute('data-fase', f); };
 
         // Mientras hay estática, UWIL salta entre fuentes como canales cambiando; al estabilizarse
@@ -131,28 +142,69 @@ const imageURL = new URL(image, Astro.site);
           ultimaFuente = i;
           marca.style.fontFamily = FUENTES[i];
           marca.style.fontStyle = Math.random() < 0.5 ? 'italic' : 'normal';
-          relojFuente = setTimeout(cambiarFuente, 70 + Math.random() * 110);
+          // Cuanto más sintonizada la señal, más despacio cambia
+          relojFuente = setTimeout(cambiarFuente, 70 + Math.random() * 110 + p * 260);
         }
         function fijarFuente() {
           clearTimeout(relojFuente);
           if (marca) { marca.style.fontFamily = ''; marca.style.fontStyle = ''; }
         }
 
-        // 1) Azul con AV-1 → aparece PLAY  2) Entra la señal con tracking
-        setTimeout(function () { if (!terminado) fase('play'); }, 350);
-        setTimeout(function () { if (!terminado) { fase('senal'); cambiarFuente(); } }, 750);
+        // Carga real: fuentes (40 %), página completa (35 %) e imágenes del fondo (25 %)
+        var carga = { fuentes: 0, pagina: 0, fondo: 0 };
+        var cargaReal = function () { return carga.fuentes * 0.4 + carga.pagina * 0.35 + carga.fondo * 0.25; };
+        (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function () { carga.fuentes = 1; });
+        if (document.readyState === 'complete') { carga.pagina = carga.fondo = 1; }
+        else addEventListener('load', function () { carga.pagina = carga.fondo = 1; }, { once: true });
+        // Las imágenes del fondo van después de este script en el HTML: se cuentan al terminar de leerlo
+        document.addEventListener('DOMContentLoaded', function () {
+          var imgs = [].slice.call(document.querySelectorAll('#layer-1-bg img'));
+          if (!imgs.length) { carga.fondo = 1; return; }
+          var listas = 0;
+          var una = function () { listas++; carga.fondo = Math.max(carga.fondo, listas / imgs.length); };
+          imgs.forEach(function (img) {
+            if (img.complete) una(); else { img.addEventListener('load', una, { once: true }); img.addEventListener('error', una, { once: true }); }
+          });
+        });
 
-        // 3) Se estabiliza cuando cargaron fuentes y fondo (o al llegar al máximo)
-        function intentar() {
-          if (terminado || !listo) return;
-          var espera = Math.max(0, MIN - (performance.now() - inicio));
-          setTimeout(estabilizar, espera);
+        // 1) Azul con AV-1 → aparece PLAY  2) Entra la señal y empieza la búsqueda
+        setTimeout(function () { if (!terminado) fase('play'); }, 350);
+        setTimeout(function () {
+          if (terminado) return;
+          fase('senal');
+          enSenal = true;
+          inicioSenal = performance.now();
+          cambiarFuente();
+        }, SENAL_DESDE);
+
+        // 3) Reloj de la sintonía: avanza con la carga real, pero nunca más rápido que la búsqueda
+        //    mínima ni más lento que el máximo; jamás retrocede. El marcador del tracking oscila
+        //    buscando el centro con una amplitud que se apaga al acercarse a 1.
+        function sintonizar(ahora) {
+          if (terminado) return;
+          if (enSenal) {
+            var porTiempo = Math.min(1, (ahora - inicioSenal) / BUSQUEDA_MIN);
+            var objetivo = ahora - inicio >= MAX - ESTABLE ? 1 : Math.min(porTiempo, cargaReal());
+            p = Math.max(p, p + (objetivo - p) * 0.12);
+            if (objetivo >= 1 && p > 0.985) p = 1;
+            var t = ahora / 1000;
+            var amplitud = Math.pow(1 - p, 1.3);
+            var desvio = amplitud * (Math.sin(t * 7.5) + 0.25 * Math.sin(t * 23));
+            intro.style.setProperty('--p', p.toFixed(3));
+            intro.style.setProperty('--tr', Math.max(-1, Math.min(1, desvio)).toFixed(3));
+            if (p >= 1) { estabilizar(); return; }
+          }
+          requestAnimationFrame(sintonizar);
         }
+        requestAnimationFrame(sintonizar);
+
         function estabilizar() {
           if (terminado) return;
           fijarFuente();
+          intro.style.setProperty('--p', '1');
+          intro.style.setProperty('--tr', '0');
           fase('estable');
-          setTimeout(terminar, 750); // lo justo para leer la tarjeta de título nítida
+          setTimeout(terminar, ESTABLE); // lo justo para leer la tarjeta de título nítida
         }
         // 4) Corte: entra el sitio con el glitch de cambio de canal y la vista hace su enfoque
         function terminar() {
@@ -168,13 +220,6 @@ const imageURL = new URL(image, Astro.site);
           removeEventListener('keydown', saltar);
         }
         function saltar() { if (!terminado) terminar(); }
-
-        var fuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-        var carga = new Promise(function (ok) {
-          if (document.readyState === 'complete') ok(); else addEventListener('load', ok, { once: true });
-        });
-        Promise.all([fuentes, carga]).then(function () { listo = true; intentar(); });
-        setTimeout(function () { listo = true; intentar(); }, MAX - 750);
 
         intro.addEventListener('pointerdown', saltar);
         addEventListener('keydown', saltar);
