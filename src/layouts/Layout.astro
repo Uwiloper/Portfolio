@@ -109,9 +109,38 @@ const imageURL = new URL(image, Astro.site);
         var listo = false, terminado = false;
         var fase = function (f) { intro.setAttribute('data-fase', f); };
 
+        // Mientras hay estática, UWIL salta entre fuentes como canales cambiando; al estabilizarse
+        // se fija en Joyride (la del logo). Solo fuentes del sistema o ya cargadas: nada que descargar.
+        var marca = intro.querySelector('.iv-marca');
+        var FUENTES = [
+          "'Press Start 2P', monospace",
+          "Georgia, 'Times New Roman', serif",
+          "'Courier New', Courier, monospace",
+          "Impact, 'Arial Narrow Bold', 'Arial Black', sans-serif",
+          "'Arial Black', 'Helvetica Neue', sans-serif",
+          "'Trebuchet MS', 'Segoe UI', sans-serif",
+          "'Times New Roman', Times, serif",
+          "'Lucida Console', Monaco, monospace",
+          "'Brush Script MT', 'Segoe Script', cursive"
+        ];
+        var relojFuente = 0, ultimaFuente = -1;
+        function cambiarFuente() {
+          if (!marca || terminado) return;
+          var i;
+          do { i = Math.floor(Math.random() * FUENTES.length); } while (i === ultimaFuente);
+          ultimaFuente = i;
+          marca.style.fontFamily = FUENTES[i];
+          marca.style.fontStyle = Math.random() < 0.5 ? 'italic' : 'normal';
+          relojFuente = setTimeout(cambiarFuente, 70 + Math.random() * 110);
+        }
+        function fijarFuente() {
+          clearTimeout(relojFuente);
+          if (marca) { marca.style.fontFamily = ''; marca.style.fontStyle = ''; }
+        }
+
         // 1) Azul con AV-1 → aparece PLAY  2) Entra la señal con tracking
         setTimeout(function () { if (!terminado) fase('play'); }, 350);
-        setTimeout(function () { if (!terminado) fase('senal'); }, 750);
+        setTimeout(function () { if (!terminado) { fase('senal'); cambiarFuente(); } }, 750);
 
         // 3) Se estabiliza cuando cargaron fuentes y fondo (o al llegar al máximo)
         function intentar() {
@@ -121,6 +150,7 @@ const imageURL = new URL(image, Astro.site);
         }
         function estabilizar() {
           if (terminado) return;
+          fijarFuente();
           fase('estable');
           setTimeout(terminar, 750); // lo justo para leer la tarjeta de título nítida
         }
@@ -128,6 +158,7 @@ const imageURL = new URL(image, Astro.site);
         function terminar() {
           if (terminado) return;
           terminado = true;
+          fijarFuente();
           try { sessionStorage.setItem('uwil-intro-vista', '1'); } catch (e) { /* sin almacenamiento */ }
           fase('fin');
           var activa = document.querySelector('.nav-label.active');

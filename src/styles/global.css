@@ -65,9 +65,9 @@
 
 /* Tarjeta de título: UWIL emerge de la estática (tiembla, se separa en rosa/cian, una franja se
    rasga con el tracking) y al estabilizarse queda nítida con "Just tasteful" debajo */
-#intro-vcr { --iv-marca: 64px; --iv-lema: 12px; }
-@media (min-width: 768px) { #intro-vcr { --iv-marca: 96px; --iv-lema: 16px; } }
-@media (min-width: 1024px) { #intro-vcr { --iv-marca: calc(118px * var(--escala)); --iv-lema: calc(19px * var(--escala)); } }
+#intro-vcr { --iv-marca: 64px; --iv-lema: 15px; }
+@media (min-width: 768px) { #intro-vcr { --iv-marca: 96px; --iv-lema: 19px; } }
+@media (min-width: 1024px) { #intro-vcr { --iv-marca: calc(118px * var(--escala)); --iv-lema: calc(23px * var(--escala)); } }
 
 .iv-titulo {
   position: absolute; inset: 0; z-index: 1;
@@ -88,8 +88,8 @@
 .iv-marca::after { color: #22d3ee; clip-path: inset(55% 0 6% 0); transform: translateX(.07em); }
 .iv-lema {
   font-family: 'Joyride', sans-serif; font-style: italic; font-size: var(--iv-lema);
-  letter-spacing: .38em; color: rgba(255, 255, 255, .62); padding-left: .38em; /* compensa el espaciado del final */
-  opacity: 0; transition: opacity .45s ease .12s, letter-spacing .6s ease;
+  letter-spacing: .02em; color: rgba(255, 255, 255, .68);
+  opacity: 0; transition: opacity .45s ease .12s;
 }
 
 /* Con la estática: inestable */
@@ -97,7 +97,7 @@
 #intro-vcr[data-fase="senal"] .iv-marca { filter: blur(.6px) contrast(1.2); text-shadow: 0 0 12px rgba(255, 255, 255, .35); }
 #intro-vcr[data-fase="senal"] .iv-marca::before { animation: iv-rasgado-a .45s steps(3) infinite; }
 #intro-vcr[data-fase="senal"] .iv-marca::after { animation: iv-rasgado-b .38s steps(3) infinite; }
-#intro-vcr[data-fase="senal"] .iv-lema { opacity: .25; letter-spacing: .55em; }
+#intro-vcr[data-fase="senal"] .iv-lema { opacity: .25; }
 @keyframes iv-inestable {
   0% { transform: translate(0, 0) skewX(0); opacity: .85; }
   50% { transform: translate(-.4%, .3%) skewX(-3deg); opacity: .6; }
