@@ -1,0 +1,495 @@
+---
+// Televisor CRT del Lobby. Muestra canales de YouTube, pero solo carga el reproductor
+// (la API de YouTube y el iframe) cuando alguien presiona PLAY: antes es una simple miniatura.
+// Se controla con sus propios botones o con el deck en modo VCR (eventos "tv-control" / "tv-estado").
+interface Canal { id: string; nombre: string; videoId: string; titulo: string; autor: string }
+interface Props { canales: Canal[] }
+
+const { canales } = Astro.props;
+const primero = canales[0];
+const miniatura = (id: string) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+const dos = (n: number) => String(n).padStart(2, '0');
+---
+
+<section id="tv" class="tv" data-canales={JSON.stringify(canales)} aria-label="Televisor del Lobby">
+  <div class="tv-gabinete">
+    <div class="tv-marco">
+      <div class="tv-pantalla" id="tv-pantalla">
+        <!-- Aquí la API de YouTube pone su iframe (solo tras el primer PLAY) -->
+        <div class="tv-imagen">
+          <div id="tv-reproductor"></div>
+          <button type="button" id="tv-portada" class="tv-portada" aria-label={`Reproducir ${primero.titulo}`}>
+            <img id="tv-miniatura" src={miniatura(primero.videoId)} alt="" width="480" height="360" loading="lazy" decoding="async" />
+            <span class="tv-portada-play" aria-hidden="true">▶ PLAY</span>
+          </button>
+        </div>
+        <div class="tv-estatica" aria-hidden="true"></div>
+        <div class="tv-cristal" aria-hidden="true"></div>
+        <div id="tv-osd" class="tv-osd" aria-live="polite">
+          <span id="tv-osd-canal">CH {dos(2)}</span>
+          <span id="tv-osd-nombre">{primero.nombre}</span>
+        </div>
+        <div id="tv-osd-volumen" class="tv-osd-volumen" aria-hidden="true"><span>VOL</span><b></b></div>
+        <div class="tv-negro" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- Panel lateral: marca, rejilla del parlante y controles -->
+    <div class="tv-panel">
+      <span class="tv-marca">UWIL</span>
+      <span class="tv-modelo">TRINITRON-ISH 14"</span>
+      <div class="tv-rejilla" aria-hidden="true"></div>
+      <div class="tv-botones" role="group" aria-label="Controles del televisor">
+        <button type="button" class="tv-btn" data-tv="ch+" aria-label="Canal siguiente">CH ▲</button>
+        <button type="button" class="tv-btn" data-tv="ch-" aria-label="Canal anterior">CH ▼</button>
+        <button type="button" class="tv-btn" data-tv="vol+" aria-label="Subir volumen">VOL +</button>
+        <button type="button" class="tv-btn" data-tv="vol-" aria-label="Bajar volumen">VOL −</button>
+      </div>
+      <button type="button" id="tv-power" class="tv-power" aria-pressed="true" aria-label="Encendido">
+        <i aria-hidden="true"></i>POWER
+      </button>
+    </div>
+  </div>
+  <p id="tv-pie" class="tv-pie">{primero.titulo} · {primero.autor}</p>
+</section>
+
+<style>
+  .tv {
+    --rosa: #ec4899;
+    --cian: #22d3ee;
+    width: min(100%, 640px);
+    font-family: ui-monospace, monospace;
+    color: #d7d9de;
+    user-select: none;
+  }
+  .tv button:focus-visible { outline: 2px solid var(--rosa); outline-offset: 3px; }
+
+  /* Gabinete de plástico gris oscuro, con el panel de controles a la derecha */
+  .tv-gabinete {
+    display: grid; grid-template-columns: minmax(0, 1fr) 104px; gap: 14px;
+    padding: 16px; border-radius: 18px;
+    background:
+      radial-gradient(120% 90% at 30% 0%, rgba(255, 255, 255, .07), transparent 60%),
+      linear-gradient(180deg, #2a2a30, #19191d 60%, #121215);
+    border: 1px solid #34343b;
+    box-shadow: 0 34px 60px -24px rgba(0, 0, 0, .95), inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 -3px 0 rgba(0, 0, 0, .5);
+  }
+
+  /* Marco hundido alrededor del tubo */
+  .tv-marco {
+    padding: 12px; border-radius: 14px;
+    background: linear-gradient(180deg, #0b0b0d, #17171b);
+    box-shadow: inset 0 3px 12px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .06);
+  }
+  .tv-pantalla {
+    position: relative; aspect-ratio: 16 / 9; overflow: hidden;
+    border-radius: 18px / 22px; background: #050607;
+    box-shadow: 0 0 0 2px #000, 0 0 30px rgba(34, 211, 238, .07);
+    isolation: isolate;
+  }
+  .tv-imagen { position: absolute; inset: 0; transform-origin: 50% 50%; }
+  .tv-imagen :global(iframe), #tv-reproductor { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  /* Portada: la miniatura del canal hasta que alguien presiona PLAY (no carga nada de YouTube) */
+  .tv-portada {
+    position: absolute; inset: 0; z-index: 1; display: grid; place-items: center;
+    padding: 0; border: 0; cursor: pointer; background: #000; overflow: hidden;
+  }
+  .tv-portada img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: saturate(.75) contrast(1.1) brightness(.7) blur(.4px);
+    transition: filter .3s, transform .4s;
+  }
+  .tv-portada:hover img { filter: saturate(.95) contrast(1.1) brightness(.85); transform: scale(1.02); }
+  .tv-portada-play {
+    position: relative; padding: 8px 14px;
+    font-family: 'Press Start 2P', ui-monospace, monospace; font-size: 12px; color: #fff;
+    background: rgba(0, 0, 0, .55); border: 2px solid rgba(255, 255, 255, .85);
+    text-shadow: 2px 0 rgba(236, 72, 153, .8), -2px 0 rgba(34, 211, 238, .8);
+    animation: tv-parpadeo 1.6s steps(2, jump-none) infinite;
+  }
+  @keyframes tv-parpadeo { 50% { opacity: .55; } }
+  .tv.viendo .tv-portada { display: none; }
+
+  /* Vidrio del tubo: líneas y viñeta SOLO sobre la portada o la estática; con el video sonando
+     no se cubre el reproductor de YouTube (el brillo queda en el marco) */
+  .tv-cristal {
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, .28) 0 1px, transparent 1px 3px),
+      radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, .65) 100%),
+      linear-gradient(120deg, rgba(255, 255, 255, .1), transparent 40%);
+    transition: opacity .3s;
+  }
+  .tv.viendo:not(.cambiando) .tv-cristal { opacity: 0; }
+
+  /* Estática entre canales */
+  .tv-estatica {
+    position: absolute; inset: -50%; z-index: 2; pointer-events: none; opacity: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-color: #111;
+  }
+  .tv.cambiando .tv-estatica, .tv.sin-senal .tv-estatica { opacity: 1; animation: tv-ruido .18s steps(3) infinite; }
+  @keyframes tv-ruido {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-7%, 4%); }
+    66% { transform: translate(5%, -6%); }
+    100% { transform: translate(-3%, 7%); }
+  }
+
+  /* Indicadores en pantalla (OSD), verde como los televisores de antes */
+  .tv-osd, .tv-osd-volumen {
+    position: absolute; z-index: 4; pointer-events: none;
+    font-family: 'Press Start 2P', ui-monospace, monospace; color: #7dff8a;
+    text-shadow: 0 0 6px rgba(125, 255, 138, .7), 2px 2px 0 #000;
+    transition: opacity .25s;
+  }
+  .tv-osd { top: 7%; right: 6%; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-size: 16px; }
+  .tv-osd span + span { font-size: 9px; letter-spacing: .08em; }
+  .tv.viendo:not(.osd-visible) .tv-osd { opacity: 0; }
+  .tv-osd-volumen { left: 6%; bottom: 9%; display: flex; align-items: center; gap: 8px; font-size: 9px; opacity: 0; }
+  .tv-osd-volumen b { width: 120px; height: 10px; background: repeating-linear-gradient(90deg, #7dff8a 0 6px, transparent 6px 8px) 0 0 / var(--vol, 80%) 100% no-repeat; box-shadow: inset 0 0 0 1px rgba(125, 255, 138, .35); }
+  .tv.vol-visible .tv-osd-volumen { opacity: 1; }
+
+  /* Apagado: la imagen se encoge a una línea y luego a un punto */
+  .tv-negro { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: #050607; opacity: 0; transition: opacity .2s .35s; }
+  .tv.apagado .tv-negro { opacity: 1; }
+  .tv.apagado .tv-imagen { animation: tv-apagar .45s cubic-bezier(.6, 0, .9, .4) forwards; }
+  .tv.encendiendo .tv-imagen { animation: tv-encender .4s cubic-bezier(.1, .6, .3, 1); }
+  @keyframes tv-apagar {
+    0% { transform: none; filter: brightness(1); }
+    55% { transform: scale(1, .006); filter: brightness(4); }
+    100% { transform: scale(0, .006); filter: brightness(6); }
+  }
+  @keyframes tv-encender {
+    0% { transform: scale(1, .006); filter: brightness(5); }
+    60% { transform: scale(1, 1.02); filter: brightness(1.6); }
+    100% { transform: none; filter: none; }
+  }
+  .tv.apagado .tv-osd, .tv.apagado .tv-osd-volumen { opacity: 0; }
+
+  /* Panel lateral */
+  .tv-panel { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 4px 0; }
+  .tv-marca { font-family: 'Joyride', sans-serif; font-style: italic; font-size: 17px; letter-spacing: .12em; color: #e8e8ec; text-align: center; }
+  .tv-modelo { margin-top: -6px; font-size: 7px; letter-spacing: .18em; color: #7d7f86; text-align: center; }
+  .tv-rejilla {
+    flex: 1; min-height: 44px; border-radius: 6px;
+    background: radial-gradient(circle, #050506 1.4px, transparent 1.6px) 0 0 / 7px 7px, #1d1d22;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, .8);
+  }
+  .tv-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tv-btn, .tv-power {
+    font: inherit; font-size: 8px; letter-spacing: .12em; color: #1c1d21; cursor: pointer;
+    padding: 7px 2px; border: 1px solid #000; border-radius: 3px;
+    background: linear-gradient(180deg, #e9ebee, #b4b8be);
+    box-shadow: 0 3px 0 #45474c, 0 4px 6px rgba(0, 0, 0, .6);
+    transition: translate .08s, box-shadow .08s, color .15s;
+  }
+  .tv-btn:hover, .tv-power:hover { color: var(--rosa); }
+  .tv-btn:active, .tv-power:active { translate: 0 3px; box-shadow: 0 0 0 #45474c, 0 1px 2px rgba(0, 0, 0, .6); }
+  .tv-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .tv-power { display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .tv-power i { width: 7px; height: 7px; border-radius: 50%; background: var(--rosa); box-shadow: 0 0 8px var(--rosa); transition: background .3s, box-shadow .3s; }
+  .tv.apagado .tv-power i { background: #3a1f2b; box-shadow: none; }
+
+  .tv-pie {
+    margin: 8px 4px 0; font-size: 10px; letter-spacing: .08em; color: #8b8d94;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  @media (max-width: 640px) {
+    .tv-gabinete { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 10px; border-radius: 14px; }
+    .tv-marco { padding: 7px; }
+    .tv-panel { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; padding: 0; }
+    .tv-modelo, .tv-rejilla { display: none; }
+    .tv-marca { font-size: 13px; }
+    .tv-botones { flex: 1; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+    .tv-btn, .tv-power { font-size: 7px; letter-spacing: .06em; padding: 7px 4px; }
+    .tv-osd { font-size: 11px; }
+    .tv-portada-play { font-size: 9px; }
+  }
+</style>
+
+<script>
+  import { obtenerCinta } from '../js/cassette';
+
+  interface Canal { id: string; nombre: string; videoId: string; titulo: string; autor: string }
+  // Lo justo de la API de YouTube (https://developers.google.com/youtube/iframe_api_reference)
+  interface YtPlayer {
+    playVideo(): void; pauseVideo(): void; stopVideo(): void;
+    loadVideoById(id: string): void; cueVideoById(id: string): void;
+    seekTo(s: number, permitirBuscar: boolean): void;
+    getCurrentTime(): number; getDuration(): number; getPlayerState(): number;
+    setVolume(v: number): void; destroy(): void;
+    getVideoData?(): { isLive?: boolean };
+  }
+  type Yt = { Player: new (el: string | HTMLElement, opciones: object) => YtPlayer };
+  type Ventana = Window & { YT?: Yt; onYouTubeIframeAPIReady?: () => void };
+  const w = window as Ventana;
+
+  // Estados de YouTube
+  const TERMINADO = 0, SONANDO = 1, PAUSADO = 2;
+
+  const tv = document.getElementById('tv');
+  const canales: Canal[] = JSON.parse(tv?.dataset.canales || '[]');
+  const $ = (id: string) => document.getElementById(id);
+  const portada = $('tv-portada') as HTMLButtonElement | null;
+  const miniatura = $('tv-miniatura') as HTMLImageElement | null;
+  const osdCanal = $('tv-osd-canal'), osdNombre = $('tv-osd-nombre'), osdVolumen = $('tv-osd-volumen');
+  const pie = $('tv-pie');
+  const btnPower = $('tv-power');
+  const dos = (n: number) => String(n).padStart(2, '0');
+  const limitar = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+  // Los canales empiezan en el 2, como en la perilla de un televisor viejo
+  const PRIMER_CANAL = 2;
+  const CLAVE_VOLUMEN = 'lobby-tv-volumen';
+
+  let actual = 0;
+  let encendido = true;
+  let player: YtPlayer | null = null;
+  let listo = false;
+  let estadoYt = -1;
+  let quiereSonar = false;   // la intención del usuario (PLAY) aunque el video aún esté cargando
+  let sinSenal = false;
+  let volumen = 80;
+  let tOsd = 0, tVol = 0, tCambio = 0, tSinSenal = 0, tReloj = 0;
+  let api: Promise<Yt> | null = null;
+
+  try { const v = localStorage.getItem(CLAVE_VOLUMEN); if (v !== null) volumen = limitar(Number(v), 0, 100); } catch { /* sin almacenamiento */ }
+
+  // ---------- API de YouTube: se descarga una sola vez y solo cuando hace falta ----------
+  function cargarApi(): Promise<Yt> {
+    if (w.YT?.Player) return Promise.resolve(w.YT);
+    api ??= new Promise((resolver, rechazar) => {
+      const previo = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => { previo?.(); resolver(w.YT!); };
+      const s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.async = true;
+      s.onerror = () => { api = null; rechazar(new Error('Sin conexión con YouTube')); };
+      document.head.append(s);
+    });
+    return api;
+  }
+
+  async function crearReproductor() {
+    const YT = await cargarApi();
+    if (player) return;
+    player = new YT.Player('tv-reproductor', {
+      host: 'https://www.youtube-nocookie.com',
+      videoId: canales[actual].videoId,
+      playerVars: { autoplay: 1, controls: 0, disablekb: 1, rel: 0, playsinline: 1, iv_load_policy: 3, fs: 0 },
+      events: {
+        onReady: () => {
+          listo = true;
+          player?.setVolume(volumen);
+          if (quiereSonar && encendido) player?.playVideo();
+          avisar();
+        },
+        onStateChange: (e: { data: number }) => {
+          estadoYt = e.data;
+          if (e.data === SONANDO) { sinSenal = false; tv?.classList.remove('sin-senal'); tv?.classList.add('viendo'); pausarCinta(); }
+          if (e.data === TERMINADO) cambiarCanal(1);
+          avisar();
+        },
+        // 100: video borrado · 101/150: no se puede incrustar → "sin señal" y al siguiente canal
+        onError: () => {
+          sinSenal = true;
+          tv?.classList.add('sin-senal');
+          mostrarOsd('SIN SEÑAL');
+          avisar();
+          clearTimeout(tSinSenal);
+          tSinSenal = window.setTimeout(() => cambiarCanal(1), 1800);
+        },
+      },
+    });
+  }
+
+  // ---------- estado que leen los demás (el deck en modo VCR) ----------
+  function estado() {
+    if (!encendido) return 'apagado';
+    if (sinSenal) return 'sin-senal';
+    if (tv?.classList.contains('cambiando')) return 'cambiando';
+    if (estadoYt === SONANDO) return 'reproduciendo';
+    if (quiereSonar) return 'cargando';
+    if (player && estadoYt === PAUSADO) return 'pausado';
+    return 'detenido';
+  }
+
+  function avisar() {
+    const c = canales[actual];
+    let tiempo = 0, duracion = 0, vivo = false;
+    if (player && listo && !tv?.classList.contains('cambiando')) {
+      try {
+        tiempo = player.getCurrentTime() || 0;
+        duracion = player.getDuration() || 0;
+        // En una transmisión en vivo YouTube da horas de "duración": se muestra EN VIVO
+        vivo = !!player.getVideoData?.().isLive || duracion > 12 * 3600;
+      } catch { /* aún sin video */ }
+    }
+    document.dispatchEvent(new CustomEvent('tv-estado', {
+      detail: { canal: PRIMER_CANAL + actual, nombre: c.nombre, titulo: c.titulo, autor: c.autor, estado: estado(), tiempo, duracion, vivo },
+    }));
+    // Mientras suena, el reloj del VCR se actualiza cada medio segundo
+    clearInterval(tReloj);
+    if (estadoYt === SONANDO && encendido) tReloj = window.setInterval(avisar, 500);
+  }
+
+  // ---------- pantalla ----------
+  function mostrarOsd(nombre?: string) {
+    const c = canales[actual];
+    if (osdCanal) osdCanal.textContent = `CH ${dos(PRIMER_CANAL + actual)}`;
+    if (osdNombre) osdNombre.textContent = nombre ?? c.nombre;
+    tv?.classList.add('osd-visible');
+    clearTimeout(tOsd);
+    tOsd = window.setTimeout(() => tv?.classList.remove('osd-visible'), 2600);
+  }
+
+  function pintarCanal() {
+    const c = canales[actual];
+    if (miniatura) miniatura.src = `https://i.ytimg.com/vi/${c.videoId}/hqdefault.jpg`;
+    portada?.setAttribute('aria-label', `Reproducir ${c.titulo}`);
+    if (pie) pie.textContent = `${c.titulo} · ${c.autor}`;
+  }
+
+  // ---------- acciones ----------
+  function reproducir() {
+    if (!encendido) return;
+    quiereSonar = true;
+    pausarCinta();
+    if (player && listo) player.playVideo();
+    else crearReproductor().catch(() => { quiereSonar = false; sinSenal = true; tv?.classList.add('sin-senal'); mostrarOsd('SIN SEÑAL'); avisar(); });
+    avisar();
+  }
+
+  function pausar() {
+    quiereSonar = false;
+    if (player && listo) player.pauseVideo();
+    avisar();
+  }
+
+  function detener() {
+    quiereSonar = false;
+    if (player && listo) player.stopVideo();
+    estadoYt = -1;
+    tv?.classList.remove('viendo');
+    mostrarOsd();
+    avisar();
+  }
+
+  // Cambio de canal: medio segundo de estática y el OSD, como al girar la perilla
+  function cambiarCanal(paso: number) {
+    if (!encendido || !canales.length) return;
+    clearTimeout(tSinSenal);
+    sinSenal = false;
+    tv?.classList.remove('sin-senal');
+    actual = (actual + paso + canales.length) % canales.length;
+    tv?.classList.add('cambiando');
+    pintarCanal();
+    mostrarOsd();
+    avisar();
+    clearTimeout(tCambio);
+    tCambio = window.setTimeout(() => {
+      tv?.classList.remove('cambiando');
+      const id = canales[actual].videoId;
+      if (player && listo) {
+        if (quiereSonar) player.loadVideoById(id);
+        else { player.cueVideoById(id); estadoYt = -1; tv?.classList.remove('viendo'); }
+      }
+      avisar();
+    }, 520);
+  }
+
+  // Mantener FF / REW en el VCR: corre el video de a 10 s (en vivo no se puede y YouTube lo ignora)
+  let tBobinado = 0;
+  function iniciarBobinado(direccion: number) {
+    if (!player || !listo || !encendido) return;
+    clearInterval(tBobinado);
+    tBobinado = window.setInterval(() => {
+      try {
+        const t = player!.getCurrentTime() + direccion * 10;
+        player!.seekTo(limitar(t, 0, Math.max(0, player!.getDuration() - 1)), true);
+        avisar();
+      } catch { /* sin video */ }
+    }, 180);
+  }
+  const terminarBobinado = () => clearInterval(tBobinado);
+
+  function cambiarVolumen(paso: number) {
+    if (!encendido) return;
+    volumen = limitar(volumen + paso, 0, 100);
+    if (player && listo) player.setVolume(volumen);
+    try { localStorage.setItem(CLAVE_VOLUMEN, String(volumen)); } catch { /* sin almacenamiento */ }
+    osdVolumen?.style.setProperty('--vol', `${volumen}%`);
+    tv?.classList.add('vol-visible');
+    clearTimeout(tVol);
+    tVol = window.setTimeout(() => tv?.classList.remove('vol-visible'), 1500);
+  }
+  osdVolumen?.style.setProperty('--vol', `${volumen}%`);
+
+  let sonabaAlApagar = false;
+  function alternarEncendido() {
+    encendido = !encendido;
+    tv?.classList.toggle('apagado', !encendido);
+    btnPower?.setAttribute('aria-pressed', String(encendido));
+    btnPower?.setAttribute('aria-label', encendido ? 'Encendido' : 'Apagado');
+    tv?.querySelectorAll<HTMLButtonElement>('.tv-btn').forEach(b => { b.disabled = !encendido; });
+    if (portada) portada.disabled = !encendido;
+    if (!encendido) {
+      sonabaAlApagar = quiereSonar;
+      if (player && listo) player.pauseVideo();
+      quiereSonar = false;
+      terminarBobinado();
+    } else {
+      tv?.classList.add('encendiendo');
+      setTimeout(() => tv?.classList.remove('encendiendo'), 420);
+      mostrarOsd();
+      if (sonabaAlApagar) reproducir();
+    }
+    avisar();
+  }
+
+  // La TV y la cinta no suenan a la vez: lo último que se pone a sonar manda
+  function pausarCinta() {
+    const cinta = obtenerCinta();
+    if (cinta?.sonando) cinta.pausar();
+  }
+  setTimeout(() => {
+    obtenerCinta()?.addEventListener('estado', () => {
+      if (obtenerCinta()?.sonando && (quiereSonar || estadoYt === SONANDO)) pausar();
+    });
+  });
+
+  // ---------- controles propios ----------
+  portada?.addEventListener('click', reproducir);
+  btnPower?.addEventListener('click', alternarEncendido);
+  tv?.querySelectorAll<HTMLButtonElement>('.tv-btn').forEach(b => b.addEventListener('click', () => {
+    const accion = b.dataset.tv;
+    if (accion === 'ch+') cambiarCanal(1);
+    else if (accion === 'ch-') cambiarCanal(-1);
+    else if (accion === 'vol+') cambiarVolumen(10);
+    else if (accion === 'vol-') cambiarVolumen(-10);
+  }));
+
+  // ---------- control remoto: el deck en modo VCR ----------
+  document.addEventListener('tv-control', (e) => {
+    const { accion, direccion } = (e as CustomEvent<{ accion: string; direccion?: number }>).detail;
+    if (accion === 'play') reproducir();
+    else if (accion === 'pausa') (estado() === 'pausado' ? reproducir() : pausar());
+    else if (accion === 'stop') detener();
+    else if (accion === 'siguiente') cambiarCanal(1);
+    else if (accion === 'anterior') cambiarCanal(-1);
+    else if (accion === 'bobinar') iniciarBobinado(direccion ?? 1);
+    else if (accion === 'fin-bobinado') terminarBobinado();
+    else if (accion === 'power') alternarEncendido();
+    else if (accion === 'consultar') avisar();
+  });
+
+  // Al salir del Lobby la TV se pausa (no tiene sentido oír un video que no se ve)
+  document.addEventListener('visor-change', (e) => {
+    if ((e as CustomEvent).detail !== 'lobby' && (quiereSonar || estadoYt === SONANDO)) pausar();
+  });
+
+  avisar();
+</script>

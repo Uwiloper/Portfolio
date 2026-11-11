@@ -3,21 +3,22 @@
 // Dibuja el estado del motor (src/js/cassette.ts) y traduce los gestos: teclas (toque = salto
 // de pista, mantener = bobinar), arrastre y rueda sobre la cinta, perilla de volumen, POWER y EJECT.
 interface Pista { id: string; titulo: string; artista: string; duracion: number; src: string }
-interface Props { pistas: Pista[]; cinta: string; lado?: string }
+// vcr: sin cassette ni medidores; las teclas manejan la TV del Lobby (ver TvLobby.astro)
+interface Props { pistas: Pista[]; cinta: string; lado?: string; vcr?: boolean }
 
-const { pistas, cinta, lado = 'A' } = Astro.props;
+const { pistas, cinta, lado = 'A', vcr = false } = Astro.props;
 const dos = (n: number) => String(n).padStart(2, '0');
 const mmss = (s: number) => `${dos(Math.floor(s / 60))}:${dos(Math.floor(s % 60))}`;
 // Sin pistas todavía: el deck funciona (POWER, EJECT, perilla) pero la cinta avisa que está en preparación
 const proximamente = pistas.length === 0;
 ---
 
-<section id="deck" class:list={['deck', { proximamente }]} data-pistas={JSON.stringify(pistas)} data-cinta={cinta} aria-label={`Reproductor de cassette: ${cinta}${proximamente ? ' (próximamente)' : ''}`}>
+<section id="deck" class:list={['deck', { proximamente, vcr }]} data-pistas={JSON.stringify(pistas)} data-cinta={cinta} aria-label={vcr ? 'Videocasetera: controla el televisor' : `Reproductor de cassette: ${cinta}${proximamente ? ' (próximamente)' : ''}`}>
 
   <!-- Placa superior: marca, modelo y encendido -->
   <header class="deck-placa">
     <span class="deck-marca">UWIL</span>
-    <span class="deck-modelo">STEREO CASSETTE DECK · LF-1</span>
+    <span class="deck-modelo">{vcr ? 'VIDEO CASSETTE RECORDER · VR-1' : 'STEREO CASSETTE DECK · LF-1'}</span>
     <button type="button" id="deck-power" class="deck-power" aria-pressed="true" aria-label="Encendido">
       <i aria-hidden="true"></i>POWER
     </button>
@@ -107,10 +108,10 @@ const proximamente = pistas.length === 0;
 
       <div class="vfd" aria-live="off">
         <div class="vfd-fila">
-          <span id="vfd-pista">{proximamente ? 'TRK --' : 'TRK 01'}</span>
+          <span id="vfd-pista">{vcr ? 'CH --' : proximamente ? 'TRK --' : 'TRK 01'}</span>
           <span id="vfd-tiempo">{proximamente ? '--:-- / --:--' : `00:00 / ${mmss(pistas[0].duracion)}`}</span>
         </div>
-        <div class="vfd-titulo"><span id="vfd-titulo">{proximamente ? 'PROXIMAMENTE · CINTA EN PREPARACION' : pistas[0].titulo.toUpperCase()}</span></div>
+        <div class="vfd-titulo"><span id="vfd-titulo">{vcr ? 'SINTONIZANDO...' : proximamente ? 'PROXIMAMENTE · CINTA EN PREPARACION' : pistas[0].titulo.toUpperCase()}</span></div>
         <div class="vfd-indicadores">
           <span data-ind="rew">◀◀ REW</span>
           <span data-ind="play">▶ PLAY</span>
@@ -324,6 +325,18 @@ const proximamente = pistas.length === 0;
   .deck.apagado .deck-power i { background: #3a1f2b; box-shadow: none; }
   .deck.apagado .deck-puerta { cursor: default; }
 
+  /* VCR: solo placa, pantalla y teclas, del ancho del televisor */
+  .deck.vcr { width: min(100%, 640px); padding-bottom: 12px; }
+  .deck.vcr .deck-placa { margin-bottom: 10px; }
+  .deck.vcr .deck-puerta, .deck.vcr .deck-contador, .deck.vcr .deck-medidores, .deck.vcr .deck-volumen { display: none; }
+  .deck.vcr .deck-cuerpo, .deck.vcr .deck-panel { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .deck.vcr .vfd-indicadores span[data-ind="open"] { display: none; }
+  .deck.vcr .vfd { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 16px; padding: 8px 12px; }
+  .deck.vcr .vfd-fila { flex-direction: column; gap: 6px; grid-row: span 2; }
+  .deck.vcr .vfd-titulo { margin: 0; }
+  .deck.vcr .deck-teclas { margin-top: 10px; }
+  .deck.vcr .tecla { height: 46px; }
+
   @media (max-width: 640px) {
     .deck { padding-bottom: 12px; }
     .deck-cuerpo { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 0 12px; }
@@ -338,6 +351,8 @@ const proximamente = pistas.length === 0;
     .perilla { width: 40px; height: 40px; }
     .deck-teclas { margin: 10px 12px 0; gap: 4px; padding: 5px; }
     .tecla { height: 46px; }
+    .deck.vcr .vfd { grid-template-columns: minmax(0, 1fr); }
+    .deck.vcr .vfd-fila { flex-direction: row; grid-row: auto; }
   }
 </style>
 
@@ -351,6 +366,13 @@ const proximamente = pistas.length === 0;
   const zumbido = new Zumbido(cinta);
   // Sin pistas: la cinta está "en preparación" (sin transporte ni arrastre; POWER, EJECT y perilla sí)
   const proximamente = pistas.length === 0;
+  // Modo VCR: las teclas mandan órdenes a la TV y la pantalla muestra el canal
+  const vcr = !!deck?.classList.contains('vcr');
+  type EstadoTv = { canal: number; nombre: string; titulo: string; autor: string; estado: string; tiempo: number; duracion: number; vivo: boolean };
+  let tv: EstadoTv | null = null;
+  let bobinandoTv = 0;
+  const ordenTv = (accion: string, direccion?: number) =>
+    document.dispatchEvent(new CustomEvent('tv-control', { detail: { accion, direccion } }));
 
   // ---------- geometría del cassette (unidades del SVG) ----------
   const R_VACIO = 22;            // radio del eje sin cinta
@@ -467,7 +489,28 @@ const proximamente = pistas.length === 0;
     }
   }
 
+  function pintarVcr() {
+    const e = tv?.estado ?? 'detenido';
+    deck?.classList.toggle('is-playing', e === 'reproduciendo');
+    const on: Record<string, boolean> = {
+      play: e === 'reproduciendo' || e === 'pausado' || e === 'cargando',
+      pause: e === 'pausado',
+      ff: bobinandoTv > 0, rew: bobinandoTv < 0,
+      error: e === 'sin-senal',
+    };
+    indicadores.forEach(s => s.classList.toggle('on', !!on[s.dataset.ind ?? '']));
+    teclas.play?.setAttribute('aria-pressed', String(on.play));
+    teclas.pause?.setAttribute('aria-pressed', String(on.pause));
+    Object.values(teclas).forEach(t => { t.disabled = !encendido || e === 'apagado'; });
+    if (!tv) return;
+    if (vfdPista) vfdPista.textContent = `CH ${dos(tv.canal)}`;
+    if (vfdTiempo) vfdTiempo.textContent = tv.vivo ? '● EN VIVO' : tv.duracion > 0 ? `${mmss(tv.tiempo)} / ${mmss(tv.duracion)}` : '--:-- / --:--';
+    const titulo = (e === 'apagado' ? 'TV APAGADA' : `${tv.titulo} · ${tv.autor}`).toUpperCase();
+    if (vfdTitulo && vfdTitulo.textContent !== titulo) { vfdTitulo.textContent = titulo; ajustarDesborde(); }
+  }
+
   function pintarEstado() {
+    if (vcr) { pintarVcr(); return; }
     const e = cinta.estado;
     deck?.classList.toggle('is-playing', cinta.sonando);
     const on: Record<string, boolean> = {
@@ -540,9 +583,9 @@ const proximamente = pistas.length === 0;
   teclas.play?.addEventListener('pointerdown', () => sonarTecla(true));
   teclas.stop?.addEventListener('pointerdown', () => sonarTecla(true));
   teclas.pause?.addEventListener('pointerdown', () => sonarTecla());
-  teclas.play?.addEventListener('click', () => cinta.reproducir());
-  teclas.pause?.addEventListener('click', () => (cinta.estado === 'pausado' ? cinta.reproducir() : cinta.pausar()));
-  teclas.stop?.addEventListener('click', () => cinta.detener());
+  teclas.play?.addEventListener('click', () => (vcr ? ordenTv('play') : cinta.reproducir()));
+  teclas.pause?.addEventListener('click', () => (vcr ? ordenTv('pausa') : cinta.estado === 'pausado' ? cinta.reproducir() : cinta.pausar()));
+  teclas.stop?.addEventListener('click', () => (vcr ? ordenTv('stop') : cinta.detener()));
 
   // REW / FF: toque = salto animado a la pista anterior/siguiente; mantener = bobinar mientras se sostiene
   function teclaDeBobinado(tecla: HTMLButtonElement | undefined, direccion: 1 | -1) {
@@ -550,7 +593,10 @@ const proximamente = pistas.length === 0;
     let temporizador = 0;
     let mantenida = false;
     let activa = false;
-    const saltar = () => (direccion > 0 ? cinta.siguiente() : cinta.anterior());
+    // En modo VCR: toque = cambiar de canal; mantener = correr el video
+    const saltar = () => (vcr ? ordenTv(direccion > 0 ? 'siguiente' : 'anterior') : direccion > 0 ? cinta.siguiente() : cinta.anterior());
+    const bobinar = () => { if (vcr) { bobinandoTv = direccion; ordenTv('bobinar', direccion); pintarVcr(); } else cinta.iniciarBobinado(direccion); };
+    const dejarDeBobinar = () => { if (vcr) { bobinandoTv = 0; ordenTv('fin-bobinado'); pintarVcr(); } else cinta.terminarBobinado(); };
     tecla.addEventListener('pointerdown', (e) => {
       if (tecla.disabled || e.button > 0) return;
       e.preventDefault();
@@ -559,15 +605,15 @@ const proximamente = pistas.length === 0;
       activa = true;
       mantenida = false;
       tecla.classList.add('hundida');
-      temporizador = window.setTimeout(() => { mantenida = true; cinta.iniciarBobinado(direccion); }, 280);
+      temporizador = window.setTimeout(() => { mantenida = true; bobinar(); }, 280);
     });
     const soltar = (cancelar: boolean) => {
       if (!activa) return;
       activa = false;
       clearTimeout(temporizador);
-      if (mantenida) cinta.terminarBobinado();
+      if (mantenida) dejarDeBobinar();
       else if (!cancelar) saltar();
-      if (!cinta.bobinando) tecla.classList.remove('hundida');
+      if (vcr || !cinta.bobinando) tecla.classList.remove('hundida');
     };
     tecla.addEventListener('pointerup', () => soltar(false));
     tecla.addEventListener('pointercancel', () => soltar(true));
@@ -700,6 +746,11 @@ const proximamente = pistas.length === 0;
     e.preventDefault();
   });
 
+  if (vcr) {
+    document.addEventListener('tv-estado', (e) => { tv = (e as CustomEvent<EstadoTv>).detail; pintarVcr(); });
+    // La TV puede haber avisado antes de que este script escuchara: se le pregunta
+    setTimeout(() => ordenTv('consultar'));
+  }
   pintarEstado();
   if (proximamente) {
     puerta?.removeAttribute('title');

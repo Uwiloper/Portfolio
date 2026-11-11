@@ -1,0 +1,11 @@
+{
+  "titulo": "LOBBY TV",
+  "canales": [
+    { "id": "lobby-fm", "nombre": "LOBBY FM", "videoId": "mmKguZohAck", "titulo": "Best of lofi hip hop 2023", "autor": "Lofi Girl" },
+    { "id": "synthwave", "nombre": "SYNTHWAVE", "videoId": "4xDzrJKXOOY", "titulo": "synthwave radio - beats to chill/game to", "autor": "Lofi Girl" },
+    { "id": "memes-mundial", "nombre": "MEMES", "videoId": "-Qg2N6LfMEo", "titulo": "Los memes y virales de la clasificación de Perú al Mundial", "autor": "TEC" },
+    { "id": "memes-canciones", "nombre": "MEMES", "videoId": "zfdxCg1R8-w", "titulo": "Canciones peruanas que se volvieron memes virales", "autor": "Magacín 247" },
+    { "id": "memes-esto-solo-pasa", "nombre": "MEMES", "videoId": "Dhm58aY7ZLY", "titulo": "Esto solo pasa en Perú #24", "autor": "Dani DM" },
+    { "id": "memes-peru-meme", "nombre": "MEMES", "videoId": "3TAD-CRCut8", "titulo": "Perú no es clave... es MEME", "autor": "whatdafaqshow" }
+  ]
+}
