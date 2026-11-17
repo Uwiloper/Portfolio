@@ -19,18 +19,21 @@ const pistas = playlist.canciones.map(({ id, titulo, artista, duracion, archivo 
 }));
 // Sin pistas propias, el deck se vuelve la videocasetera de la TV
 const vcr = pistas.length === 0;
+// Por ahora el Lobby muestra solo la TV con su pila de VHS
+const MOSTRAR_DECK = false;
 ---
 
 <article class:list={[
   'camera-focus-view relative w-full h-full flex flex-col items-center justify-start gap-4 p-4 pt-14 pb-44 z-10 select-none overflow-y-auto scrollbar-hide',
-  vcr ? 'lg:justify-center lg:pt-0 lg:pb-0' : 'lg:pt-6 lg:pb-6',
+  MOSTRAR_DECK && !vcr ? 'lg:pt-6 lg:pb-6' : 'lg:justify-center lg:pt-0 lg:pb-0',
 ]}>
   <header class="w-full max-w-[640px] border-b border-white/10 pb-2 shrink-0">
     <h2 class="font-display text-xl md:text-2xl text-white uppercase tracking-widest italic drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-      {vcr ? tv.titulo : playlist.tituloPlaylist}
+      {MOSTRAR_DECK && !vcr ? playlist.tituloPlaylist : tv.titulo}
     </h2>
   </header>
 
-  <TvLobby canales={tv.canales} />
-  <DeckCassette pistas={pistas} cinta={playlist.cinta} lado={playlist.lado} vcr={vcr} />
+  <TvLobby cintas={tv.cintas} />
+  <!-- El deck queda guardado por ahora: para mostrarlo de nuevo, activa MOSTRAR_DECK -->
+  {MOSTRAR_DECK && <DeckCassette pistas={pistas} cinta={playlist.cinta} lado={playlist.lado} vcr={vcr} />}
 </article>
