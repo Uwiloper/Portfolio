@@ -102,7 +102,14 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 
         <!-- CONTRAPORTADA -->
         <section id="seccion-contraportada" class="relative flex flex-col p-6 lg:p-10">
-          <span id="detalle-sello" class="detalle-sello"></span>
+          <div class="detalle-estado">
+            <span id="detalle-sello" class="detalle-sello"></span>
+            <!-- Aviso con sonido propio del proyecto (proyectos.json → estilo.voz), ej. la voz de Cheka -->
+            <button type="button" id="detalle-voz" class="detalle-voz hidden" aria-label="Escuchar el aviso">
+              <span class="voz-ondas" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="voz-texto"><small id="detalle-voz-quien"></small><strong id="detalle-voz-frase"></strong></span>
+            </button>
+          </div>
 
           <div class="flex flex-col h-full max-w-[760px] mx-auto w-full min-h-0">
             <div id="wrap-contra-badge" class="flex items-center gap-3 mb-6">
@@ -399,6 +406,35 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   #vista-detalle[data-tema="noir"] .portada-velo { background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.85) 100%), linear-gradient(to top, rgba(0,0,0,.85), transparent 50%); }
   #vista-detalle[data-tema="noir"] .detalle-cta { border-radius: 0; }
 
+  /* ---------- AVISO CON VOZ (cualquier tema; hoy lo usa Cheka) ---------- */
+  #vista-detalle .detalle-estado { display: contents; }
+  #vista-detalle .detalle-voz.hidden { display: none !important; }
+  #vista-detalle .detalle-voz {
+    display: inline-flex; align-items: center; gap: .8rem; padding: .55rem 1rem .55rem .85rem; cursor: pointer;
+    border-radius: 14px; border: 1px solid color-mix(in srgb, var(--theme-color) 25%, transparent);
+    background: #0e1326; color: #fff; text-align: left;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .45);
+    transform-origin: 0 50%; transition: transform .2s, border-color .2s;
+  }
+  #vista-detalle .detalle-voz:hover { transform: scale(1.03); border-color: var(--theme-color); }
+  #vista-detalle .detalle-voz:focus-visible { outline: 2px solid var(--theme-color); outline-offset: 3px; }
+  #vista-detalle .detalle-voz.entra { animation: voz-entra .55s cubic-bezier(.2, 1.4, .4, 1) both; }
+  @keyframes voz-entra { from { opacity: 0; transform: translateY(8px) scale(.9); } }
+  .voz-ondas { display: flex; align-items: center; gap: 3px; height: 1.6rem; }
+  .voz-ondas i { width: 4px; height: 35%; border-radius: 2px; background: var(--theme-color); transition: height .2s; }
+  .voz-ondas i:nth-child(2), .voz-ondas i:nth-child(4) { height: 65%; }
+  .voz-ondas i:nth-child(3) { height: 100%; }
+  /* Mientras suena, las barras laten como en la app */
+  .detalle-voz.sonando .voz-ondas i { animation: voz-onda .5s ease-in-out infinite alternate; }
+  .detalle-voz.sonando .voz-ondas i:nth-child(2) { animation-delay: -.15s; }
+  .detalle-voz.sonando .voz-ondas i:nth-child(3) { animation-delay: -.3s; }
+  .detalle-voz.sonando .voz-ondas i:nth-child(4) { animation-delay: -.1s; }
+  .detalle-voz.sonando .voz-ondas i:nth-child(5) { animation-delay: -.25s; }
+  @keyframes voz-onda { from { height: 20%; } to { height: 100%; } }
+  .voz-texto { display: flex; flex-direction: column; line-height: 1.2; }
+  .voz-texto small { font-family: var(--font-body); font-size: .68rem; color: rgba(255, 255, 255, .6); }
+  .voz-texto strong { font-family: var(--font-body); font-size: .92rem; font-weight: 700; }
+
   /* ---------- TEMA TECH: terminal de monitoreo ---------- */
   /* Rejilla de osciloscopio + barrido */
   #vista-detalle[data-tema="tech"] .detalle-textura {
@@ -437,18 +473,22 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   #vista-detalle[data-tema="tech"] .detalle-label { font-style: normal; border-bottom: 0; letter-spacing: .1em; text-transform: lowercase; }
   #vista-detalle[data-tema="tech"] .detalle-label::before { content: "> "; color: var(--theme-2); }
 
-  /* Sello como indicador de estado */
-  #vista-detalle[data-tema="tech"] .detalle-sello {
-    display: inline-flex; align-items: center; gap: .5rem; align-self: flex-start; margin-bottom: 1.25rem;
-    font-family: var(--font-label); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
-    color: var(--theme-color); border: 1px solid var(--theme-color); padding: .3rem .7rem;
-    background: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  /* Sello como indicador de estado (píldora con check, como el "pago verificado" de Cheka) */
+  #vista-detalle[data-tema="tech"] .detalle-estado {
+    display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-bottom: 1.25rem;
     /* alineado con el contenido centrado de 760px */
     margin-left: max(0px, calc((100% - 760px) / 2));
   }
-  #vista-detalle[data-tema="tech"] .detalle-sello::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--theme-color); box-shadow: 0 0 8px var(--theme-color); }
+  #vista-detalle[data-tema="tech"] .detalle-sello {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--font-label); font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--theme-color); border: 1px solid var(--theme-color); padding: .35rem .85rem; border-radius: 999px;
+    background: color-mix(in srgb, var(--theme-color) 10%, transparent);
+  }
+  #vista-detalle[data-tema="tech"] .detalle-sello::before { content: "✓"; display: grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%; font-size: .65rem; letter-spacing: 0; color: var(--theme-bg); background: var(--theme-color); box-shadow: 0 0 10px var(--theme-color); }
 
-  #vista-detalle[data-tema="tech"] .credito { border: 1px solid color-mix(in srgb, var(--theme-color) 40%, transparent); background: color-mix(in srgb, var(--theme-color) 8%, transparent); padding: .35rem .7rem; }
+  #vista-detalle[data-tema="tech"] .credito { border: 1px solid color-mix(in srgb, var(--theme-color) 40%, transparent); background: color-mix(in srgb, var(--theme-color) 8%, transparent); padding: .35rem .7rem; border-radius: 999px; }
+  #vista-detalle[data-tema="tech"] .foto-item { border-radius: 10px; overflow: hidden; }
   #vista-detalle[data-tema="tech"] .credito-nombre { font-family: var(--font-label); text-transform: lowercase; }
 
   #vista-detalle[data-tema="tech"] .portada-velo { background: linear-gradient(to top, rgba(0,0,0,.9), transparent 55%), color-mix(in srgb, var(--theme-color) 12%, transparent); mix-blend-mode: normal; }
@@ -617,6 +657,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
   }
 
   function cerrarDetalleUI() {
+    detenerVoz();
     document.body.style.overflow = '';
     mouseTooltip?.classList.remove('is-visible');
     switchView(vistaDetalle, origenDetalle ?? vistaCarrusel);
@@ -658,6 +699,56 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     etiquetas?: Record<string, string>;
     sello?: string;
     etiquetaFoto?: string;
+    // Aviso con sonido: los audios suenan en orden (ej. la moneda y luego la voz)
+    voz?: { quien: string; frase: string; audios: string[] };
+  }
+
+  // ---------- aviso con voz ----------
+  const btnVoz = document.getElementById('detalle-voz');
+  let vozActual: EstiloProyecto['voz'] | null = null;
+  let audiosVoz: HTMLAudioElement[] = [];
+  let tVoz = 0;
+  const vozYaSonada = new Set<string>();
+
+  function detenerVoz() {
+    clearTimeout(tVoz);
+    audiosVoz.forEach(a => { a.onended = null; a.pause(); });
+    btnVoz?.classList.remove('sonando');
+  }
+
+  function sonarVoz() {
+    if (!vozActual) return;
+    detenerVoz();
+    audiosVoz = vozActual.audios.map(src => { const a = new Audio(src); a.volume = 0.8; return a; });
+    btnVoz?.classList.add('sonando');
+    const tocar = (i: number) => {
+      const a = audiosVoz[i];
+      if (!a) { btnVoz?.classList.remove('sonando'); return; }
+      a.onended = () => tocar(i + 1);
+      a.play().catch(() => btnVoz?.classList.remove('sonando'));
+    };
+    tocar(0);
+  }
+  btnVoz?.addEventListener('click', sonarVoz);
+
+  // Suena sola la primera vez que se abre el proyecto en la visita; después, con un clic
+  function prepararVoz(id: string, voz?: EstiloProyecto['voz']) {
+    detenerVoz();
+    vozActual = voz ?? null;
+    toggleContent(btnVoz, voz);
+    if (!voz || !btnVoz) return;
+    const quien = document.getElementById('detalle-voz-quien');
+    const frase = document.getElementById('detalle-voz-frase');
+    if (quien) quien.textContent = voz.quien;
+    if (frase) frase.textContent = voz.frase;
+    btnVoz.setAttribute('aria-label', `Escuchar: ${voz.quien} ${voz.frase}`);
+    btnVoz.classList.remove('entra');
+    void btnVoz.offsetWidth;
+    btnVoz.classList.add('entra');
+    if (!vozYaSonada.has(id)) {
+      vozYaSonada.add(id);
+      tVoz = window.setTimeout(sonarVoz, 900);
+    }
   }
 
   const fuentesCargadas = new Set<string>();
@@ -678,7 +769,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
     document.head.appendChild(link);
   }
 
-  function aplicarEstilo(proyecto: { titulo: string; colorPrincipal?: string; estilo?: EstiloProyecto }) {
+  function aplicarEstilo(proyecto: { id: string; titulo: string; colorPrincipal?: string; estilo?: EstiloProyecto }) {
     if (!vistaDetalle) return;
     const estilo: EstiloProyecto = proyecto.estilo || {};
     vistaDetalle.dataset.tema = estilo.tema || 'default';
@@ -709,6 +800,7 @@ const carruselInfinito = Array.from({ length: copias }, () => data.proyectos).fl
 
     const sello = document.getElementById('detalle-sello');
     if (sello) { sello.textContent = estilo.sello || ''; toggleContent(sello, estilo.sello); }
+    prepararVoz(proyecto.id, estilo.voz);
 
     const portada = document.getElementById('detalle-portada-imagen') as HTMLImageElement | null;
     if (portada) portada.alt = `Portada de ${proyecto.titulo}`;

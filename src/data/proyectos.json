@@ -75,24 +75,29 @@
       "titulo": "Cheka",
       "categoria": "Web & app",
       "año": "2026",
-      "colorPrincipal": "#24da8d",
-      "imagen1": "https://placehold.co/300x450/0b0b0b/24da8d?text=CHEKA",
-      "imagen2": "https://placehold.co/300x450/24da8d/0b0b0b?text=CHEKA",
-      "descripcion": "Validación automática de pagos con Yape y Plin: una app Android conectada a un panel web en tiempo real.",
+      "colorPrincipal": "#1dd382",
+      "imagen1": "/images/vhs/cheka-vhs1.webp",
+      "imagen2": "/images/vhs/cheka-vhs2.webp",
+      "descripcion": "Validación automática de pagos con Yape, Plin y bancos: una app Android que canta cada cobro y un panel web en tiempo real.",
       "estilo": {
         "tema": "tech",
         "paleta": {
-          "primario": "#24da8d",
-          "secundario": "#00d2ff",
-          "fondo": "#030806",
-          "panel": "#06100c",
-          "texto": "#d6f5e6"
+          "primario": "#1dd382",
+          "secundario": "#9af5c9",
+          "fondo": "#06100c",
+          "panel": "#0a1712",
+          "texto": "#e3f7ec"
         },
         "tipografia": {
-          "googleFonts": "Chakra+Petch:wght@500;700&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@300;400",
-          "titulo": "'Chakra Petch', 'Joyride', sans-serif",
+          "googleFonts": "Inter:ital,wght@0,400;0,600;0,700;1,900&family=Share+Tech+Mono",
+          "titulo": "'Inter', 'Joyride', sans-serif",
           "etiquetas": "'Share Tech Mono', ui-monospace, monospace",
-          "texto": "'IBM Plex Sans', system-ui, sans-serif"
+          "texto": "'Inter', system-ui, sans-serif"
+        },
+        "voz": {
+          "quien": "Cheka dice",
+          "frase": "«María Torres te yapeó»",
+          "audios": ["/sonidos/cheka/moneda.wav", "/sonidos/cheka/voz-yape.mp3"]
         },
         "etiquetas": {
           "sinopsis": "resumen",
@@ -109,7 +114,7 @@
           "subtitulo": "Tus pagos validados en automático"
         },
         "portada": {
-          "imagen": "",
+          "imagen": "/images/proyectos/cheka-portada.webp",
           "textoBoton": "VISITAR",
           "linkBoton": "https://cheka-pe-six.vercel.app/",
           "director": "Uwil"
@@ -118,15 +123,20 @@
           "badge": "",
           "badgeIcono": "",
           "fraseItalica": "En un mercado lleno de capturas falsas y cajas que no cuadran, alguien tenía que verificar cada pago.",
-          "sinopsis": "Cheka conecta un móvil Android del negocio con un panel web y valida en automático los pagos que llegan por Yape y Plin. El cajero ya no depende de una captura de pantalla: el pago aparece confirmado en el panel en tiempo real.",
+          "sinopsis": "Cheka lee en el celular del negocio el aviso real de Yape, Plin, BCP, BBVA y Sip, y lo canta en voz alta al instante. El cajero ya no depende de una captura de pantalla: ve el check verde en su terminal, sin ver el saldo, y el dueño sigue cada cobro en un panel web en tiempo real.",
           "reto": "Llevar cada evento de pago desde el teléfono hasta la web en tiempo real, sin exponer datos sensibles del negocio y sin frenar la atención en el punto de venta.\n\nUn tecno-thriller de sincronización y seguridad que valida cada pago sin pestañear.",
           "resultados": [],
           "techCredits": [
-            { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
             { "nombre": "Android", "icono": "/icons/android.svg" },
+            { "nombre": "Kotlin", "icono": "/icons/kotlin.svg" },
+            { "nombre": "Firebase", "icono": "/icons/firebase.svg" },
             { "nombre": "Cloudflare", "icono": "/icons/cloudflare.svg" }
           ],
-          "fotos": []
+          "fotos": [
+            "/images/proyectos/cheka-foto1.webp",
+            "/images/proyectos/cheka-foto2.webp",
+            "/images/proyectos/cheka-foto3.webp"
+          ]
         }
       }
     }
