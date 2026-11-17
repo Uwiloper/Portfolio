@@ -1,9 +1,21 @@
 ---
 import '../styles/global.css';
 import contacto from '../data/contacto.json';
+import proyectosData from '../data/proyectos.json';
 
 // Firma del preloader: la misma frase que cierra Contacto
 const lema = contacto.frase || 'Just tasteful';
+
+// Fondo: portada y dos primeras fotos de cada proyecto, intercaladas (uno de cada proyecto por turno)
+const porProyecto = proyectosData.proyectos.map((p) =>
+  [p.detalle?.portada?.imagen, ...(p.detalle?.contraportada?.fotos ?? []).slice(0, 2)].filter((src): src is string => !!src));
+const fondos = Array.from({ length: Math.max(0, ...porProyecto.map((l) => l.length)) }, (_, i) => porProyecto.map((l) => l[i]))
+  .flat().filter((src): src is string => !!src);
+// Cada imagen aparece 5 s; el ciclo dura 5 s × cuántas haya (los % del fundido se calculan para ese ciclo)
+const PASO = 5;
+const ciclo = Math.max(1, fondos.length) * PASO;
+const pct = (s: number) => `${Math.min(100, (s / ciclo) * 100).toFixed(2)}%`;
+const fundidoFondo = `@keyframes slowFade { 0%, 100% { opacity: 0; } ${pct(2.25)}, ${pct(4.5)} { opacity: .25; } ${pct(6.75)} { opacity: 0; } }`;
 
 // Permite que las páginas que usen este layout le pasen un título personalizado
 interface Props {
@@ -227,10 +239,11 @@ const imageURL = new URL(image, Astro.site);
     </script>
 
     <div id="layer-1-bg" class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-      <img src="/images/proyectos/lazaro-portada.webp" class="bg-project-image" alt="" decoding="async" />
-      <img src="/images/proyectos/invlazaro-foto1.webp" class="bg-project-image" alt="" decoding="async" />
-      <img src="/images/proyectos/invlazaro-foto2.webp" class="bg-project-image" alt="" decoding="async" />
+      {fondos.map((src, i) => (
+        <img src={src} class="bg-project-image" alt="" decoding="async" style={`animation-duration: ${ciclo}s; animation-delay: ${i * PASO}s`} />
+      ))}
     </div>
+    <style is:inline set:html={fundidoFondo}></style>
 
     <div id="layer-2-vhs" class="fixed inset-0 z-10 pointer-events-none wobbley">
       <canvas id="vhs-canvas" class="w-full h-full opacity-30 mix-blend-screen" style="filter: blur(1px);"></canvas>

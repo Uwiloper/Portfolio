@@ -1,6 +1,23 @@
 {
   "trabajos": [
-        {
+    {
+      "id": "exp-dalutech",
+      "periodo": "2026 - Presente",
+      "empresa": "Dalutech Corp",
+      "rol": "Dev Junior",
+      "descripcion": "Desarrollo de un ERP contable modular: contabilidad, permisos por roles, reportes en Excel y autenticación en dos pasos. Sistema aún no publicado.",
+      "botonTexto": "",
+      "botonUrl": "",
+      "tecnologias": [
+        { "nombre": "Laravel", "icono": "/icons/laravel.svg" },
+        { "nombre": "PHP", "icono": "/icons/php.svg" },
+        { "nombre": "Vue", "icono": "/icons/vue.svg" },
+        { "nombre": "Inertia", "icono": "/icons/inertia.svg" },
+        { "nombre": "PostgreSQL", "icono": "/icons/postgresql.svg" },
+        { "nombre": "TailwindCss", "icono": "/icons/tailwindcss.svg" }
+      ]
+    },
+    {
       "id": "exp-imagenartis",
       "periodo": "2020 - Presente",
       "empresa": "Imagenartis",

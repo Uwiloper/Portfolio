@@ -287,9 +287,7 @@
   pointer-events: none;
 }
 
-.bg-project-image:nth-child(1) { animation-delay: 0s; }
-.bg-project-image:nth-child(2) { animation-delay: 5s; }
-.bg-project-image:nth-child(3) { animation-delay: 10s; }
+/* La duración y el retraso de cada imagen los pone Layout.astro según cuántas haya (y redefine slowFade) */
 
 /* ==================================================== */
 /* CAPA 2: EFECTOS VHS DE FONDO                         */
