@@ -9,7 +9,8 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
 
 <article class="camera-focus-view relative w-full h-full flex flex-col justify-start lg:justify-center p-4 pt-14 lg:pt-0 pb-44 lg:pb-0 z-10 select-none">
   
-  <div class="max-w-[700px] w-full mx-auto relative p-4 sm:p-8">
+  <!-- data-reel-ignorar-rueda: la rueda (o el deslizar del touchpad) aquí recorre las experiencias, no cambia de sección -->
+  <div id="exp-caja" class="max-w-[700px] w-full mx-auto relative p-4 sm:p-8" data-reel-ignorar-rueda>
     
     <CameraFrame />
 
@@ -53,8 +54,9 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
       <!-- COLUMNA DERECHA: Visor de Contenido -->
       <div class="lg:col-span-7 relative min-h-[220px]">
         {data.trabajos.map((trabajo, index) => (
-          <div 
+          <div
             id={trabajo.id}
+            inert={index !== 0}
             class={`exp-content absolute inset-0 flex flex-col transition-all duration-500 ${index === 0 ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'}`}
           >
             <h3 class="font-mono text-xs md:text-sm text-cyan-400 uppercase tracking-widest mb-2">
@@ -143,6 +145,9 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
     // Cambiar contenido visible
     const targetId = selectedTab.getAttribute('data-target');
     contents.forEach(content => {
+      // Las experiencias ocultas quedan debajo de la visible: inert evita que sus enlaces o íconos
+      // reciban clics o el hover (antes el "Visitar" de otra experiencia se podía pulsar oculto)
+      content.toggleAttribute('inert', content.id !== targetId);
       if (content.id === targetId) {
         content.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
         content.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
@@ -173,4 +178,19 @@ const hideArrowsOnWeb = data.trabajos.length <= 2 ? 'lg:hidden' : 'lg:flex';
       if (activeIndex < tabs.length - 1) activateTab(activeIndex + 1);
     });
   });
+
+  // Rueda o deslizar del touchpad dentro del cuadro: pasa a la experiencia anterior/siguiente.
+  // Un gesto = un paso; mientras sigan llegando eventos del mismo gesto (inercia) no se avanza más.
+  const caja = document.getElementById('exp-caja');
+  let finGesto = 0;
+  caja?.addEventListener('wheel', (e) => {
+    const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    e.preventDefault();
+    const ahora = performance.now();
+    const gestoNuevo = ahora > finGesto;
+    finGesto = ahora + 220;
+    if (!gestoNuevo || Math.abs(delta) < 4) return;
+    const destino = Math.max(0, Math.min(tabs.length - 1, activeIndex + (delta > 0 ? 1 : -1)));
+    if (destino !== activeIndex) activateTab(destino);
+  }, { passive: false });
 </script>
