@@ -1,11 +1,12 @@
 {
   "titulo": "LOBBY TV",
   "cintas": [
-    { "id": "lofi", "etiqueta": "LOFI p/ estudiar", "color": "#ec4899", "videoId": "mmKguZohAck", "titulo": "Best of lofi hip hop 2023", "autor": "Lofi Girl" },
-    { "id": "synthwave", "etiqueta": "SYNTHWAVE 24/7", "color": "#22d3ee", "videoId": "4xDzrJKXOOY", "titulo": "synthwave radio - beats to chill/game to", "autor": "Lofi Girl" },
-    { "id": "memes-mundial", "etiqueta": "Perú al Mundial", "color": "#ef4444", "videoId": "-Qg2N6LfMEo", "titulo": "Los memes y virales de la clasificación de Perú al Mundial", "autor": "TEC" },
-    { "id": "memes-canciones", "etiqueta": "Canciones meme", "color": "#f5b83d", "videoId": "zfdxCg1R8-w", "titulo": "Canciones peruanas que se volvieron memes virales", "autor": "Magacín 247" },
-    { "id": "memes-esto-solo-pasa", "etiqueta": "Solo en Perú #24", "color": "#4ade80", "videoId": "Dhm58aY7ZLY", "titulo": "Esto solo pasa en Perú #24", "autor": "Dani DM" },
-    { "id": "memes-peru-meme", "etiqueta": "Perú es MEME", "color": "#a78bfa", "videoId": "3TAD-CRCut8", "titulo": "Perú no es clave... es MEME", "autor": "whatdafaqshow" }
+    { "id": "philantropia", "etiqueta": "Philantropia", "color": "#ec4899", "videoId": "-wUFd8UVaLk", "titulo": "El pobre es pobre porque quiere", "autor": "Philantropia Pchujoy" },
+    { "id": "wiwiwi", "etiqueta": "WiWiWi Cat", "color": "#f5b83d", "videoId": "iPnNjWELJwc", "titulo": "New WiWiWi Cat!", "autor": "FunnyPetsClub" },
+    { "id": "hollow-knight", "etiqueta": "Hollow Knight", "color": "#a5b4fc", "videoId": "sn987Kg6Ml8", "titulo": "Hollow Knight: La Historia en 1 Video", "autor": "El Fedelobo" },
+    { "id": "star-wars", "etiqueta": "Star Wars", "color": "#facc15", "videoId": "Ui3BvKGUsDc", "titulo": "Star Wars - La saga completa cronológicamente explicada", "autor": "Retrología" },
+    { "id": "nate-gentile", "etiqueta": "Nate Gentile", "color": "#22d3ee", "videoId": "so6n3rZh6e8", "titulo": "Cómo y por qué he cambiado mi físico, mi vida y mis hábitos", "autor": "Nate Gentile" },
+    { "id": "pinwin", "etiqueta": "No tan en serio", "color": "#4ade80", "videoId": "F8RDUcg4avs", "titulo": "no te tomes todo tan en serio.", "autor": "Pinwin" },
+    { "id": "bioshock", "etiqueta": "Bioshock Lutece", "color": "#ef4444", "videoId": "YEtq0HMmm7k", "titulo": "Los hermanos Lutece: Demiurgos en Bioshock Infinite", "autor": "3 Person View" }
   ]
 }

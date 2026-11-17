@@ -18,7 +18,7 @@ const pila = cintas.map((c, i) => {
   const arriba = nivel === niveles - 1 || i + nPilas >= cintas.length;
   // La de más arriba de cada pila queda más torcida, como dejada al pasar
   const giro = (azar(i, 2) - 0.5) * (arriba ? 22 : 7);
-  return { ...c, izquierda: columnas[columna] + (azar(i, 1) - 0.5) * 12, nivel, giro: Math.round(giro * 10) / 10 };
+  return { ...c, izquierda: columnas[columna] + (azar(i, 1) - 0.5) * 12, columna, nivel, giro: Math.round(giro * 10) / 10 };
 });
 ---
 
@@ -29,7 +29,7 @@ const pila = cintas.map((c, i) => {
     <div class="tv-pila" role="group" aria-label="Cintas VHS: elige una para verla">
       {pila.map((c, i) => (
         <button
-          type="button" class="vhs" data-indice={i}
+          type="button" class="vhs" data-indice={i} data-columna={c.columna} data-nivel={c.nivel}
           style={`--x: ${c.izquierda.toFixed(1)}%; --nivel: ${c.nivel}; --giro: ${c.giro}deg; --c: ${c.color}`}
           aria-label={`Ver ${c.titulo} (${c.autor})`} title={`${c.titulo} · ${c.autor}`}
         >
@@ -51,7 +51,9 @@ const pila = cintas.map((c, i) => {
               <!-- Sin cinta: pantalla azul de la entrada de video -->
               <div class="tv-azul" aria-hidden="true">
                 <span class="tv-azul-av">AV-1</span>
-                <span class="tv-azul-aviso">▲ ELIGE UN VHS ▲</span>
+                <span class="tv-azul-flecha">▲</span>
+                <span class="tv-azul-aviso">ELIGE UN VHS</span>
+                <span class="tv-azul-sub">de la pila de arriba</span>
               </div>
             </div>
             <div class="tv-estatica" aria-hidden="true"></div>
@@ -121,9 +123,15 @@ const pila = cintas.map((c, i) => {
       linear-gradient(90deg, rgba(255, 255, 255, .06) 0 2px, transparent 2px calc(100% - 2px), rgba(255, 255, 255, .06) calc(100% - 2px)),
       linear-gradient(180deg, #2b2b31, #141417 55%, #0c0c0e);
     box-shadow: 0 3px 5px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .1);
-    transition: translate .2s cubic-bezier(.2, .8, .2, 1), filter .2s;
+    /* bottom: cuando se saca una cinta, las de encima caen con un pequeño rebote */
+    transition: translate .25s cubic-bezier(.3, 1.6, .5, 1), rotate .25s cubic-bezier(.3, 1.6, .5, 1), filter .2s, bottom .42s cubic-bezier(.5, 0, .4, 1.35);
   }
-  .vhs:hover { translate: 0 -5px; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 60%, transparent)); z-index: 2; }
+  /* Al pasar el mouse la cinta se levanta y se ladea un poco, como si la empujaras */
+  .vhs:hover { translate: 0 -5px; rotate: -2deg; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 60%, transparent)); z-index: 2; }
+  .vhs:nth-child(even):hover { rotate: 2deg; }
+  /* Sin cinta puesta, de vez en cuando una cinta da un saltito para invitar a elegirla */
+  .vhs.invita { animation: vhs-invita .7s cubic-bezier(.3, 1.6, .5, 1); }
+  @keyframes vhs-invita { 30% { translate: 0 -9px; rotate: -3deg; } 60% { translate: 0 -2px; rotate: 1.5deg; } }
   .vhs-etiqueta {
     width: 100%; height: 72%; display: grid; place-items: center; overflow: hidden;
     padding: 0 4px; border-radius: 1px;
@@ -133,7 +141,7 @@ const pila = cintas.map((c, i) => {
   }
   /* La cinta que está dentro del aparato no está en la pila */
   .vhs.en-ranura { visibility: hidden; pointer-events: none; }
-  .vhs.volando { z-index: 20; pointer-events: none; translate: none; }
+  .vhs.volando { z-index: 20; pointer-events: none; translate: none; rotate: none; transition: none; animation: none; }
   .tv.apagado .vhs { cursor: not-allowed; }
 
   /* ---------- Gabinete ---------- */
@@ -186,14 +194,22 @@ const pila = cintas.map((c, i) => {
   /* Pantalla azul de "sin señal de video" */
   .tv-azul {
     position: absolute; inset: 0; z-index: 2; display: none;
-    flex-direction: column; justify-content: space-between; padding: 7% 7%;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 7%;
     background: linear-gradient(180deg, #1f3fd1, #1733b0);
     font-family: 'Press Start 2P', ui-monospace, monospace; color: #fff;
     text-shadow: 2px 2px 0 rgba(0, 0, 0, .35);
   }
   .tv.sin-cinta .tv-azul { display: flex; }
-  .tv-azul-av { font-size: 16px; }
-  .tv-azul-aviso { align-self: center; font-size: 10px; letter-spacing: .08em; animation: tv-parpadeo 1.4s steps(2, jump-none) infinite; }
+  .tv-azul-av { position: absolute; top: 9%; left: 7%; font-size: 16px; }
+  /* La invitación, al centro: flecha que apunta a la pila y el aviso grande */
+  .tv-azul-flecha { font-size: 22px; animation: tv-flecha 1s ease-in-out infinite; }
+  @keyframes tv-flecha { 50% { transform: translateY(-8px); } }
+  .tv-azul-aviso {
+    padding: 10px 16px; font-size: 18px; letter-spacing: .06em; line-height: 1.3; text-align: center;
+    background: rgba(0, 0, 0, .28); border: 3px solid #fff; box-shadow: 4px 4px 0 rgba(0, 0, 0, .3);
+    animation: tv-parpadeo 1.4s steps(2, jump-none) infinite;
+  }
+  .tv-azul-sub { font-size: 9px; letter-spacing: .08em; opacity: .85; }
 
   /* Vidrio: líneas y viñeta solo cuando no corre el video (no se tapa el reproductor de YouTube) */
   .tv-cristal {
@@ -314,8 +330,11 @@ const pila = cintas.map((c, i) => {
     .tv-btn, .tv-power { font-size: 7px; letter-spacing: .06em; padding: 7px 4px; }
     .tv-osd { font-size: 9px; }
     .tv-portada-play { font-size: 9px; }
-    .tv-azul-av { font-size: 11px; }
-    .tv-azul-aviso { font-size: 8px; }
+    .tv-azul { gap: 8px; }
+    .tv-azul-av { font-size: 10px; }
+    .tv-azul-flecha { font-size: 14px; }
+    .tv-azul-aviso { font-size: 11px; padding: 7px 10px; border-width: 2px; }
+    .tv-azul-sub { font-size: 7px; }
   }
 </style>
 
@@ -489,9 +508,36 @@ const pila = cintas.map((c, i) => {
     setTimeout(() => ranura?.classList.remove('abierta'), 380);
   }
 
+  // ---------- la pila: nada queda flotando ----------
+  // Cada cinta se apoya sobre las que siguen en su columna; las que están fuera (en la ranura o volando
+  // hacia ella) no cuentan, así que las de encima caen. Las de fuera conservan su lugar para poder volver.
+  const fuera = new Set<number>();
+  function apilar() {
+    vhs.forEach((el, i) => {
+      if (fuera.has(i)) return;
+      const columna = el.dataset.columna, nivel = Number(el.dataset.nivel);
+      const debajo = vhs.filter((o, k) => k !== i && !fuera.has(k) && o.dataset.columna === columna && Number(o.dataset.nivel) < nivel).length;
+      el.style.setProperty('--nivel', String(debajo));
+    });
+  }
+
+  // Sin cinta puesta, cada tanto una cinta da un saltito: "elígeme"
+  setInterval(() => {
+    if (!tv?.classList.contains('sin-cinta') || !encendido || tv.offsetParent === null) return;
+    if (vhs.some(el => el.classList.contains('volando'))) return;
+    const libres = vhs.filter((el, i) => !fuera.has(i) && !el.matches(':hover'));
+    const el = libres[Math.floor(Math.random() * libres.length)];
+    if (!el) return;
+    el.classList.add('invita');
+    el.addEventListener('animationend', () => el.classList.remove('invita'), { once: true });
+  }, 2400);
+
   function animarEntrada(el: HTMLElement) {
     el.getAnimations().forEach(a => a.cancel());
+    el.classList.remove('invita');
     el.classList.add('volando'); // antes de medir: quita el levantamiento del hover
+    fuera.add(vhs.indexOf(el as HTMLButtonElement));
+    apilar(); // las de encima caen mientras esta vuela
     const d = haciaRanura(el);
     const giro = getComputedStyle(el).getPropertyValue('--giro') || '0deg';
     const anim = el.animate([
@@ -508,6 +554,9 @@ const pila = cintas.map((c, i) => {
     el.getAnimations().forEach(a => a.cancel());
     el.classList.remove('en-ranura');
     el.classList.add('volando');
+    // Vuelve a su lugar: las de encima se levantan para hacerle espacio (antes de medir su destino)
+    fuera.delete(vhs.indexOf(el as HTMLButtonElement));
+    apilar();
     const d = haciaRanura(el);
     const giro = getComputedStyle(el).getPropertyValue('--giro') || '0deg';
     abrirTapa();
